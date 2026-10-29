@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "pins": [
+    {
+      "name": "weave",
+      "repository": "https://github.com/quaat/weave",
+      "commit": "e7c3f3cab1e25994b96a948cbe27c96bb061d5a8",
+      "fetched_at": "2026-10-29T23:16:41Z",
+      "fetch_method": "git fetch --depth 1",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "sha256": "b578d9a7c9556921a95db16fe27e74c6526fa9b71c4bbf0a2da68037534f0b71"
+      },
+      "additional_license_files": [
+        {"path": "LICENSES/MIT.txt", "spdx": "MIT", "sha256": "b578d9a7c9556921a95db16fe27e74c6526fa9b71c4bbf0a2da68037534f0b71"},
+        {"path": "LICENSES/BSD-2-Clause.txt", "spdx": "BSD-2-Clause", "sha256": "f32fb3b417a194167cfad068223fc975ba96c5960513a10f66a3c28720aec1df"},
+        {"path": "LICENSES/Bitstream-Vera.txt", "spdx": "Bitstream-Vera", "sha256": "5b3b4d3cef4029bda987a71f4bfb6087e40c5e91a2cb853fe7f6ccb78d9d8e38"},
+        {"path": "LICENSES/LicenseRef-Arev-Fonts.txt", "spdx": "LicenseRef-Arev-Fonts", "sha256": "ff385c273276bddba776dd4b5cb7c2d4ab8c0329580b9a0264b29402912f8fd9"},
+        {"path": "LICENSES/OFL-1.1-RFN.txt", "spdx": "OFL-1.1-RFN", "sha256": "8eea8287e5876b539670cadb82e99f9a7afddec6f6730811be1daf25d2e9bcfd"}
+      ],
+      "notes": "Commit date 2026-10-29T22:03:18+01:00 (merge of PR #83). REUSE.toml:15-92 annotates every tools/weave_workflow/**, docs/development/*.md, .claude/** and .github/** file as MIT, copyright 2026 Thomas F. Hagelien; the non-MIT licence files cover specification PDFs/fonts and weave.sty only. tools/weave_workflow/ (32 files) and docs/development/ (14 files) exist. Controller: 18 production Python files, 4468 lines / 3698 SLOC; 163 static test methods; tests not executed. Untrusted download at /tmp/claude-1000/upstream/weave; nothing executed from it."
+    },
+    {
+      "name": "weave-baseline",
+      "repository": "https://github.com/quaat/weave",
+      "commit": "d8010aec6746bbdcc54b21801c537d28917c0533",
+      "fetched_at": "2026-10-29T23:16:49Z",
+      "fetch_method": "git fetch --depth 1",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "sha256": "b578d9a7c9556921a95db16fe27e74c6526fa9b71c4bbf0a2da68037534f0b71"
+      },
+      "notes": "Commit date 2026-10-29T18:35:41+01:00 (merge of PR #81). diff -rq shows tools/, docs/, .claude/, .github/, REUSE.toml, LICENSE, LICENSES/, AGENTS.md, CLAUDE.md and follow-up identical to the e7c3f3c pin; the 44 differing paths are in agent-kit/, evidence/, specification/, README.md and STABILITY.md. The reported 89 passing controller tests were not rerun; 163 test methods counted statically."
+    }
+  ],
+  "related_fetches": [
+    {
+      "name": "weave-issue-6",
+      "url": "https://api.github.com/repos/quaat/weave/issues/6 and /issues/6/comments?per_page=100",
+      "fetched_at": "2026-10-29T23:19:28Z",
+      "fetch_method": "curl (GitHub REST API, unauthenticated), HTTP 200 for both",
+      "notes": "58 comments, all weave-agent envelopes by quaat; stored at /tmp/claude-1000/upstream/weave-issue6/ (not in the repository)."
+    }
+  ]
+}
