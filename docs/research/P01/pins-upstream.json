@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "generated_for": "P01 upstream coordination surfaces (gh-aw, Symphony, Beads)",
+  "observation_note": "Observed facts only. A pin records what was fetched and inspected; it is not a validated dependency lockfile or a reuse decision.",
+  "pins": [
+    {
+      "name": "gh-aw",
+      "repository": "https://github.com/githubnext/gh-aw",
+      "canonical_repository_observed": "https://github.com/github/gh-aw",
+      "commit": "28f2101d8af447fdb90ffd70dd2579e4ad64a21c",
+      "commit_date": "2026-10-29T14:07:49-07:00",
+      "fetched_at": "2026-10-29T23:16:42Z",
+      "fetch_method": "git fetch --depth 1",
+      "default_branch_head_observed": "28f2101d8af447fdb90ffd70dd2579e4ad64a21c",
+      "default_branch_head_observed_at": "2026-10-29T23:17Z",
+      "nearest_tag": "v1.0.1",
+      "nearest_tag_commit": "0627fdbe4beb5f3b71aa569f8d97150b87f2111a",
+      "nearest_tag_relation": "ancestor of pin; 43 commits between v1.0.1 and pin (bounded treeless fetch --shallow-since=2026-10-26); no tag points at the pin; v1.0.1 is the highest version tag listed by git ls-remote --tags",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "spdx_basis": "text matches MIT permission and warranty clauses; SPDX identifier inferred, not declared in file",
+        "copyright": "Copyright GitHub, Inc.",
+        "sha256": "2510b446bc1f0cf9702453075d20cd88631e20e5642658edb7325d9c1eb534f7"
+      },
+      "runtime_observed": {
+        "go": "go 1.27.3 (go.mod:3)",
+        "setup_action": "node24 (actions/setup/action.yml:41)",
+        "distribution": "gh CLI extension (gh extension install github/gh-aw)"
+      },
+      "notes": "githubnext/gh-aw and github/gh-aw both resolved HEAD to the same SHA via git ls-remote on 2026-10-29; the module path and docs use github/gh-aw. Work-queue spec, pkg/workqueue/schema and specs/work-queue/transactions.tsp are byte-identical between v1.0.0 and the pin (git diff --quiet exit 0); runtime JS/Go changed after v1.0.1."
+    },
+    {
+      "name": "symphony",
+      "repository": "https://github.com/openai/symphony",
+      "commit": "be10a1b79df723d6d7612b5651c8522704dafb2e",
+      "commit_date": "2026-09-15T15:12:07-07:00",
+      "fetched_at": "2026-10-29T23:16:42Z",
+      "fetch_method": "git fetch --depth 1",
+      "default_branch_head_observed": "be10a1b79df723d6d7612b5651c8522704dafb2e",
+      "default_branch_head_observed_at": "2026-10-29T23:17Z",
+      "nearest_tag": "v0.0.3",
+      "nearest_tag_commit": "1c0fb6c8e8ef9031a2c861e62af5f9e66cee39cb",
+      "nearest_tag_relation": "v0.0.3 is an ancestor, 1 commit before the pin; the lightweight tag 'nightly' points exactly at the pin (moving nightly tag, not a release)",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "Apache-2.0",
+        "spdx_basis": "Apache License Version 2.0 text; README.md:41 states Apache License 2.0",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "notice_path": "NOTICE",
+        "notice_sha256": "38c76eb8701e52953f63154a77b407667a6ee34c3a2a8785c8f8b2cd5494d09d"
+      },
+      "runtime_observed": {
+        "reference_implementation": "Elixir 1.19.5-otp-28 / Erlang 28 (elixir/mise.toml); mix project version 0.0.3 (elixir/mix.exs:7)",
+        "agent_protocol": "Codex app-server (SPEC.md:148, 950-984)"
+      },
+      "notes": "SPEC.md status 'Draft v1 (language-agnostic)'. Elixir implementation self-described as prototype for evaluation only."
+    },
+    {
+      "name": "beads",
+      "repository": "https://github.com/gastownhall/beads",
+      "commit": "e226083653b893998614df4225f73b6688ca9166",
+      "commit_date": "2026-10-29T04:48:30+00:00",
+      "fetched_at": "2026-10-29T23:16:42Z",
+      "fetch_method": "git fetch --depth 1",
+      "default_branch_head_observed": "e226083653b893998614df4225f73b6688ca9166",
+      "default_branch_head_observed_at": "2026-10-29T23:17Z",
+      "nearest_tag": "v1.3.2",
+      "nearest_tag_commit": "9b65b9e198acbcc98e7fd3a87a5d55baa065a572",
+      "nearest_tag_relation": "NOT an ancestor of the pin: v1.3.2 is a merge of branch release-prep/v1.3.2; main commit 02f3349b99429628895e8ff520adcaf5cb0fc29a 'forward-port v1.3.1 and v1.3.2 to main' is an ancestor (bounded treeless fetch --shallow-since=2026-10-23)",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "spdx_basis": "file begins 'MIT License'; SPDX identifier inferred",
+        "copyright": "Copyright (c) 2025 Beads Contributors",
+        "sha256": "caa2c60efbbf71e18b45ef6006a18213f8a42554b235af88883f6f1ec240b7db",
+        "third_party_path": "THIRD_PARTY_LICENSES",
+        "third_party_sha256": "50b7ae5d2cbdb67ff26f255f118002241ff27bc2ad0535d0c4ec7639b12224aa"
+      },
+      "runtime_observed": {
+        "go": "go 1.27.3 (go.mod:3)",
+        "storage": "Dolt (embedded default, or external dolt sql-server)"
+      },
+      "notes": "Inspected for vocabulary and readiness UX only. Not a candidate authority; the plan (section 2) excludes adding a second issue database."
+    }
+  ],
+  "documentation_fetches": {
+    "fetched_at": "2026-10-29T23:18:32Z",
+    "method": "curl -L, HTTP status recorded; HTML converted to text with a local isolated script",
+    "results": [
+      {"url": "https://github.github.com/gh-aw/introduction/overview/", "http_status": 200, "pinned_copy": "docs/src/content/docs/introduction/overview.mdx"},
+      {"url": "https://github.github.com/gh-aw/introduction/architecture/", "http_status": 200, "pinned_copy": "docs/src/content/docs/introduction/architecture.mdx"},
+      {"url": "https://github.github.com/gh-aw/reference/custom-safe-outputs/", "http_status": 200, "pinned_copy": "docs/src/content/docs/reference/custom-safe-outputs.md"},
+      {"url": "https://github.github.com/gh-aw/specs/work-queue-specification/", "http_status": 200, "pinned_copy": "docs/src/content/docs/specs/work-queue-specification.md"},
+      {"url": "https://github.github.com/gh-aw/specs/repo-memory-ledger-specification/", "http_status": 200, "pinned_copy": "docs/src/content/docs/specs/repo-memory-ledger-specification.md"},
+      {"url": "https://github.com/openai/symphony/blob/main/SPEC.md", "http_status": 200, "pinned_copy": "SPEC.md (main == pin at fetch time)"}
+    ]
+  }
+}
