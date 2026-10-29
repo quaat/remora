@@ -1,0 +1,2155 @@
+{
+  "schema_version": 1,
+  "matrix_version": "1.0.0",
+  "status": "proposed",
+  "task": "P01",
+  "purpose": "Source for the credential specification emitted by harness init (plan section 10). No secret values. Branch patterns are enforcement configuration, not token permissions.",
+  "evidence": "docs/research/P01/permission-evidence.json",
+  "evidence_accessed_at": "2026-10-29T23:30:00Z",
+  "credential_types": [
+    "github_app_installation",
+    "fine_grained_pat",
+    "classic_pat",
+    "oauth_gh_cli",
+    "github_token",
+    "human_account",
+    "none"
+  ],
+  "write_levels": [
+    "write",
+    "full",
+    "admin"
+  ],
+  "expiry_revocation_procedures": {
+    "github_app_installation": {
+      "sources": [
+        "S-gh-app-iat",
+        "S-gh-rest-installations",
+        "S-gh-app-keys",
+        "S-gh-app-suspend"
+      ],
+      "procedure": "Installation tokens expire after 1 hour; revoke the current token with DELETE /installation/token. The App private key does not expire: rotate by generating a new key before deleting the old one; suspend the installation for an emergency stop. ghs_ tokens are not on the credential revocation API list (S-gh-token-exp)."
+    },
+    "fine_grained_pat": {
+      "sources": [
+        "S-gh-pat-manage",
+        "S-gh-token-exp",
+        "S-gh-org-pat-review"
+      ],
+      "procedure": "Set expires_in (1-366 days; default 30). Revoke by deleting the token, through the credential revocation API (github_pat_ prefix), or by organization owners (org resource owner only)."
+    },
+    "classic_pat": {
+      "sources": [
+        "S-gh-pat-manage",
+        "S-gh-token-exp",
+        "S-gh-org-pat-policy"
+      ],
+      "procedure": "Set an expiry (optional for classic PATs; unused tokens are removed after a year). Revoke by deleting the token or through the credential revocation API (ghp_ prefix). Organization owners cannot see or revoke classic PATs in the UI (S-gh-org-pat-review)."
+    },
+    "oauth_gh_cli": {
+      "sources": [
+        "S-gh-cli-auth-login",
+        "S-gh-cli-auth-logout",
+        "S-gh-token-exp"
+      ],
+      "procedure": "gh auth logout does not revoke the token. Revoke GitHub CLI access at github.com/settings/applications; this revokes every gh token on all devices. --expiring is a preference, not a guarantee."
+    },
+    "github_token": {
+      "sources": [
+        "S-gh-actions-token"
+      ],
+      "procedure": "Created per job; expires when the job finishes or after its maximum lifetime (6 h on GitHub-hosted runners, refresh up to 24 h on self-hosted). No separate revocation procedure is documented."
+    },
+    "human_account": {
+      "sources": [
+        "S-gh-rules-available"
+      ],
+      "procedure": "The human's own account credentials; outside the harness. Removing repository write/maintain role or ruleset bypass is the revocation path for integration authority."
+    },
+    "none": {
+      "sources": [],
+      "procedure": "No GitHub credential is issued. Model-provider credentials are out of scope for this GitHub matrix (runtime-and-identities.md section F); keep them out of the sandbox environment through a host-side proxy where feasible."
+    }
+  },
+  "setup_only_permissions": [
+    {
+      "resource": "rulesets_admin",
+      "levels": [
+        "write"
+      ],
+      "reason": "Administration write creates/edits rulesets"
+    },
+    {
+      "resource": "projects_org",
+      "levels": [
+        "admin"
+      ],
+      "reason": "Project administration"
+    }
+  ],
+  "authority_capabilities": [
+    "state_branch_write",
+    "candidate_publication",
+    "ci_evidence",
+    "merge_main",
+    "human_commands",
+    "command_ingestion",
+    "board_projection",
+    "pending_effects",
+    "execution_control",
+    "setup"
+  ],
+  "single_authority_capabilities": [
+    "state_branch_write",
+    "candidate_publication",
+    "ci_evidence",
+    "merge_main",
+    "human_commands",
+    "command_ingestion",
+    "pending_effects"
+  ],
+  "state_kinds": [
+    {
+      "id": "task_state",
+      "record": "refs/heads/harness/state: state/tasks/<id>.json (narrow adapter) or the adopted backend's record",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "approved_task_revisions",
+      "record": "refs/heads/harness/state: immutable revision objects bound by digest",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "claims_leases",
+      "record": "refs/heads/harness/state: development and review ownership with generation and expiry, inside the task/job record",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "resource_reservations",
+      "record": "refs/heads/harness/state: separately addressable reservations updated in the same commit",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "review_rounds",
+      "record": "refs/heads/harness/state: task-wide completed rounds, reserved slot, findings and dispositions",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "questions",
+      "record": "refs/heads/harness/state: question records with stable ID and designated human",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "command_receipts",
+      "record": "refs/heads/harness/state: durable command IDs and results for the retry horizon",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "pending_effects",
+      "record": "refs/heads/harness/state: intents for external GitHub effects with idempotency keys",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "sessions_and_stop",
+      "record": "refs/heads/harness/state: session status, stop_requested, stop_confirmed, authority revocation",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "enrollment",
+      "record": "refs/heads/harness/state: enrolled principal, role, runtime capabilities, revocation",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "accepted_evidence",
+      "record": "refs/heads/harness/state: accepted verdicts, per-check provenance, manual acceptances and completion records (artifacts by digest elsewhere)",
+      "authoritative": true,
+      "required_capability": "state_branch_write"
+    },
+    {
+      "id": "candidate_refs",
+      "record": "refs/heads/agent/<task>/<generation>/...: immutable generation-specific candidate commits; which candidate is under review is recorded in task_state",
+      "authoritative": true,
+      "required_capability": "candidate_publication"
+    },
+    {
+      "id": "ci_evidence",
+      "record": "check runs on the candidate SHA from the pinned trusted-CI App",
+      "authoritative": true,
+      "required_capability": "ci_evidence"
+    },
+    {
+      "id": "integration",
+      "record": "refs/heads/main via a reviewed pull request",
+      "authoritative": true,
+      "required_capability": "merge_main"
+    },
+    {
+      "id": "human_command_input",
+      "record": "issue comments (or terminal-posted comments) authored by the accountable human; an input, accepted only through command_receipts",
+      "authoritative": true,
+      "required_capability": "human_commands"
+    },
+    {
+      "id": "board_projection",
+      "record": "Project Status and the three default fields",
+      "authoritative": false,
+      "derived_from": [
+        "task_state",
+        "review_rounds",
+        "questions",
+        "sessions_and_stop"
+      ]
+    },
+    {
+      "id": "issue_summaries",
+      "record": "maintained issue summary, labels and timeline comments",
+      "authoritative": false,
+      "derived_from": [
+        "task_state",
+        "review_rounds",
+        "questions",
+        "accepted_evidence"
+      ]
+    }
+  ],
+  "rulesets": [
+    {
+      "id": "RS-state-immutable",
+      "target_refs": [
+        "refs/heads/harness/state"
+      ],
+      "rules": [
+        "deletion",
+        "non_fast_forward"
+      ],
+      "bypass_actors": [],
+      "sources": [
+        "S-gh-rules-available",
+        "S-gh-rest-rules"
+      ],
+      "unverified": [
+        "two-ruleset layout (bypass on RS-state-writers must not lift these rules)"
+      ]
+    },
+    {
+      "id": "RS-state-writers",
+      "target_refs": [
+        "refs/heads/harness/state"
+      ],
+      "rules": [
+        "creation",
+        "update"
+      ],
+      "bypass_actors": [
+        {
+          "actor_type": "Integration",
+          "actor": "the state-writer App of the active placement only",
+          "bypass_mode": "always"
+        }
+      ],
+      "sources": [
+        "S-gh-rules-available",
+        "S-gh-rules-create",
+        "S-gh-rest-rules"
+      ],
+      "unverified": [
+        "User actor_type for a PAT holder"
+      ]
+    },
+    {
+      "id": "RS-candidates-immutable",
+      "target_refs": [
+        "refs/heads/agent/**/*"
+      ],
+      "rules": [
+        "deletion",
+        "non_fast_forward"
+      ],
+      "bypass_actors": [],
+      "sources": [
+        "S-gh-rules-available",
+        "S-gh-rules-create"
+      ],
+      "unverified": [
+        "candidate-ref cleanup procedure under a no-bypass deletion rule"
+      ]
+    },
+    {
+      "id": "RS-candidates-writers",
+      "target_refs": [
+        "refs/heads/agent/**/*"
+      ],
+      "rules": [
+        "creation",
+        "update"
+      ],
+      "bypass_actors": [
+        {
+          "actor_type": "Integration",
+          "actor": "the candidate-publisher App of the active placement only",
+          "bypass_mode": "always"
+        }
+      ],
+      "sources": [
+        "S-gh-rules-available",
+        "S-gh-rules-create"
+      ],
+      "unverified": [
+        "per-task branch ownership is not enforceable by GitHub; the trusted publisher must enforce it"
+      ]
+    },
+    {
+      "id": "RS-main",
+      "target_refs": [
+        "refs/heads/main"
+      ],
+      "rules": [
+        "pull_request",
+        "required_status_checks",
+        "non_fast_forward",
+        "deletion"
+      ],
+      "bypass_actors": [],
+      "parameters": {
+        "required_approving_review_count": ">= 1",
+        "required_status_checks.integration_id": "trusted-CI App (DP-03)"
+      },
+      "sources": [
+        "S-gh-rules-available",
+        "S-gh-rest-rules"
+      ],
+      "unverified": [
+        "whether an App review counts toward required approvals",
+        "admin bypass removal on a user-owned repository (DP-05)"
+      ]
+    }
+  ],
+  "placements": {
+    "supervisor_hosted": {
+      "default": true,
+      "description": "Each enrolled trusted supervisor runs the same pinned reducer and publishes transitions with the selected backend's conditional update. One state branch is the authority.",
+      "roles": [
+        {
+          "id": "setup-operator",
+          "phase": "setup",
+          "credential_types": [
+            "github_app_installation",
+            "fine_grained_pat",
+            "classic_pat",
+            "oauth_gh_cli"
+          ],
+          "permissions": [
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "repository identity; read effective rules for doctor",
+              "parameter_name": "metadata"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "create milestones and issues; check assignee",
+              "parameter_name": "issues"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "rulesets_admin",
+              "permission_name": "Administration",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "create harness/state, agent/** and main rulesets",
+              "parameter_name": "administration"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-pat-manage",
+              "purpose": "create/configure the Project and its fields",
+              "parameter_name": "organization_projects",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "repository identity"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "create milestones and issues"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "rulesets_admin",
+              "permission_name": "Administration",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "create rulesets"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "create/configure the Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "only if the App creates the Project with repositoryId (S-gh-projects-api)",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "contents",
+              "permission_name": "repo",
+              "level": "full",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "repo scope: repository-wide full access (covers issues, milestones)"
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "create/configure a user-owned Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            },
+            {
+              "credential_type": "oauth_gh_cli",
+              "resource": "contents",
+              "permission_name": "repo",
+              "level": "full",
+              "source": "S-gh-cli-auth-login",
+              "purpose": "gh minimum scope repo (with read:org, gist); bootstrap uses this"
+            },
+            {
+              "credential_type": "oauth_gh_cli",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "gh project commands on a user-owned Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            },
+            {
+              "credential_type": "oauth_gh_cli",
+              "resource": "projects_org",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-cli-project",
+              "purpose": "gh project commands on an org-owned Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            }
+          ],
+          "authorities": [
+            "setup"
+          ],
+          "must_not_have": [
+            "reuse as any runtime credential",
+            "presence on a worker host's runtime credential store or in any sandbox",
+            "use by automation after harness init completes"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-main",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-state-writers",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-candidates-writers",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "accountable human operator session on a trusted workstation, used only for init/import; never a supervisor runtime store or sandbox",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "fine_grained_pat",
+              "classic_pat",
+              "oauth_gh_cli"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "FG/App permission level required by GraphQL createProjectV2, updateProjectV2Field and linkProjectV2ToRepository (not tabulated)",
+            "classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
+            "whether an App can access a user-owned Project (no permission found)"
+          ],
+          "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime."
+        },
+        {
+          "id": "supervisor-runtime",
+          "phase": "runtime",
+          "credential_types": [
+            "github_app_installation",
+            "fine_grained_pat",
+            "classic_pat"
+          ],
+          "permissions": [
+            {
+              "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "doctor: effective rules"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "conditional state commit to harness/state; publish generation-specific agent/** candidates"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "issue summaries, questions, comments; poll human commands"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "checks",
+              "permission_name": "Checks",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read trusted-CI check runs as evidence"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "commit_statuses",
+              "permission_name": "Commit statuses",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read status evidence"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "Project Status/field projection",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "pull_requests",
+              "permission_name": "Pull requests",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "open integration PRs for the human",
+              "when": {
+                "decision_point": "DP-08",
+                "option": "supervisor_opens_pr"
+              }
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "workflow_files",
+              "permission_name": "Workflows",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "publish candidates that change .github/workflows/**",
+              "when": {
+                "decision_point": "DP-04",
+                "option": "allow_with_workflows_write"
+              }
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "doctor: effective rules",
+              "parameter_name": "metadata"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "state commit and candidate publication (cannot be named as a UI ruleset bypass actor; see unverified)",
+              "parameter_name": "contents"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "issue summaries, questions; poll human commands",
+              "parameter_name": "issues"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "commit_statuses",
+              "permission_name": "Commit statuses",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "read status evidence (Checks API unavailable to FG PATs)",
+              "parameter_name": "statuses"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-pat-manage",
+              "purpose": "Project projection",
+              "parameter_name": "organization_projects",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "pull_requests",
+              "permission_name": "Pull requests",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "open integration PRs",
+              "parameter_name": "pull_requests",
+              "when": {
+                "decision_point": "DP-08",
+                "option": "supervisor_opens_pr"
+              }
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "workflow_files",
+              "permission_name": "Workflows",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "workflow-changing candidates",
+              "parameter_name": "workflows",
+              "when": {
+                "decision_point": "DP-04",
+                "option": "allow_with_workflows_write"
+              }
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "separate projection-only credential for a user-owned Project; held by the supervisor, never combined with repo scope",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            }
+          ],
+          "authorities": [
+            "state_branch_write",
+            "candidate_publication",
+            "command_ingestion",
+            "board_projection",
+            "pending_effects"
+          ],
+          "must_not_have": [
+            "Administration write (setup-only)",
+            "Projects admin (setup-only)",
+            "Checks write (belongs to trusted-ci)",
+            "bypass on RS-main or on any *-immutable ruleset",
+            "Workflows write unless DP-04 = allow_with_workflows_write",
+            "classic repo scope at runtime (repository-wide, all repositories of the user)",
+            "the setup-operator credential",
+            "exposure to any model sandbox, environment variable, image layer or credential proxy reachable by a model"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-state-writers",
+              "relation": "bypass_actor"
+            },
+            {
+              "ruleset": "RS-state-immutable",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-candidates-writers",
+              "relation": "bypass_actor"
+            },
+            {
+              "ruleset": "RS-candidates-immutable",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "enrolled trusted supervisor host, outside every sandbox: App private key (or FG PAT) in a host secret store; installation tokens minted per use",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "fine_grained_pat",
+              "classic_pat"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "permission required by GraphQL createCommitOnBranch and updateRefs (not tabulated; Contents write inferred)",
+            "two-ruleset layout: bypass of RS-state-writers leaves RS-state-immutable enforced for the same actor",
+            "ruleset enforcement parity across REST, GraphQL and git push",
+            "FG PAT holder as bypass actor via REST actor_type User",
+            "whether an App pull request review counts toward required approvals on main (relevant only if DP-08 = supervisor_opens_pr)",
+            "classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository"
+          ],
+          "notes": "Every enrolled supervisor runs the same pinned reducer; they are concurrent clients of one state branch, not separate ledgers. Fine-grained PATs cannot read the Checks API (S-gh-pat-manage), so a FG-PAT supervisor cannot read trusted-CI check runs; that profile needs DP-02 = github_app for P09."
+        },
+        {
+          "id": "developer-sandbox",
+          "phase": "runtime",
+          "credential_types": [
+            "none"
+          ],
+          "permissions": [],
+          "authorities": [],
+          "must_not_have": [
+            "any GitHub token or credential, read or write",
+            "Docker Sandboxes 'github' secret service (the proxy injects the host token into api.github.com/github.com requests; S-docker-sbx-credentials)",
+            "SSH agent forwarding (sbx default ssh.agentForwardingEnabled=true; S-docker-sbx-settings)",
+            "host Docker socket or home-directory mount",
+            "controller, publication or merge credential, directly or through a proxy that grants writes"
+          ],
+          "enforcement": [],
+          "secret_holder": "none",
+          "expiry_revocation": {
+            "procedures": [
+              "none"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "actual Docker Sandboxes defaults on the target host (P02b)",
+            "OCI egress enforcement including DNS/IPv6 bypass (P02b)"
+          ],
+          "read_access": "none required; the supervisor supplies the exact checkout and immutable packet"
+        },
+        {
+          "id": "reviewer-sandbox",
+          "phase": "runtime",
+          "credential_types": [
+            "none"
+          ],
+          "permissions": [],
+          "authorities": [],
+          "must_not_have": [
+            "any GitHub token or credential, read or write",
+            "Docker Sandboxes 'github' secret service (the proxy injects the host token into api.github.com/github.com requests; S-docker-sbx-credentials)",
+            "SSH agent forwarding (sbx default ssh.agentForwardingEnabled=true; S-docker-sbx-settings)",
+            "host Docker socket or home-directory mount",
+            "controller, publication or merge credential, directly or through a proxy that grants writes",
+            "developer caches, session or writable environment"
+          ],
+          "enforcement": [],
+          "secret_holder": "none",
+          "expiry_revocation": {
+            "procedures": [
+              "none"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "writable reviewer scratch under the selected runtime (P02b)"
+          ],
+          "read_access": "none required; the supervisor supplies the exact candidate SHA checkout in a fresh clone per job"
+        },
+        {
+          "id": "trusted-ci",
+          "phase": "runtime",
+          "credential_types": [
+            "github_app_installation",
+            "github_token"
+          ],
+          "permissions": [
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read candidate at exact SHA"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "checks",
+              "permission_name": "Checks",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "publish verification check runs"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "commit_statuses",
+              "permission_name": "Commit statuses",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "optional status contexts"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "contents",
+              "permission_name": "contents",
+              "level": "read",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "read candidate at exact SHA"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "checks",
+              "permission_name": "checks",
+              "level": "write",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "publish verification check runs"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "commit_statuses",
+              "permission_name": "statuses",
+              "level": "write",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "optional status contexts"
+            }
+          ],
+          "authorities": [
+            "ci_evidence"
+          ],
+          "must_not_have": [
+            "Contents write",
+            "any ruleset bypass",
+            "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
+            "candidate-controlled workflow definitions or credentials exposed to candidate code"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-main",
+              "relation": "required_check_source"
+            }
+          ],
+          "secret_holder": "dedicated CI App installation (DP-03) or the per-job GITHUB_TOKEN of an approved workflow revision",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "github_token"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
+          ],
+          "notes": "Statuses from 'any source' are spoofable by any writer (S-gh-rules-available); pin the source App with integration_id."
+        },
+        {
+          "id": "human-integrator",
+          "phase": "runtime",
+          "credential_types": [
+            "human_account"
+          ],
+          "permissions": [],
+          "authorities": [
+            "merge_main",
+            "human_commands"
+          ],
+          "must_not_have": [
+            "auto-merge",
+            "ruleset bypass unless DP-05 = keep_admin_bypass_as_visible_override",
+            "bypass_mode exempt (no audit entry)",
+            "own credentials inside any sandbox or supervisor"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-main",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "the human's own GitHub account",
+          "expiry_revocation": {
+            "procedures": [
+              "human_account"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
+          ],
+          "repository_role": "write or maintain (admin only if DP-05 keeps admin bypass)",
+          "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission."
+        },
+        {
+          "id": "projection-only",
+          "phase": "runtime",
+          "credential_types": [
+            "github_app_installation",
+            "fine_grained_pat",
+            "classic_pat"
+          ],
+          "permissions": [
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read accepted state"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "refresh issue summaries/labels"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "refresh Project fields",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "read accepted state",
+              "parameter_name": "contents"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "refresh issue summaries/labels",
+              "parameter_name": "issues"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-pat-manage",
+              "purpose": "refresh Project fields",
+              "parameter_name": "organization_projects",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "refresh a user-owned Project (public repository only; see unverified)",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            }
+          ],
+          "authorities": [
+            "board_projection"
+          ],
+          "must_not_have": [
+            "Contents write",
+            "accepting answers or any command",
+            "renewing, reclaiming or releasing leases",
+            "acknowledging authoritative outbox/pending-effect state",
+            "any ruleset bypass",
+            "classic repo scope"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-state-writers",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "optional scheduled Actions job or one-shot reconcile host; App key or PAT secret subject to DP-06",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "fine_grained_pat",
+              "classic_pat"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
+            "DP-06 applies when the job's App key or PAT is stored as an Actions secret"
+          ],
+          "notes": "Optional idle refresh job (plan section 10). It derives projections from accepted state and never changes authority; it cannot substitute for a running supervisor."
+        }
+      ],
+      "authority_map": {
+        "task_state": {
+          "writer_role": "supervisor-runtime"
+        },
+        "approved_task_revisions": {
+          "writer_role": "supervisor-runtime"
+        },
+        "claims_leases": {
+          "writer_role": "supervisor-runtime"
+        },
+        "resource_reservations": {
+          "writer_role": "supervisor-runtime"
+        },
+        "review_rounds": {
+          "writer_role": "supervisor-runtime"
+        },
+        "questions": {
+          "writer_role": "supervisor-runtime"
+        },
+        "command_receipts": {
+          "writer_role": "supervisor-runtime"
+        },
+        "pending_effects": {
+          "writer_role": "supervisor-runtime"
+        },
+        "sessions_and_stop": {
+          "writer_role": "supervisor-runtime"
+        },
+        "enrollment": {
+          "writer_role": "supervisor-runtime"
+        },
+        "accepted_evidence": {
+          "writer_role": "supervisor-runtime"
+        },
+        "candidate_refs": {
+          "writer_role": "supervisor-runtime"
+        },
+        "ci_evidence": {
+          "writer_role": "trusted-ci"
+        },
+        "integration": {
+          "writer_role": "human-integrator"
+        },
+        "human_command_input": {
+          "writer_role": "human-integrator"
+        },
+        "board_projection": {
+          "writer_role": null,
+          "projection_writers": [
+            "supervisor-runtime",
+            "projection-only"
+          ]
+        },
+        "issue_summaries": {
+          "writer_role": null,
+          "projection_writers": [
+            "supervisor-runtime",
+            "projection-only"
+          ]
+        }
+      }
+    },
+    "actions_hosted": {
+      "default": false,
+      "description": "Separately justified fallback: an Actions job runs the same pinned reducer; supervisors only execute and read. Not an additional authority; never enabled concurrently with supervisor-hosted reducers.",
+      "roles": [
+        {
+          "id": "setup-operator",
+          "phase": "setup",
+          "credential_types": [
+            "github_app_installation",
+            "fine_grained_pat",
+            "classic_pat",
+            "oauth_gh_cli"
+          ],
+          "permissions": [
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "repository identity; read effective rules for doctor",
+              "parameter_name": "metadata"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "create milestones and issues; check assignee",
+              "parameter_name": "issues"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "rulesets_admin",
+              "permission_name": "Administration",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "create harness/state, agent/** and main rulesets",
+              "parameter_name": "administration"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-pat-manage",
+              "purpose": "create/configure the Project and its fields",
+              "parameter_name": "organization_projects",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "repository identity"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "create milestones and issues"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "rulesets_admin",
+              "permission_name": "Administration",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "create rulesets"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "create/configure the Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "only if the App creates the Project with repositoryId (S-gh-projects-api)",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "contents",
+              "permission_name": "repo",
+              "level": "full",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "repo scope: repository-wide full access (covers issues, milestones)"
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "create/configure a user-owned Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            },
+            {
+              "credential_type": "oauth_gh_cli",
+              "resource": "contents",
+              "permission_name": "repo",
+              "level": "full",
+              "source": "S-gh-cli-auth-login",
+              "purpose": "gh minimum scope repo (with read:org, gist); bootstrap uses this"
+            },
+            {
+              "credential_type": "oauth_gh_cli",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "gh project commands on a user-owned Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            },
+            {
+              "credential_type": "oauth_gh_cli",
+              "resource": "projects_org",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-cli-project",
+              "purpose": "gh project commands on an org-owned Project",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            }
+          ],
+          "authorities": [
+            "setup"
+          ],
+          "must_not_have": [
+            "reuse as any runtime credential",
+            "presence on a worker host's runtime credential store or in any sandbox",
+            "use by automation after harness init completes"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-main",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-state-writers",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-candidates-writers",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "accountable human operator session on a trusted workstation, used only for init/import; never a supervisor runtime store or sandbox",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "fine_grained_pat",
+              "classic_pat",
+              "oauth_gh_cli"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "FG/App permission level required by GraphQL createProjectV2, updateProjectV2Field and linkProjectV2ToRepository (not tabulated)",
+            "classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
+            "whether an App can access a user-owned Project (no permission found)"
+          ],
+          "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime."
+        },
+        {
+          "id": "supervisor-runtime",
+          "phase": "runtime",
+          "credential_types": [
+            "github_app_installation",
+            "fine_grained_pat"
+          ],
+          "permissions": [
+            {
+              "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "doctor"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read harness/state (authority, stop requests) and exact base/candidate commits"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "doctor",
+              "parameter_name": "metadata"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "read harness/state and commits",
+              "parameter_name": "contents"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "actions",
+              "permission_name": "Actions",
+              "level": "write",
+              "source": "S-gh-pat-manage",
+              "purpose": "candidate request channel (workflow_dispatch to the reducer workflow); endpoint mapping unverified",
+              "parameter_name": "actions"
+            }
+          ],
+          "authorities": [
+            "execution_control"
+          ],
+          "must_not_have": [
+            "Contents write (the Actions placement exists for deployments that cannot trust supervisors with it)",
+            "Administration write",
+            "Checks write",
+            "any ruleset bypass",
+            "the setup-operator credential",
+            "exposure to any model sandbox"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-state-writers",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-candidates-writers",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "enrolled supervisor host, outside every sandbox",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "fine_grained_pat"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "channel by which a supervisor without Contents write submits transition requests and hands candidate material to the Actions publisher (workflow_dispatch/repository_dispatch permission mapping not in the evidence)",
+            "App permission for dispatching workflows (no App 'Actions' entry in permission-evidence.json)"
+          ],
+          "notes": "Read-only client of the authoritative state. Launches/stops sandboxes and reports stop-confirmed; all state transitions are applied by actions-publisher-fallback."
+        },
+        {
+          "id": "actions-publisher-fallback",
+          "phase": "runtime",
+          "credential_types": [
+            "github_token",
+            "github_app_installation",
+            "classic_pat"
+          ],
+          "permissions": [
+            {
+              "credential_type": "github_token",
+              "resource": "contents",
+              "permission_name": "contents",
+              "level": "write",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "state commit and candidate publication (bypass naming unverified; prefer the in-job App token)"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "issues",
+              "permission_name": "issues",
+              "level": "write",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "comments, summaries"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "checks",
+              "permission_name": "checks",
+              "level": "read",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "read trusted-CI evidence"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "commit_statuses",
+              "permission_name": "statuses",
+              "level": "read",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "read status evidence"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "state commit and candidate publication with an App that can be named as bypass actor"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "comments, summaries"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "checks",
+              "permission_name": "Checks",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read trusted-CI evidence"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "Project projection (GITHUB_TOKEN cannot access Projects)",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "Project projection for a user-owned Project via an Actions secret",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            }
+          ],
+          "authorities": [
+            "state_branch_write",
+            "candidate_publication",
+            "command_ingestion",
+            "board_projection",
+            "pending_effects"
+          ],
+          "must_not_have": [
+            "pull_request_target trigger for the reducer",
+            "scheduled runs as authority for claims or renewals",
+            "workflow edits without review (anyone with write can change the permissions key)",
+            "Administration write",
+            "Checks write",
+            "bypass on RS-main or on any *-immutable ruleset",
+            "a second reducer running beside supervisor-hosted reducers"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-state-writers",
+              "relation": "bypass_actor"
+            },
+            {
+              "ruleset": "RS-state-immutable",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-candidates-writers",
+              "relation": "bypass_actor"
+            },
+            {
+              "ruleset": "RS-candidates-immutable",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "GitHub Actions job of an approved, protected workflow revision; App private key as an Actions secret (DP-06) for the in-job installation token",
+          "expiry_revocation": {
+            "procedures": [
+              "github_token",
+              "github_app_installation",
+              "classic_pat"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "GITHUB_TOKEN as a ruleset bypass actor (not found)",
+            "GITHUB_TOKEN behaviour when pushing .github/workflows changes (no workflows key)",
+            "candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09",
+            "latency/cost of an Actions job per transition (P02a measurement)"
+          ],
+          "notes": "Selected only for deployments that cannot trust state-writing supervisors (plan section 4). Same protocol and state branch as the default placement; switching placement is an explicit pause/fence/drain operation, never concurrent."
+        },
+        {
+          "id": "developer-sandbox",
+          "phase": "runtime",
+          "credential_types": [
+            "none"
+          ],
+          "permissions": [],
+          "authorities": [],
+          "must_not_have": [
+            "any GitHub token or credential, read or write",
+            "Docker Sandboxes 'github' secret service (the proxy injects the host token into api.github.com/github.com requests; S-docker-sbx-credentials)",
+            "SSH agent forwarding (sbx default ssh.agentForwardingEnabled=true; S-docker-sbx-settings)",
+            "host Docker socket or home-directory mount",
+            "controller, publication or merge credential, directly or through a proxy that grants writes"
+          ],
+          "enforcement": [],
+          "secret_holder": "none",
+          "expiry_revocation": {
+            "procedures": [
+              "none"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "actual Docker Sandboxes defaults on the target host (P02b)",
+            "OCI egress enforcement including DNS/IPv6 bypass (P02b)"
+          ],
+          "read_access": "none required; the supervisor supplies the exact checkout and immutable packet"
+        },
+        {
+          "id": "reviewer-sandbox",
+          "phase": "runtime",
+          "credential_types": [
+            "none"
+          ],
+          "permissions": [],
+          "authorities": [],
+          "must_not_have": [
+            "any GitHub token or credential, read or write",
+            "Docker Sandboxes 'github' secret service (the proxy injects the host token into api.github.com/github.com requests; S-docker-sbx-credentials)",
+            "SSH agent forwarding (sbx default ssh.agentForwardingEnabled=true; S-docker-sbx-settings)",
+            "host Docker socket or home-directory mount",
+            "controller, publication or merge credential, directly or through a proxy that grants writes",
+            "developer caches, session or writable environment"
+          ],
+          "enforcement": [],
+          "secret_holder": "none",
+          "expiry_revocation": {
+            "procedures": [
+              "none"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "writable reviewer scratch under the selected runtime (P02b)"
+          ],
+          "read_access": "none required; the supervisor supplies the exact candidate SHA checkout in a fresh clone per job"
+        },
+        {
+          "id": "trusted-ci",
+          "phase": "runtime",
+          "credential_types": [
+            "github_app_installation",
+            "github_token"
+          ],
+          "permissions": [
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read candidate at exact SHA"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "checks",
+              "permission_name": "Checks",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "publish verification check runs"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "commit_statuses",
+              "permission_name": "Commit statuses",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "optional status contexts"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "contents",
+              "permission_name": "contents",
+              "level": "read",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "read candidate at exact SHA"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "checks",
+              "permission_name": "checks",
+              "level": "write",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "publish verification check runs"
+            },
+            {
+              "credential_type": "github_token",
+              "resource": "commit_statuses",
+              "permission_name": "statuses",
+              "level": "write",
+              "source": "S-gh-workflow-permissions",
+              "purpose": "optional status contexts"
+            }
+          ],
+          "authorities": [
+            "ci_evidence"
+          ],
+          "must_not_have": [
+            "Contents write",
+            "any ruleset bypass",
+            "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
+            "candidate-controlled workflow definitions or credentials exposed to candidate code"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-main",
+              "relation": "required_check_source"
+            }
+          ],
+          "secret_holder": "dedicated CI App installation (DP-03) or the per-job GITHUB_TOKEN of an approved workflow revision",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "github_token"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
+          ],
+          "notes": "Statuses from 'any source' are spoofable by any writer (S-gh-rules-available); pin the source App with integration_id."
+        },
+        {
+          "id": "human-integrator",
+          "phase": "runtime",
+          "credential_types": [
+            "human_account"
+          ],
+          "permissions": [],
+          "authorities": [
+            "merge_main",
+            "human_commands"
+          ],
+          "must_not_have": [
+            "auto-merge",
+            "ruleset bypass unless DP-05 = keep_admin_bypass_as_visible_override",
+            "bypass_mode exempt (no audit entry)",
+            "own credentials inside any sandbox or supervisor"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-main",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "the human's own GitHub account",
+          "expiry_revocation": {
+            "procedures": [
+              "human_account"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
+          ],
+          "repository_role": "write or maintain (admin only if DP-05 keeps admin bypass)",
+          "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission."
+        },
+        {
+          "id": "projection-only",
+          "phase": "runtime",
+          "credential_types": [
+            "github_app_installation",
+            "fine_grained_pat",
+            "classic_pat"
+          ],
+          "permissions": [
+            {
+              "credential_type": "github_app_installation",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "read accepted state"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "refresh issue summaries/labels"
+            },
+            {
+              "credential_type": "github_app_installation",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-appperms",
+              "purpose": "refresh Project fields",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "contents",
+              "permission_name": "Contents",
+              "level": "read",
+              "source": "S-gh-fgpat",
+              "purpose": "read accepted state",
+              "parameter_name": "contents"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "issues",
+              "permission_name": "Issues",
+              "level": "write",
+              "source": "S-gh-fgpat",
+              "purpose": "refresh issue summaries/labels",
+              "parameter_name": "issues"
+            },
+            {
+              "credential_type": "fine_grained_pat",
+              "resource": "projects_org",
+              "permission_name": "Projects",
+              "level": "write",
+              "source": "S-gh-pat-manage",
+              "purpose": "refresh Project fields",
+              "parameter_name": "organization_projects",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "org_owned"
+              }
+            },
+            {
+              "credential_type": "classic_pat",
+              "resource": "projects_user",
+              "permission_name": "project",
+              "level": "write",
+              "source": "S-gh-oauth-scopes",
+              "purpose": "refresh a user-owned Project (public repository only; see unverified)",
+              "when": {
+                "decision_point": "DP-01",
+                "option": "user_owned"
+              }
+            }
+          ],
+          "authorities": [
+            "board_projection"
+          ],
+          "must_not_have": [
+            "Contents write",
+            "accepting answers or any command",
+            "renewing, reclaiming or releasing leases",
+            "acknowledging authoritative outbox/pending-effect state",
+            "any ruleset bypass",
+            "classic repo scope"
+          ],
+          "enforcement": [
+            {
+              "ruleset": "RS-state-writers",
+              "relation": "subject_to"
+            }
+          ],
+          "secret_holder": "optional scheduled Actions job; App key or PAT secret subject to DP-06",
+          "expiry_revocation": {
+            "procedures": [
+              "github_app_installation",
+              "fine_grained_pat",
+              "classic_pat"
+            ],
+            "table": "expiry_revocation_procedures"
+          },
+          "unverified": [
+            "for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
+            "DP-06 applies when the job's App key or PAT is stored as an Actions secret"
+          ],
+          "notes": "Optional idle refresh job (plan section 10). It derives projections from accepted state and never changes authority; it cannot substitute for a running supervisor."
+        }
+      ],
+      "authority_map": {
+        "task_state": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "approved_task_revisions": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "claims_leases": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "resource_reservations": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "review_rounds": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "questions": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "command_receipts": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "pending_effects": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "sessions_and_stop": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "enrollment": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "accepted_evidence": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "candidate_refs": {
+          "writer_role": "actions-publisher-fallback"
+        },
+        "ci_evidence": {
+          "writer_role": "trusted-ci"
+        },
+        "integration": {
+          "writer_role": "human-integrator"
+        },
+        "human_command_input": {
+          "writer_role": "human-integrator"
+        },
+        "board_projection": {
+          "writer_role": null,
+          "projection_writers": [
+            "actions-publisher-fallback",
+            "projection-only"
+          ]
+        },
+        "issue_summaries": {
+          "writer_role": null,
+          "projection_writers": [
+            "actions-publisher-fallback",
+            "projection-only"
+          ]
+        }
+      }
+    }
+  },
+  "decision_points": [
+    {
+      "id": "DP-01",
+      "parameter": "project_owner",
+      "status": "undecided",
+      "question": "Organization-owned or user-owned repository and Project?",
+      "options": [
+        {
+          "id": "org_owned",
+          "effect": "Project projection can use an App (organization 'Projects') or a FG PAT (organization_projects)"
+        },
+        {
+          "id": "user_owned",
+          "effect": "Only classic PAT/OAuth 'project' is documented; a separate broad credential is required for projection and its exposure must be stated"
+        }
+      ],
+      "recommended": "org_owned",
+      "sources": [
+        "S-gh-pat-manage",
+        "S-gh-oauth-scopes",
+        "S-gh-projects-actions"
+      ]
+    },
+    {
+      "id": "DP-02",
+      "parameter": "supervisor_credential_kind",
+      "status": "undecided",
+      "question": "GitHub App or PAT for the state writer / candidate publisher?",
+      "options": [
+        {
+          "id": "github_app",
+          "effect": "Can be named as the only ruleset bypass actor; can read Checks; 1-hour tokens; needs App registration and private-key custody"
+        },
+        {
+          "id": "fine_grained_pat",
+          "effect": "Cannot be named as a UI bypass actor (REST User actor unverified); cannot call the Checks API"
+        },
+        {
+          "id": "classic_pat",
+          "effect": "Repository-wide across all the user's repositories; not recommended for runtime"
+        }
+      ],
+      "recommended": "github_app",
+      "sources": [
+        "S-gh-rules-create",
+        "S-gh-rest-rules",
+        "S-gh-pat-manage",
+        "S-gh-app-iat"
+      ]
+    },
+    {
+      "id": "DP-03",
+      "parameter": "trusted_ci_identity",
+      "status": "undecided",
+      "question": "Dedicated trusted-CI App, or the Actions GITHUB_TOKEN of an approved workflow?",
+      "options": [
+        {
+          "id": "dedicated_ci_app",
+          "effect": "Pinnable as required-check source via integration_id; separate from the publisher"
+        },
+        {
+          "id": "actions_github_token",
+          "effect": "No extra App; pinning GITHUB_TOKEN as required-check source is unverified"
+        }
+      ],
+      "recommended": "dedicated_ci_app",
+      "sources": [
+        "S-gh-rules-available",
+        "S-gh-rest-rules",
+        "S-gh-rest-checks"
+      ]
+    },
+    {
+      "id": "DP-04",
+      "parameter": "candidate_workflow_edits",
+      "status": "undecided",
+      "question": "May candidates modify .github/workflows/**?",
+      "options": [
+        {
+          "id": "reject",
+          "effect": "Publisher refuses such candidates; no Workflows write"
+        },
+        {
+          "id": "allow_with_workflows_write",
+          "effect": "Publisher needs Workflows write (FG/App) or workflow scope (classic)"
+        }
+      ],
+      "recommended": "reject",
+      "sources": [
+        "S-gh-fgpat",
+        "S-gh-oauth-scopes"
+      ]
+    },
+    {
+      "id": "DP-05",
+      "parameter": "admin_bypass",
+      "status": "undecided",
+      "question": "Keep repository admins on the main / state-branch bypass lists?",
+      "options": [
+        {
+          "id": "remove_admins_from_bypass",
+          "effect": "Overrides require editing the ruleset, which is visible"
+        },
+        {
+          "id": "keep_admin_bypass_as_visible_override",
+          "effect": "Admin override is outside the automation guarantee (plan section 3); never bypass_mode exempt"
+        }
+      ],
+      "recommended": "remove_admins_from_bypass",
+      "sources": [
+        "S-gh-rules-create",
+        "S-gh-rest-rules"
+      ]
+    },
+    {
+      "id": "DP-06",
+      "parameter": "app_key_as_actions_secret",
+      "status": "undecided",
+      "question": "Is a long-lived App private key acceptable as an Actions secret (actions_hosted placement, Actions projection job)?",
+      "options": [
+        {
+          "id": "reject",
+          "effect": "actions_hosted placement and the Actions projection-only job are unavailable unless another credential path is approved"
+        },
+        {
+          "id": "accept",
+          "effect": "The workflow file and its protections join the trusted computing base"
+        }
+      ],
+      "recommended": "reject",
+      "sources": [
+        "S-gh-app-keys",
+        "S-gh-actions-token-howto",
+        "S-gh-actions-repo-settings"
+      ]
+    },
+    {
+      "id": "DP-07",
+      "parameter": "repository_visibility_plan",
+      "status": "undecided",
+      "question": "Repository visibility and GitHub plan for each pilot repository?",
+      "options": [
+        {
+          "id": "public_any_plan",
+          "effect": "Rulesets available"
+        },
+        {
+          "id": "private_pro_team_enterprise",
+          "effect": "Rulesets available"
+        },
+        {
+          "id": "private_free",
+          "effect": "Rulesets unavailable: setup must report the gap and disable autonomous execution"
+        }
+      ],
+      "recommended": "public_any_plan",
+      "sources": [
+        "S-gh-rules-about"
+      ]
+    },
+    {
+      "id": "DP-08",
+      "parameter": "integration_pr_opening",
+      "status": "undecided",
+      "question": "Does the supervisor open integration pull requests, or does the human?",
+      "options": [
+        {
+          "id": "human_opens_pr",
+          "effect": "No Pull requests write at runtime"
+        },
+        {
+          "id": "supervisor_opens_pr",
+          "effect": "Adds Pull requests write; whether an App review counts toward required approvals is unverified"
+        }
+      ],
+      "recommended": "human_opens_pr",
+      "sources": [
+        "S-gh-fgpat",
+        "S-gh-rules-available"
+      ]
+    },
+    {
+      "id": "DP-09",
+      "parameter": "placement",
+      "status": "undecided",
+      "question": "Placement for a given deployment (plan default: supervisor_hosted)",
+      "options": [
+        {
+          "id": "supervisor_hosted",
+          "effect": "Default: trusted supervisors run the pinned reducer and hold state-writing credentials"
+        },
+        {
+          "id": "actions_hosted",
+          "effect": "Separately justified fallback for deployments that cannot trust state-writing supervisors; Actions latency/cost"
+        }
+      ],
+      "recommended": "supervisor_hosted",
+      "sources": []
+    }
+  ],
+  "bootstrap_profile": {
+    "description": "Current bootstrap configuration as reported by the orchestrator for this session; not inspected live by P01 and not a supported runtime profile.",
+    "repository": "quaat/remora",
+    "owner_type": "user",
+    "visibility": "public",
+    "project_owner": "user (quaat)",
+    "credentials": [
+      {
+        "holder": "human operator quaat via gh",
+        "credential_type": "oauth_gh_cli",
+        "scopes_reported": [
+          "repo",
+          "project"
+        ],
+        "note": "gh's documented minimum scopes are repo, read:org and gist (S-gh-cli-auth-login); the token's actual scope list was not inspected"
+      }
+    ],
+    "github_app": null,
+    "rulesets": "not inspected by P01 (unverified)",
+    "decision_point_values": {
+      "DP-01": "user_owned",
+      "DP-02": "none (no runtime credential exists)",
+      "DP-03": "none (bootstrap CI is not trusted-CI evidence)",
+      "DP-06": "not applicable (no App)",
+      "DP-07": "public_any_plan",
+      "DP-09": "not applicable (human-operated, no reducer)"
+    },
+    "autonomous_execution": false,
+    "gaps_against_matrix": [
+      "a human OAuth token with repo scope is a setup credential; it must not be reused as supervisor-runtime credential",
+      "no App exists, so RS-state-writers / RS-candidates-writers cannot name a single machine bypass actor",
+      "user-owned Project requires a classic/OAuth 'project' credential for projection (DP-01)"
+    ]
+  },
+  "unverified": [
+    "Whether an individual User actor_type works as a repository ruleset bypass actor (REST enum lists it; UI eligible list does not).",
+    "Whether the GitHub Actions GITHUB_TOKEN identity can be a ruleset bypass actor (not found).",
+    "Whether a GitHub App installation can access user-owned Projects v2 (no App permission found).",
+    "Fine-grained PAT / App permission levels required by GraphQL mutations createProjectV2, updateProjectV2Field, linkProjectV2ToRepository, createCommitOnBranch, updateRefs.",
+    "Which HTTP status (409 vs 422) REST ref PATCH returns for a non-fast-forward race.",
+    "Error shape and race behaviour of createCommitOnBranch expectedHeadOid mismatch and updateRefs beforeOid mismatch.",
+    "Whether ruleset Restrict updates / Block force pushes are enforced identically for REST, GraphQL and git push paths.",
+    "Whether bypass of one ruleset leaves rules in a separate no-bypass ruleset enforced for the same actor (two-ruleset layout).",
+    "Whether a GitHub App pull request review counts toward required approvals on main.",
+    "GITHUB_TOKEN behaviour when pushing changes to .github/workflows (no workflows permissions key documented).",
+    "Classic PAT/OAuth scope required to create rulesets (not tabulated).",
+    "Docker Sandboxes actual defaults on target host (docs inconsistent on shared skills mode; SSH agent forwarding on by default; default allowed-domain list not enumerated on defaults page).",
+    "Docker Sandboxes support on non-Ubuntu Linux hosts such as the Debian 11 bootstrap host (not in documented support list).",
+    "Rootless Docker cgroup limit enforcement on target hosts (silently ignored without cgroup v2 + systemd).",
+    "OCI egress enforcement including DNS and IPv6 bypass (not documented; P02b measurement)."
+  ]
+}

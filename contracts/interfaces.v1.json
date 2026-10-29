@@ -1,0 +1,699 @@
+{
+  "schema_version": 1,
+  "status": "proposed",
+  "decision_record": "docs/decisions/0002-internal-interfaces.md",
+  "note": "Index of internal contracts for later tasks. Names, inputs, outputs and errors are proposals; the owner task finalizes the concrete Python signatures and schemas and must record any change as a shared-interface amendment.",
+  "common_errors": {
+    "Conflict": "The observed state head moved; reread and recompute, never rebase the previous decision.",
+    "AmbiguousWrite": "Request outcome unknown; look up the stable command ID or idempotency key before any retry.",
+    "Unauthorized": "Authenticated actor/role/enrollment does not permit the operation.",
+    "StaleGeneration": "Claim generation or authority epoch is not current; output is not accepted.",
+    "SchemaUnsupported": "State, packet or record version is not supported; fail closed.",
+    "InvalidInput": "Input fails schema or semantic validation."
+  },
+  "interfaces": [
+    {
+      "id": "state-backend",
+      "owner_module": "src/remora/state/",
+      "owner_task": "P05",
+      "consumers": [
+        "P02a",
+        "P05",
+        "P06",
+        "P07",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "read_state",
+          "inputs": [
+            "scope (task ids | index | all)"
+          ],
+          "outputs": [
+            "state_head_oid",
+            "records",
+            "schema_version",
+            "policy_revision"
+          ],
+          "errors": [
+            "SchemaUnsupported",
+            "IntegrityError",
+            "Unavailable"
+          ]
+        },
+        {
+          "name": "compute_transition",
+          "inputs": [
+            "state records",
+            "command envelope (authenticated actor, role, command_id, kind, task_id, claim_generation, task_revision, payload)",
+            "clock reading with skew bound"
+          ],
+          "outputs": [
+            "transition (all affected records, events, pending effects) | rejection(reason)"
+          ],
+          "errors": [
+            "InvalidInput"
+          ],
+          "notes": "Pure and deterministic; the reducer validates authorization, prerequisites, resources, scope, budget and evidence."
+        },
+        {
+          "name": "apply_transition",
+          "inputs": [
+            "transition",
+            "expected_head_oid"
+          ],
+          "outputs": [
+            "new_head_oid",
+            "receipt (command_id, result)"
+          ],
+          "errors": [
+            "Conflict",
+            "AmbiguousWrite",
+            "Unauthorized",
+            "StaleGeneration",
+            "SchemaUnsupported"
+          ],
+          "notes": "One conditional update of the authoritative branch; multi-record transitions are atomic."
+        },
+        {
+          "name": "lookup_receipt",
+          "inputs": [
+            "command_id"
+          ],
+          "outputs": [
+            "receipt | not_found"
+          ],
+          "errors": [
+            "Unavailable"
+          ]
+        },
+        {
+          "name": "create_snapshot",
+          "inputs": [
+            "covered_head_oid"
+          ],
+          "outputs": [
+            "snapshot_id",
+            "covered_head_oid",
+            "schema_version",
+            "policy_revision",
+            "integrity_digest"
+          ],
+          "errors": [
+            "Conflict",
+            "AmbiguousWrite"
+          ]
+        },
+        {
+          "name": "verify_snapshot",
+          "inputs": [
+            "snapshot_id",
+            "replay_mode (suffix | full)"
+          ],
+          "outputs": [
+            "equivalent | mismatch(details)",
+            "replay_cost",
+            "fetch_cost"
+          ],
+          "errors": [
+            "IntegrityError",
+            "SchemaUnsupported"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "publisher",
+      "owner_module": "src/remora/publication/",
+      "owner_task": "P05",
+      "consumers": [
+        "P02a",
+        "P06",
+        "P07",
+        "P08",
+        "P09"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "conditional_ref_update",
+          "inputs": [
+            "ref_updates [{ref, expected_old_oid | must_not_exist, new_oid}]"
+          ],
+          "outputs": [
+            "updated_refs"
+          ],
+          "errors": [
+            "Conflict",
+            "AmbiguousWrite",
+            "RulesetRejected",
+            "TransportUnsupported"
+          ],
+          "notes": "Transport (updateRefs/beforeOid, createCommitOnBranch/expectedHeadOid, git push --force-with-lease=<ref>:<expect>) is selected by P02a; REST PATCH git/refs has no expected-old value."
+        },
+        {
+          "name": "publish_candidate",
+          "inputs": [
+            "task_id",
+            "claim_generation",
+            "task_revision",
+            "checkpoint bundle digest from execution.checkpoint",
+            "idempotency_key"
+          ],
+          "outputs": [
+            "candidate_ref (agent/<task>/<generation>/...)",
+            "candidate_sha"
+          ],
+          "errors": [
+            "StaleGeneration",
+            "Unauthorized",
+            "PolicyRejected",
+            "AlreadyExistsDifferent",
+            "Conflict",
+            "AmbiguousWrite"
+          ],
+          "notes": "Imports material into a clean controlled Git environment without candidate hooks, helpers or filters; authority is rechecked against state before and after."
+        },
+        {
+          "name": "read_back_effect",
+          "inputs": [
+            "idempotency_key"
+          ],
+          "outputs": [
+            "present | absent",
+            "observed_target"
+          ],
+          "errors": [
+            "Unavailable"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "execution",
+      "owner_module": "src/remora/runtime/",
+      "owner_task": "P06",
+      "contract_fixture_task": "P02b",
+      "consumers": [
+        "P02a",
+        "P02b",
+        "P06",
+        "P08",
+        "P11"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "start",
+          "direction": "call",
+          "inputs": [
+            "job_id",
+            "role (developer | reviewer)",
+            "task_id",
+            "claim_generation",
+            "packet_digest",
+            "checkout_spec (repository, exact sha)",
+            "runtime_profile_id",
+            "limits"
+          ],
+          "outputs": [
+            "execution_id",
+            "session_status=active"
+          ],
+          "errors": [
+            "ProfileUnavailable",
+            "CapabilityMismatch",
+            "AuthorityNotHeld"
+          ]
+        },
+        {
+          "name": "checkpoint",
+          "direction": "call",
+          "inputs": [
+            "execution_id"
+          ],
+          "outputs": [
+            "checkpoint_id",
+            "bundle_digest",
+            "head_sha",
+            "acknowledged=false until publisher acknowledges"
+          ],
+          "errors": [
+            "NotRunning",
+            "AuthorityNotHeld"
+          ]
+        },
+        {
+          "name": "stop_request",
+          "direction": "call",
+          "inputs": [
+            "execution_id",
+            "stop_id",
+            "reason"
+          ],
+          "outputs": [
+            "state=stop_requested"
+          ],
+          "errors": [
+            "UnknownExecution"
+          ],
+          "notes": "Idempotent by stop_id. Publication authority is revoked in shared state before or with this call."
+        },
+        {
+          "name": "stop_confirmed",
+          "direction": "event",
+          "inputs": [],
+          "outputs": [
+            "execution_id",
+            "stop_id",
+            "terminated_at",
+            "termination_evidence (method, exit_status, observer)",
+            "last_acknowledged_checkpoint_id"
+          ],
+          "errors": [],
+          "notes": "Emitted only when termination is observed; otherwise stop_uncertain is emitted and stop stays requested."
+        },
+        {
+          "name": "authority_lost",
+          "direction": "event",
+          "inputs": [],
+          "outputs": [
+            "execution_id",
+            "cause (lease_margin | offline_grace | revoked | generation_superseded)",
+            "detected_at"
+          ],
+          "errors": [],
+          "notes": "Supervisor must stop execution and refuse publication for this generation."
+        },
+        {
+          "name": "status",
+          "direction": "call",
+          "inputs": [
+            "execution_id"
+          ],
+          "outputs": [
+            "session_status (pending | active | awaiting_input | error | complete | stale)",
+            "stop_state (none | stop_requested | stop_confirmed | stop_uncertain)"
+          ],
+          "errors": [
+            "UnknownExecution"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reviewer-launch",
+      "owner_module": "src/remora/review/launch.py",
+      "owner_task": "P08",
+      "contract_fixture_task": "P02b",
+      "consumers": [
+        "P02b",
+        "P08",
+        "P09"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "launch_review",
+          "inputs": [
+            "review_job_id",
+            "review_claim_generation",
+            "frozen review packet (digest)",
+            "candidate_sha",
+            "base_sha",
+            "runtime_profile_id",
+            "provider"
+          ],
+          "outputs": [
+            "execution_id",
+            "writable_scratch=true",
+            "fresh_clone=true"
+          ],
+          "errors": [
+            "ProfileUnavailable",
+            "AuthorityNotHeld",
+            "IndependenceViolation"
+          ],
+          "notes": "Uses execution.start with role reviewer; no developer session, cache or writable environment."
+        },
+        {
+          "name": "collect_result",
+          "inputs": [
+            "execution_id"
+          ],
+          "outputs": [
+            "review_result (verdict PASS | CHANGES_REQUESTED | UNVERIFIED, criterion findings)",
+            "check_evidence[]",
+            "infrastructure_outcome (ok | timeout | tool_unavailable | crashed)"
+          ],
+          "errors": [
+            "InfrastructureFailure"
+          ],
+          "notes": "An infrastructure outcome is not a verdict."
+        }
+      ]
+    },
+    {
+      "id": "command-ingestion",
+      "owner_module": "src/remora/github/commands.py",
+      "owner_task": "P07",
+      "consumers": [
+        "P05",
+        "P07",
+        "P10",
+        "P11"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "poll_commands",
+          "inputs": [
+            "cursor"
+          ],
+          "outputs": [
+            "raw_commands [{comment_id, issue, author_login, created_at, edited, body}]",
+            "next_cursor"
+          ],
+          "errors": [
+            "Unavailable",
+            "RateLimited"
+          ]
+        },
+        {
+          "name": "parse_and_authenticate",
+          "inputs": [
+            "raw_command",
+            "enrollment and maintainer policy from state"
+          ],
+          "outputs": [
+            "command envelope (command_id, actor, role, verb, target id, question_revision, args)"
+          ],
+          "errors": [
+            "Unauthorized",
+            "EditedCommand",
+            "Unparseable",
+            "Superseded"
+          ]
+        },
+        {
+          "name": "submit",
+          "inputs": [
+            "command envelope"
+          ],
+          "outputs": [
+            "receipt from state-backend.apply_transition (applied | duplicate | rejected)"
+          ],
+          "errors": [
+            "Conflict",
+            "AmbiguousWrite"
+          ],
+          "notes": "Several ingesters (supervisors, optional Actions ingestion) are safe only through command_id deduplication in state."
+        },
+        {
+          "name": "post_terminal_command",
+          "inputs": [
+            "verb",
+            "target id",
+            "body",
+            "human's own credential"
+          ],
+          "outputs": [
+            "comment_id"
+          ],
+          "errors": [
+            "Unauthorized",
+            "AmbiguousWrite"
+          ],
+          "notes": "harness answer posts the same authorized command to the issue; it is not a side channel."
+        }
+      ],
+      "related_modules": [
+        "src/remora/commands/ (P05: command envelope schema and command_id deduplication receipts)"
+      ]
+    },
+    {
+      "id": "board-projection",
+      "owner_module": "src/remora/github/projection.py",
+      "owner_task": "P07",
+      "consumers": [
+        "P07",
+        "P10",
+        "P11"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "compute_projection",
+          "inputs": [
+            "accepted state records"
+          ],
+          "outputs": [
+            "desired status, Review, Needs human, Blocked by, issue summary"
+          ],
+          "errors": [],
+          "notes": "Pure."
+        },
+        {
+          "name": "read_projection",
+          "inputs": [
+            "task ids"
+          ],
+          "outputs": [
+            "observed Project fields and summaries"
+          ],
+          "errors": [
+            "Unavailable"
+          ]
+        },
+        {
+          "name": "reconcile_projection",
+          "inputs": [
+            "desired",
+            "observed",
+            "idempotency_key"
+          ],
+          "outputs": [
+            "writes_applied",
+            "discrepancies"
+          ],
+          "errors": [
+            "ProjectionWriteFailed"
+          ],
+          "notes": "Never changes authoritative state; a failed write is retried later."
+        }
+      ]
+    },
+    {
+      "id": "plan-compiler",
+      "owner_module": "src/remora/plan/",
+      "owner_task": "P03",
+      "consumers": [
+        "P04",
+        "P05",
+        "P07",
+        "P08",
+        "P09",
+        "P10"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "load_plan",
+          "inputs": [
+            "approved plan source",
+            "source digest"
+          ],
+          "outputs": [
+            "plan graph (tasks, milestones, gates)"
+          ],
+          "errors": [
+            "InvalidInput",
+            "SourceDigestMismatch"
+          ]
+        },
+        {
+          "name": "validate",
+          "inputs": [
+            "plan graph"
+          ],
+          "outputs": [
+            "findings [{code, task_id, message, fix}]"
+          ],
+          "errors": []
+        },
+        {
+          "name": "compile_task_revision",
+          "inputs": [
+            "task definition",
+            "approval reference"
+          ],
+          "outputs": [
+            "task revision (task_id, revision, task_digest, criteria with digests)"
+          ],
+          "errors": [
+            "InvalidInput",
+            "RevisionDrift"
+          ]
+        },
+        {
+          "name": "readiness",
+          "inputs": [
+            "plan graph",
+            "accepted completions",
+            "reservations",
+            "holds"
+          ],
+          "outputs": [
+            "ready [{task, reason}]",
+            "blocked [{task, blockers}]",
+            "cycles"
+          ],
+          "errors": []
+        },
+        {
+          "name": "build_review_packet",
+          "inputs": [
+            "task revision",
+            "candidate_sha",
+            "base_sha",
+            "integration target",
+            "diff digest",
+            "policy revisions",
+            "prior findings",
+            "round count",
+            "evidence refs"
+          ],
+          "outputs": [
+            "packet",
+            "packet_digest"
+          ],
+          "errors": [
+            "InvalidInput",
+            "RevisionDrift"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "evidence-records",
+      "owner_module": "src/remora/review/evidence.py",
+      "owner_task": "P08",
+      "consumers": [
+        "P08",
+        "P09",
+        "P11",
+        "P12"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "record_check_evidence",
+          "inputs": [
+            "check_id",
+            "executor_identity",
+            "environment_digest",
+            "command",
+            "exit_status",
+            "source_sha",
+            "artifact_ref (digest)",
+            "provenance (developer_supplied | reviewer_executed | trusted_ci | human_inspection)",
+            "independently_executed"
+          ],
+          "outputs": [
+            "evidence_id"
+          ],
+          "errors": [
+            "InvalidInput"
+          ]
+        },
+        {
+          "name": "validate_verdict",
+          "inputs": [
+            "review_result",
+            "packet",
+            "evidence mode (unverified_pilot | trusted_ci)"
+          ],
+          "outputs": [
+            "accepted | rejected(reason)"
+          ],
+          "errors": [
+            "StaleGeneration",
+            "InvalidInput"
+          ],
+          "notes": "PASS requires satisfied criteria with successful independently executed evidence; missing evidence yields UNVERIFIED."
+        },
+        {
+          "name": "record_manual_acceptance",
+          "inputs": [
+            "task revision",
+            "candidate_sha",
+            "unverified criteria",
+            "reason",
+            "human command receipt"
+          ],
+          "outputs": [
+            "acceptance_id"
+          ],
+          "errors": [
+            "Unauthorized",
+            "InvalidInput"
+          ],
+          "notes": "unverified_pilot only; never rewrites a verdict."
+        }
+      ],
+      "schema_owner": "P03 (src/remora/contracts/: evidence and verdict record schemas)"
+    },
+    {
+      "id": "trusted-evidence",
+      "owner_module": "src/remora/evidence/",
+      "owner_task": "P09",
+      "consumers": [
+        "P09",
+        "P10",
+        "P11",
+        "P12"
+      ],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "verify_trusted_ci",
+          "inputs": [
+            "check run reference",
+            "candidate_sha",
+            "verification policy revision",
+            "expected CI App identity"
+          ],
+          "outputs": [
+            "trusted | untrusted(reason) | unavailable"
+          ],
+          "errors": [
+            "Unavailable"
+          ],
+          "notes": "Developer-supplied logs and pilot manual acceptances never satisfy a trusted-CI requirement."
+        },
+        {
+          "name": "evaluate_completion_gate",
+          "inputs": [
+            "task revision",
+            "accepted evidence",
+            "integration evidence (merge commit, PR head, required checks)",
+            "evidence mode"
+          ],
+          "outputs": [
+            "complete | blocked(reasons)"
+          ],
+          "errors": [
+            "StaleGeneration",
+            "InvalidInput"
+          ],
+          "notes": "Done requires an accepted merge or an explicitly accepted non-code deliverable."
+        }
+      ]
+    }
+  ]
+}

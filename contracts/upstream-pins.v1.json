@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "pinned_at": "2026-10-29T23:16:49Z",
+  "pinned_at_rule": "Latest fetched_at among the pins; each pin keeps its own fetched_at.",
+  "status": "observed pins for P01 evidence; not a validated dependency lockfile and not a reuse decision",
+  "derived_from": [
+    "docs/research/P01/pins-weave.json",
+    "docs/research/P01/pins-upstream.json"
+  ],
+  "consistency_rule": "pins, related_fetches and documentation_fetches must equal the research files; checked by tests/contracts/test_permission_matrix.py",
+  "pins": [
+    {
+      "name": "weave",
+      "repository": "https://github.com/quaat/weave",
+      "commit": "e7c3f3cab1e25994b96a948cbe27c96bb061d5a8",
+      "fetched_at": "2026-10-29T23:16:41Z",
+      "fetch_method": "git fetch --depth 1",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "sha256": "b578d9a7c9556921a95db16fe27e74c6526fa9b71c4bbf0a2da68037534f0b71"
+      },
+      "additional_license_files": [
+        {
+          "path": "LICENSES/MIT.txt",
+          "spdx": "MIT",
+          "sha256": "b578d9a7c9556921a95db16fe27e74c6526fa9b71c4bbf0a2da68037534f0b71"
+        },
+        {
+          "path": "LICENSES/BSD-2-Clause.txt",
+          "spdx": "BSD-2-Clause",
+          "sha256": "f32fb3b417a194167cfad068223fc975ba96c5960513a10f66a3c28720aec1df"
+        },
+        {
+          "path": "LICENSES/Bitstream-Vera.txt",
+          "spdx": "Bitstream-Vera",
+          "sha256": "5b3b4d3cef4029bda987a71f4bfb6087e40c5e91a2cb853fe7f6ccb78d9d8e38"
+        },
+        {
+          "path": "LICENSES/LicenseRef-Arev-Fonts.txt",
+          "spdx": "LicenseRef-Arev-Fonts",
+          "sha256": "ff385c273276bddba776dd4b5cb7c2d4ab8c0329580b9a0264b29402912f8fd9"
+        },
+        {
+          "path": "LICENSES/OFL-1.1-RFN.txt",
+          "spdx": "OFL-1.1-RFN",
+          "sha256": "8eea8287e5876b539670cadb82e99f9a7afddec6f6730811be1daf25d2e9bcfd"
+        }
+      ],
+      "notes": "Commit date 2026-10-29T22:03:18+01:00 (merge of PR #83). REUSE.toml:15-92 annotates every tools/weave_workflow/**, docs/development/*.md, .claude/** and .github/** file as MIT, copyright 2026 Thomas F. Hagelien; the non-MIT licence files cover specification PDFs/fonts and weave.sty only. tools/weave_workflow/ (32 files) and docs/development/ (14 files) exist. Controller: 18 production Python files, 4468 lines / 3698 SLOC; 163 static test methods; tests not executed. Untrusted download at /tmp/claude-1000/upstream/weave; nothing executed from it."
+    },
+    {
+      "name": "weave-baseline",
+      "repository": "https://github.com/quaat/weave",
+      "commit": "d8010aec6746bbdcc54b21801c537d28917c0533",
+      "fetched_at": "2026-10-29T23:16:49Z",
+      "fetch_method": "git fetch --depth 1",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "sha256": "b578d9a7c9556921a95db16fe27e74c6526fa9b71c4bbf0a2da68037534f0b71"
+      },
+      "notes": "Commit date 2026-10-29T18:35:41+01:00 (merge of PR #81). diff -rq shows tools/, docs/, .claude/, .github/, REUSE.toml, LICENSE, LICENSES/, AGENTS.md, CLAUDE.md and follow-up identical to the e7c3f3c pin; the 44 differing paths are in agent-kit/, evidence/, specification/, README.md and STABILITY.md. The reported 89 passing controller tests were not rerun; 163 test methods counted statically."
+    },
+    {
+      "name": "gh-aw",
+      "repository": "https://github.com/githubnext/gh-aw",
+      "canonical_repository_observed": "https://github.com/github/gh-aw",
+      "commit": "28f2101d8af447fdb90ffd70dd2579e4ad64a21c",
+      "commit_date": "2026-10-29T14:07:49-07:00",
+      "fetched_at": "2026-10-29T23:16:42Z",
+      "fetch_method": "git fetch --depth 1",
+      "default_branch_head_observed": "28f2101d8af447fdb90ffd70dd2579e4ad64a21c",
+      "default_branch_head_observed_at": "2026-10-29T23:17Z",
+      "nearest_tag": "v1.0.1",
+      "nearest_tag_commit": "0627fdbe4beb5f3b71aa569f8d97150b87f2111a",
+      "nearest_tag_relation": "ancestor of pin; 43 commits between v1.0.1 and pin (bounded treeless fetch --shallow-since=2026-10-26); no tag points at the pin; v1.0.1 is the highest version tag listed by git ls-remote --tags",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "spdx_basis": "text matches MIT permission and warranty clauses; SPDX identifier inferred, not declared in file",
+        "copyright": "Copyright GitHub, Inc.",
+        "sha256": "2510b446bc1f0cf9702453075d20cd88631e20e5642658edb7325d9c1eb534f7"
+      },
+      "runtime_observed": {
+        "go": "go 1.27.3 (go.mod:3)",
+        "setup_action": "node24 (actions/setup/action.yml:41)",
+        "distribution": "gh CLI extension (gh extension install github/gh-aw)"
+      },
+      "notes": "githubnext/gh-aw and github/gh-aw both resolved HEAD to the same SHA via git ls-remote on 2026-10-29; the module path and docs use github/gh-aw. Work-queue spec, pkg/workqueue/schema and specs/work-queue/transactions.tsp are byte-identical between v1.0.0 and the pin (git diff --quiet exit 0); runtime JS/Go changed after v1.0.1."
+    },
+    {
+      "name": "symphony",
+      "repository": "https://github.com/openai/symphony",
+      "commit": "be10a1b79df723d6d7612b5651c8522704dafb2e",
+      "commit_date": "2026-09-15T15:12:07-07:00",
+      "fetched_at": "2026-10-29T23:16:42Z",
+      "fetch_method": "git fetch --depth 1",
+      "default_branch_head_observed": "be10a1b79df723d6d7612b5651c8522704dafb2e",
+      "default_branch_head_observed_at": "2026-10-29T23:17Z",
+      "nearest_tag": "v0.0.3",
+      "nearest_tag_commit": "1c0fb6c8e8ef9031a2c861e62af5f9e66cee39cb",
+      "nearest_tag_relation": "v0.0.3 is an ancestor, 1 commit before the pin; the lightweight tag 'nightly' points exactly at the pin (moving nightly tag, not a release)",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "Apache-2.0",
+        "spdx_basis": "Apache License Version 2.0 text; README.md:41 states Apache License 2.0",
+        "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+        "notice_path": "NOTICE",
+        "notice_sha256": "38c76eb8701e52953f63154a77b407667a6ee34c3a2a8785c8f8b2cd5494d09d"
+      },
+      "runtime_observed": {
+        "reference_implementation": "Elixir 1.19.5-otp-28 / Erlang 28 (elixir/mise.toml); mix project version 0.0.3 (elixir/mix.exs:7)",
+        "agent_protocol": "Codex app-server (SPEC.md:148, 950-984)"
+      },
+      "notes": "SPEC.md status 'Draft v1 (language-agnostic)'. Elixir implementation self-described as prototype for evaluation only."
+    },
+    {
+      "name": "beads",
+      "repository": "https://github.com/gastownhall/beads",
+      "commit": "e226083653b893998614df4225f73b6688ca9166",
+      "commit_date": "2026-10-29T04:48:30+00:00",
+      "fetched_at": "2026-10-29T23:16:42Z",
+      "fetch_method": "git fetch --depth 1",
+      "default_branch_head_observed": "e226083653b893998614df4225f73b6688ca9166",
+      "default_branch_head_observed_at": "2026-10-29T23:17Z",
+      "nearest_tag": "v1.3.2",
+      "nearest_tag_commit": "9b65b9e198acbcc98e7fd3a87a5d55baa065a572",
+      "nearest_tag_relation": "NOT an ancestor of the pin: v1.3.2 is a merge of branch release-prep/v1.3.2; main commit 02f3349b99429628895e8ff520adcaf5cb0fc29a 'forward-port v1.3.1 and v1.3.2 to main' is an ancestor (bounded treeless fetch --shallow-since=2026-10-23)",
+      "license": {
+        "path": "LICENSE",
+        "spdx": "MIT",
+        "spdx_basis": "file begins 'MIT License'; SPDX identifier inferred",
+        "copyright": "Copyright (c) 2025 Beads Contributors",
+        "sha256": "caa2c60efbbf71e18b45ef6006a18213f8a42554b235af88883f6f1ec240b7db",
+        "third_party_path": "THIRD_PARTY_LICENSES",
+        "third_party_sha256": "50b7ae5d2cbdb67ff26f255f118002241ff27bc2ad0535d0c4ec7639b12224aa"
+      },
+      "runtime_observed": {
+        "go": "go 1.27.3 (go.mod:3)",
+        "storage": "Dolt (embedded default, or external dolt sql-server)"
+      },
+      "notes": "Inspected for vocabulary and readiness UX only. Not a candidate authority; the plan (section 2) excludes adding a second issue database."
+    }
+  ],
+  "related_fetches": [
+    {
+      "name": "weave-issue-6",
+      "url": "https://api.github.com/repos/quaat/weave/issues/6 and /issues/6/comments?per_page=100",
+      "fetched_at": "2026-10-29T23:19:28Z",
+      "fetch_method": "curl (GitHub REST API, unauthenticated), HTTP 200 for both",
+      "notes": "58 comments, all weave-agent envelopes by quaat; stored at /tmp/claude-1000/upstream/weave-issue6/ (not in the repository)."
+    }
+  ],
+  "documentation_fetches": {
+    "fetched_at": "2026-10-29T23:18:32Z",
+    "method": "curl -L, HTTP status recorded; HTML converted to text with a local isolated script",
+    "results": [
+      {
+        "url": "https://github.github.com/gh-aw/introduction/overview/",
+        "http_status": 200,
+        "pinned_copy": "docs/src/content/docs/introduction/overview.mdx"
+      },
+      {
+        "url": "https://github.github.com/gh-aw/introduction/architecture/",
+        "http_status": 200,
+        "pinned_copy": "docs/src/content/docs/introduction/architecture.mdx"
+      },
+      {
+        "url": "https://github.github.com/gh-aw/reference/custom-safe-outputs/",
+        "http_status": 200,
+        "pinned_copy": "docs/src/content/docs/reference/custom-safe-outputs.md"
+      },
+      {
+        "url": "https://github.github.com/gh-aw/specs/work-queue-specification/",
+        "http_status": 200,
+        "pinned_copy": "docs/src/content/docs/specs/work-queue-specification.md"
+      },
+      {
+        "url": "https://github.github.com/gh-aw/specs/repo-memory-ledger-specification/",
+        "http_status": 200,
+        "pinned_copy": "docs/src/content/docs/specs/repo-memory-ledger-specification.md"
+      },
+      {
+        "url": "https://github.com/openai/symphony/blob/main/SPEC.md",
+        "http_status": 200,
+        "pinned_copy": "SPEC.md (main == pin at fetch time)"
+      }
+    ]
+  }
+}
