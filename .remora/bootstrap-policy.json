@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "mode": "human-operated-bootstrap",
+  "automatic_claims": false,
+  "automatic_merge": false,
+  "default_active_executors": 1,
+  "quality_review_limit": 3,
+  "unverified_retry_limit": 2,
+  "infrastructure_retry_limit": 2,
+  "assignment_authority": "accountable human",
+  "completion_authority": "human acceptance plus confirmed integration or accepted non-code deliverable",
+  "evidence_trust": "manual verification; format checks confer no authority",
+  "permission_matrix": "not yet implemented; P01 deliverable",
+  "runtime_profile": "not yet qualified; P02b deliverable"
+}

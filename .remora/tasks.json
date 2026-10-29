@@ -1,0 +1,664 @@
+{
+  "schema_version": 1,
+  "project": "Remora",
+  "tagline": "Remora — attach to a repo. Keep the work moving.",
+  "source_revision": 5,
+  "source_path": "docs/plan/generic-agentic-harness-plan.md",
+  "source_sha256": "4e0a0a698744dcdbc0972a08acd37bc9bd6bb6f8d9f6775020a9e653dc539406",
+  "milestones": [
+    {
+      "id": "M0",
+      "title": "M0 — Choose the smallest viable foundation",
+      "description": "Verify reuse and live coordination/runtime assumptions. Exit: Backend/runtime decision supported by experiments; failed guarantees explicitly block rollout."
+    },
+    {
+      "id": "M1",
+      "title": "M1 — Approve executable plans",
+      "description": "Package the plan, task, review, and architecture contracts. Exit: Invalid plans are explainable; a valid pilot plan compiles reproducibly."
+    },
+    {
+      "id": "M2",
+      "title": "M2 — Complete one independent review loop",
+      "description": "Wire ownership, sandboxed development, human input, and pull review in `unverified_pilot` mode. Exit: Two developers and an independent reviewer complete a dependency/rework scenario; Done requires recorded manual acceptance and integration, with no trusted-CI claim."
+    },
+    {
+      "id": "M3",
+      "title": "M3 — Verify and onboard",
+      "description": "Enforce trusted evidence and install into a second project. Exit: Template and existing-repo onboarding work without source-specific patches."
+    },
+    {
+      "id": "M4",
+      "title": "M4 — Qualify the pilot",
+      "description": "Exercise fault recovery and real operations. Exit: Required adversarial scenarios pass and operating limits are documented."
+    }
+  ],
+  "tasks": [
+    {
+      "id": "P01",
+      "title": "Reuse and authority decision",
+      "milestone": "M0",
+      "source_excerpt": "**Context:** recent reference implementations overlap the proposed controller. **Dependencies:** none. **Scope:** pin Weave and candidate upstream revisions; inspect licenses, gh-aw supported queue/safe-output surfaces, external-worker binding, Symphony runner boundary, runtime support, and required GitHub identities. Define internal interfaces and a versioned, machine-readable supervisor-hosted reducer permission matrix, including the Actions-hosted fallback and separate setup/runtime privileges, as the source for the credential specification emitted by `harness init`. Inventory the maintained Weave code removable through adoption versus required adapter code. Exclude a framework rewrite.\n\n**Acceptance:** a comparison maps each required contract to reused code, adapter work, or a demonstrated gap; one preferred backend and fallback are named; no two authorities are proposed for the same state. Existing Weave behavior and migration boundaries are enumerated.",
+      "depends_on": [],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "docs/research/P01/**",
+        "docs/decisions/**",
+        "contracts/**",
+        "tests/contracts/**"
+      ],
+      "deliverables": [
+        "Reuse inventory and license report",
+        "Versioned permission matrix and interface decisions"
+      ],
+      "exclusions": [
+        "A framework rewrite",
+        "Production queue or runtime implementation"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P01-AC01",
+          "text": "a comparison maps each required contract to reused code, adapter work, or a demonstrated gap; one preferred backend and fallback are named; no two authorities are proposed for the same state.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P01-AC02",
+          "text": "Existing Weave behavior and migration boundaries are enumerated.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P02a",
+      "title": "Coordination and backend-selection spike",
+      "milestone": "M0",
+      "source_excerpt": "**Context:** documentation alone does not establish coordination guarantees. **Dependencies:** P01. **Scope:** start the gh-aw fit assessment and narrow-adapter tests on day one, using separate disposable authority branches/repositories and the same conformance fixtures. Default to two trusted supervisor-hosted reducers. Exercise A01, A04, A05, A07, and the authority-revocation side of A17: competing claims, renewal/takeover, ambiguous writes, disconnected workers, and rejection of publication after stop. Check external-worker authentication, CAS behavior, clock skew, rare renewals, and snapshot/replay equivalence. Use fixture processes; runtime containment and physical termination belong to P02b. Parallel experiments are not simultaneous production authorities.\n\n**gh-aw rejection criteria — decide before integrating it:**\n\n1. A process outside Actions must hold and exercise a Claim through a supported authenticated path, without another ownership ledger or a fabricated Actions identity. Failure selects the narrow adapter.\n2. The protocol, implementation, schemas, and necessary runtime dependencies must be pinnable to a reproducible compatible version, with unsupported versions rejected. Reliance on a moving protocol or unpublished interface selects the narrow adapter.\n3. Adoption must remove more hand-maintained Weave production coordination/publication code than the new adapter/glue adds, and reduce maintained responsibilities. Record the files, non-generated line counts, retained tests, and responsibilities; do not game the comparison by deleting tests or ignoring integration code. If the net reduction is absent or cannot be demonstrated within the spike, select the narrow adapter.\n\nTime-box the gh-aw fit assessment to three engineer-days within P02a; any failed criterion or unresolved result at the deadline means no-go for that backend. Narrow-adapter validation runs concurrently from day one and does not wait for that decision. Select only a backend that passes the required tests; if neither qualifies, pause dependent implementation and publish the concrete gap rather than silently extending the spike or weakening a guarantee. Actions-hosted placement remains a separately justified fallback for deployments that cannot trust state-writing supervisors; it does not waive the external-worker or single-authority criteria.\n\n**Acceptance:** A01/A04/A05/A07 and the authority-fencing portion of A17 pass for the selected backend. Report each gh-aw reuse criterion as pass/fail with evidence, alongside narrow-adapter results, latency, request volume, clock bounds, authority-poll/offline-grace intervals, renewal cadence, snapshot/replay/fetch costs, and authenticated identities. Select one backend or report no-go. M0 requires its integration with the selected P02b runtime to demonstrate both fencing and confirmed termination for A17; fixture success alone is insufficient. No custom daemon is built merely because the spike is inconvenient.",
+      "depends_on": [
+        "P01"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "experiments/coordination/**",
+        "tests/coordination_spike/**",
+        "docs/research/P02a/**"
+      ],
+      "deliverables": [
+        "gh-aw fit/no-go report and narrow-adapter conformance results",
+        "Selected backend ADR and measured operating bounds"
+      ],
+      "exclusions": [
+        "Runtime containment implementation",
+        "Production shared-state integration"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P02a-AC01",
+          "text": "A01/A04/A05/A07 and the authority-fencing portion of A17 pass for the selected backend.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P02a-AC02",
+          "text": "Report each gh-aw reuse criterion as pass/fail with evidence, alongside narrow-adapter results, latency, request volume, clock bounds, authority-poll/offline-grace intervals, renewal cadence, snapshot/replay/fetch costs, and authenticated identities.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P02a-AC03",
+          "text": "Select one backend or report no-go.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P02a-AC04",
+          "text": "M0 requires its integration with the selected P02b runtime to demonstrate both fencing and confirmed termination for A17; fixture success alone is insufficient.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P02a-AC05",
+          "text": "No custom daemon is built merely because the spike is inconvenient.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P02b",
+      "title": "Runtime isolation and reviewer-launch spike",
+      "milestone": "M0",
+      "source_excerpt": "**Context:** sandbox containment and process control require a separate host test rig. **Dependencies:** P01. **Scope:** run alongside P02a, using the P01 execution/stop interface and a fixture authority. Exercise A19, writable reviewer scratch, credential separation, actual egress enforcement, process termination, and the runtime side of A07/A17. Establish the small reviewer-launch interface/fixture that P08 can use without P06. Keep candidate code and model processes outside the trusted supervisor credential boundary.\n\n**Acceptance:** the selected runtime blocks the tested host/credential/network access paths; the reviewer can execute checks in writable scratch; connected stop terminates execution within the documented target; partition tests report uncertainty honestly. Record host requirements and supported configurations. Join with P02a before M0 exit to verify that authority revocation and physical-stop acknowledgment remain distinct and work end to end. Runtime failures block P06/P08, not the independent backend assessment.",
+      "depends_on": [
+        "P01"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "experiments/runtime/**",
+        "tests/runtime_spike/**",
+        "docs/research/P02b/**"
+      ],
+      "deliverables": [
+        "Runtime threat-boundary report",
+        "Reviewer launcher fixture and joint A17 evidence"
+      ],
+      "exclusions": [
+        "Production developer supervisor",
+        "Second coordination authority"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P02b-AC01",
+          "text": "the selected runtime blocks the tested host/credential/network access paths; the reviewer can execute checks in writable scratch; connected stop terminates execution within the documented target; partition tests report uncertainty honestly.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P02b-AC02",
+          "text": "Record host requirements and supported configurations.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P02b-AC03",
+          "text": "Join with P02a before M0 exit to verify that authority revocation and physical-stop acknowledgment remain distinct and work end to end.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P02b-AC04",
+          "text": "Runtime failures block P06/P08, not the independent backend assessment.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P03",
+      "title": "Portable packets and plan validator",
+      "milestone": "M1",
+      "source_excerpt": "**Context:** plan quality is a prerequisite, independent of worker infrastructure. **Dependencies:** P01. **Scope:** extract Python models and graph checks; canonical task/criterion digests; milestone DAG; approved revision handling; actionable readiness explanations; task and review schemas. Exclude automatic product planning.\n\n**Acceptance:** valid fixtures compile deterministically; missing criteria, cycles, unresolved prerequisites, and revision drift fail clearly; independent milestone branches remain eligible. A documented schema fixture supports downstream work without overlapping ownership of the model module.",
+      "depends_on": [
+        "P01"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/plan/**",
+        "src/remora/contracts/**",
+        "tests/plan/**",
+        "tests/fixtures/plan/**",
+        "docs/contracts/**"
+      ],
+      "deliverables": [
+        "Portable task/review schemas and deterministic packet compiler",
+        "Validator with invalid graph and revision-drift fixtures"
+      ],
+      "exclusions": [
+        "Automatic product planning",
+        "Replacing approved task definitions without approval"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P03-AC01",
+          "text": "valid fixtures compile deterministically; missing criteria, cycles, unresolved prerequisites, and revision drift fail clearly; independent milestone branches remain eligible.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P03-AC02",
+          "text": "A documented schema fixture supports downstream work without overlapping ownership of the model module.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P04",
+      "title": "Architecture-aware plan checks",
+      "milestone": "M1",
+      "source_excerpt": "**Context:** valuable architecture guidance should arrive before the full runner. **Dependencies:** P03. **Scope:** portable authorized AAB/ADR baseline, rule applicability, criterion mapping, plan lint, and configuration export for one existing checker. Exclude a new analyzer and signed-governance service.\n\n**Acceptance:** fixtures expose a contradictory task, missing architectural verification, unsupported rule, and unmatched selector; none silently pass. A compliant plan includes explainable rule-to-task mappings. One project-specific checker configuration has known-good and known-bad examples.",
+      "depends_on": [
+        "P03"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/architecture/**",
+        "tests/architecture/**",
+        "docs/architecture/**",
+        "architecture/**"
+      ],
+      "deliverables": [
+        "Authorized architecture baseline or explicit missing-source blocker",
+        "Existing-checker configuration with positive and negative fixtures"
+      ],
+      "exclusions": [
+        "A new dependency analyzer",
+        "Inventing the AAB source"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P04-AC01",
+          "text": "fixtures expose a contradictory task, missing architectural verification, unsupported rule, and unmatched selector; none silently pass.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P04-AC02",
+          "text": "A compliant plan includes explainable rule-to-task mappings.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P04-AC03",
+          "text": "One project-specific checker configuration has known-good and known-bad examples.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P05",
+      "title": "Shared state, commands, and fencing adapter",
+      "milestone": "M2",
+      "source_excerpt": "**Context:** all later actions need one authority. **Dependencies:** P02a, P03. **Scope:** selected backend integration in the trusted supervisor, authenticated role binding, claims, reservations, task revisions, command deduplication, outbox/reconciliation, and state recovery. For the narrow adapter, implement per-task files, compact indexes, rare renewal commits, and verified snapshots. Reuse upstream logic where accepted by P02a; preserve its supported protocol if adopted.\n\n**Acceptance:** ownership and resource acquisition occur in one accepted transition; replay preserves task history; repeated commands do not double-apply; unauthorized or stale operations fail. Delayed board updates never alter ownership. Protect and recover the authoritative branch.",
+      "depends_on": [
+        "P02a",
+        "P03"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/state/**",
+        "src/remora/commands/**",
+        "src/remora/publication/**",
+        "tests/state/**",
+        "tests/commands/**",
+        "tests/publication/**",
+        "docs/state/**"
+      ],
+      "deliverables": [
+        "Selected backend, reducer, fencing and recovery",
+        "Authenticated publication contract and reconciliation"
+      ],
+      "exclusions": [
+        "Unvalidated backend substitution",
+        "Automatic merge"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P05-AC01",
+          "text": "ownership and resource acquisition occur in one accepted transition; replay preserves task history; repeated commands do not double-apply; unauthorized or stale operations fail.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P05-AC02",
+          "text": "Delayed board updates never alter ownership.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P05-AC03",
+          "text": "Protect and recover the authoritative branch.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P06",
+      "title": "Developer supervisor and checkpoints",
+      "milestone": "M2",
+      "source_excerpt": "**Context:** arbitrary repository code needs a controlled execution boundary. **Dependencies:** P05, P02b. **Scope:** runtime adapter, private checkout, capability matching, heartbeat/stop watchdog, bounded resources, credential-safe candidate publication, scope amendment, and recoverable checkpoints. Exclude automatic merge and arbitrary host hooks.\n\n**Acceptance:** an enrolled worker completes a scoped task; scope widening preserves its lease and commits; incompatible widening pauses; restart recovers the last durable checkpoint. Host mounts, credential access, candidate hooks, and egress controls pass negative tests for the selected profile.",
+      "depends_on": [
+        "P05",
+        "P02b"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/runtime/**",
+        "src/remora/developer/**",
+        "tests/runtime/**",
+        "tests/developer/**",
+        "containers/developer/**",
+        "docs/runtime/**"
+      ],
+      "deliverables": [
+        "Developer lifecycle and bounded runtime adapter",
+        "Credential-safe checkpoints and scope amendment integration"
+      ],
+      "exclusions": [
+        "Automatic merge",
+        "Candidate-controlled host hooks"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P06-AC01",
+          "text": "an enrolled worker completes a scoped task; scope widening preserves its lease and commits; incompatible widening pauses; restart recovers the last durable checkpoint.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P06-AC02",
+          "text": "Host mounts, credential access, candidate hooks, and egress controls pass negative tests for the selected profile.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P07",
+      "title": "GitHub board and human decisions",
+      "milestone": "M2",
+      "source_excerpt": "**Context:** GitHub must remain understandable to the maintainer. **Dependencies:** P05. **Scope:** status projection, three default fields, human ownership/delegate summary, questions, terminal answers, stop/resume, and discrepancy repair.\n\n**Acceptance:** duplicate/edited/stale commands cannot bypass authorization; a question blocks execution until an authorized answer; stop is shown as requested until confirmed; the board is rebuilt from state after a failed write. Human testing confirms that a maintainer can identify what is blocked, why, and who must respond.",
+      "depends_on": [
+        "P05"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/github/**",
+        "tests/github/**",
+        "docs/operators/**"
+      ],
+      "deliverables": [
+        "GitHub projections and authenticated human commands",
+        "Stop/resume and discrepancy reconciliation"
+      ],
+      "exclusions": [
+        "A second source of task authority",
+        "Additional default board fields beyond the plan"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P07-AC01",
+          "text": "duplicate/edited/stale commands cannot bypass authorization; a question blocks execution until an authorized answer; stop is shown as requested until confirmed; the board is rebuilt from state after a failed write.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P07-AC02",
+          "text": "Human testing confirms that a maintainer can identify what is blocked, why, and who must respond.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P08",
+      "title": "Pull-based review and task-wide budget",
+      "milestone": "M2",
+      "source_excerpt": "**Context:** review must operate independently of the developer session and should not wait for developer-sandbox implementation. **Dependencies:** P05, P03, P02b. **Scope:** pending review jobs, reviewer claims, fresh sandbox/session using the small launcher validated in P02b, schema-validated evidence, prior findings, aggregate rounds, rework queue, and bounded infrastructure retries. Use a fixture developer that submits a fixed candidate through the trusted publication contract; do not give it a direct-state bypass. Reviewer-specific launch support belongs to P08; general developer lifecycle integration remains in P06/P09.\n\n**Acceptance:** an independently started reviewer processes the fixture candidate without P06; change requests return work to Ready; reassignment does not reset the budget; duplicate results count once; stale candidates and unverified checks cannot pass. Exercise `unverified_pilot` labeling and manual acceptance; no automatic Done transition is possible without the recorded decision and integration. Complete the real cross-vendor developer/reviewer pairing at M2 integration once P06 is available. Exclude broad hosted-review adapter coverage.",
+      "depends_on": [
+        "P05",
+        "P03",
+        "P02b"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/review/**",
+        "tests/review/**",
+        "containers/reviewer/**",
+        "docs/review/**"
+      ],
+      "deliverables": [
+        "Pull reviewer and task-wide aggregate review budget",
+        "Fixture publisher and independent launcher integration"
+      ],
+      "exclusions": [
+        "Dependency on P06 implementation",
+        "Broad hosted-review provider support"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P08-AC01",
+          "text": "an independently started reviewer processes the fixture candidate without P06; change requests return work to Ready; reassignment does not reset the budget; duplicate results count once; stale candidates and unverified checks cannot pass.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P08-AC02",
+          "text": "Exercise `unverified_pilot` labeling and manual acceptance; no automatic Done transition is possible without the recorded decision and integration.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P08-AC03",
+          "text": "Complete the real cross-vendor developer/reviewer pairing at M2 integration once P06 is available.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P08-AC04",
+          "text": "Exclude broad hosted-review adapter coverage.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P09",
+      "title": "Trusted evidence and integration gate",
+      "milestone": "M3",
+      "source_excerpt": "**Context:** matching toolchains and model verdicts are insufficient completion evidence. **Dependencies:** P04, P06, P07, P08. **Scope:** integrate the independently developed developer/reviewer paths, switch explicitly from `unverified_pilot` to `trusted_ci`, and implement trusted CI provenance, per-criterion evidence, architecture checker execution, required checks, candidate/base revalidation, manual integration, and Done reconciliation.\n\n**Acceptance:** developer-supplied logs cannot satisfy a trusted-CI requirement; pilot manual exceptions cannot silently authorize new trusted-mode completions; altered workflows, stale SHAs, unavailable required checks, and unmerged PRs fail the gate. An accepted merge or explicit non-code deliverable completes the task and unlocks its dependents.",
+      "depends_on": [
+        "P04",
+        "P06",
+        "P07",
+        "P08"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/evidence/**",
+        "src/remora/integration/**",
+        "tests/evidence/**",
+        "tests/integration/**",
+        ".github/workflows/trusted-*.yml",
+        "docs/evidence/**"
+      ],
+      "deliverables": [
+        "Trusted-CI evidence verification and integration gate",
+        "Explicit evidence-mode transition report"
+      ],
+      "exclusions": [
+        "Treating developer logs as trusted CI",
+        "Automatic merge"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P09-AC01",
+          "text": "developer-supplied logs cannot satisfy a trusted-CI requirement; pilot manual exceptions cannot silently authorize new trusted-mode completions; altered workflows, stale SHAs, unavailable required checks, and unmerged PRs fail the gate.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P09-AC02",
+          "text": "An accepted merge or explicit non-code deliverable completes the task and unlocks its dependents.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P10",
+      "title": "Template and existing-repository installer",
+      "milestone": "M3",
+      "source_excerpt": "**Context:** reusability requires low-friction setup, not copied internals. **Dependencies:** P09. **Scope:** guided setup, generated credential specifications from P01, pinned images, capability/permission diagnostics, existing-project preservation, enrollment, operator examples, idle reconciliation, and documented upgrade/rollback. Exclude a hosted web dashboard.\n\n**Acceptance:** clean template setup and a brownfield dry run produce reviewable changes; rerun is idempotent; no secret enters Git; missing Projects permission or unsupported sandbox yields a precise next step. The generated credential specification matches the selected profile and distinguishes API permissions from branch restrictions; an idle-system exercise shows an answer remains pending until `harness reconcile` or a supervisor processes it. The second project requires configuration changes only.",
+      "depends_on": [
+        "P09"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "src/remora/installer/**",
+        "src/remora/cli/**",
+        "tests/installer/**",
+        "templates/**",
+        "containers/distribution/**",
+        "docs/onboarding/**"
+      ],
+      "deliverables": [
+        "Template and additive installer",
+        "Credential specification generator and capability diagnostics"
+      ],
+      "exclusions": [
+        "A hosted dashboard",
+        "Destructive instruction replacement"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P10-AC01",
+          "text": "clean template setup and a brownfield dry run produce reviewable changes; rerun is idempotent; no secret enters Git; missing Projects permission or unsupported sandbox yields a precise next step.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P10-AC02",
+          "text": "The generated credential specification matches the selected profile and distinguishes API permissions from branch restrictions; an idle-system exercise shows an answer remains pending until `harness reconcile` or a supervisor processes it.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P10-AC03",
+          "text": "The second project requires configuration changes only.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P11",
+      "title": "Fault and adversarial qualification",
+      "milestone": "M4",
+      "source_excerpt": "**Context:** concurrency failures emerge at boundaries. **Dependencies:** P10. **Scope:** execute the scenarios in section 12 with durable evidence; inject network failure, retries, stale evidence, malicious configuration, and process loss. Keep unit tests for deterministic reducers and live tests for actual transport/permissions.\n\n**Acceptance:** all required scenarios pass for the supported profile, including a rehearsal of the P12 cutover and rollback with old-controller callbacks; untested guarantees are explicitly marked unsupported; results include software revisions, test IDs, logs, and reproducible setup. No claim of production security certification.",
+      "depends_on": [
+        "P10"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "tests/qualification/**",
+        "docs/qualification/**"
+      ],
+      "deliverables": [
+        "A01–A28 qualification report",
+        "Cutover and rollback rehearsal evidence"
+      ],
+      "exclusions": [
+        "Claiming untested platforms",
+        "Production security certification"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P11-AC01",
+          "text": "all required scenarios pass for the supported profile, including a rehearsal of the P12 cutover and rollback with old-controller callbacks; untested guarantees are explicitly marked unsupported; results include software revisions, test IDs, logs, and reproducible setup.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P11-AC02",
+          "text": "No claim of production security certification.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    },
+    {
+      "id": "P12",
+      "title": "Two-project pilot and release decision",
+      "milestone": "M4",
+      "source_excerpt": "**Context:** a reusable harness must work beyond Weave. **Dependencies:** P11. **Scope:** operate Weave plus one existing project with different configuration; two developers and an independent reviewer; dependency unlock, scope amendment, human answer, failed review, takeover/recovery, and merge. Collect setup time, maintenance effort, API/Actions usage, review turnaround, and failure recovery data.\n\n**Mandatory Weave cutover, rehearsed in P11:**\n\n1. Pause legacy intake and dispatch; drain or stop all development/review executions. Confirm no held claims, uncertain active processes, pending publications, or unresolved in-flight effects. Lease expiry alone is not confirmation.\n2. Export and retain the old ledger, relevant issue-event history, configuration, and candidate/checkpoint references. Record a cutover marker and exact source revision. Revoke or remove the legacy controller's publication authority and disable its triggers so delayed callbacks cannot write after cutover.\n3. Import open tasks, candidate references, unresolved questions, resource holds, and task-wide review history across all legacy attempts. Preserve original event IDs and provenance; count completed quality rounds rather than resetting at attempt boundaries. Ambiguous or incomplete counts block that task for explicit human reconciliation. Do not infer a reset from missing data.\n4. Initialize the new authority epoch, invalidating every legacy claim, with no active worker claim imported. Validate task mappings, dependency readiness, review limits/counts, and evidence mode; produce a dry-run reconciliation diff. Record an authorized cutover acceptance before enabling new supervisors.\n5. Start the new supervisors in `trusted_ci` mode and verify rejection of late legacy events. Never run old and new controllers with simultaneous write authority. Rollback first pauses/fences and drains the new controller, reconciles post-cutover work back into an explicit compatible legacy state, and only then restores old authority. Do not restore an old ledger snapshot over newer completed work. If that reverse mapping is unsafe, remain paused for manual recovery.\n\n**Acceptance:** both projects complete the scenario without harness-source patches; all critical gates remain enabled; the cutover report proves that imported review budgets/questions/candidates are preserved and no dual-authority interval occurred. Human operators can recover from documented failures. Publish a release decision, limitations, and prioritized follow-up work. Do not extrapolate a small pilot into a large-project throughput claim.",
+      "depends_on": [
+        "P11"
+      ],
+      "scope_status": "proposed_confirm_before_assignment",
+      "allowed_paths": [
+        "docs/pilots/**",
+        "docs/releases/**"
+      ],
+      "deliverables": [
+        "Two-project pilot and measured release decision",
+        "Weave cutover record preserving review history"
+      ],
+      "exclusions": [
+        "Dual live controllers",
+        "Restoring old snapshots over newer work"
+      ],
+      "acceptance_criteria": [
+        {
+          "id": "P12-AC01",
+          "text": "both projects complete the scenario without harness-source patches; all critical gates remain enabled; the cutover report proves that imported review budgets/questions/candidates are preserved and no dual-authority interval occurred.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P12-AC02",
+          "text": "Human operators can recover from documented failures.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P12-AC03",
+          "text": "Publish a release decision, limitations, and prioritized follow-up work.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        },
+        {
+          "id": "P12-AC04",
+          "text": "Do not extrapolate a small pilot into a large-project throughput claim.",
+          "verification": "Independent review against the source task; attach named check output or explicit human-inspection evidence."
+        }
+      ],
+      "verification": [
+        "python3 -m unittest discover -s tests -v",
+        "python3 -m bootstrap check",
+        "Task-specific verification required by the copied acceptance text"
+      ],
+      "architecture": "docs/decisions/0001-bootstrap-boundary.md; full AAB applicability remains unverified until P04 has an authorized source.",
+      "review_limit": 3
+    }
+  ]
+}

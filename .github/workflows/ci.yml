@@ -1,0 +1,35 @@
+name: Bootstrap checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: bootstrap-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bootstrap:
+    name: bootstrap
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out candidate without persisted credentials
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Record Python version
+        run: python3 --version
+      - name: Validate copied plan and task graph
+        run: python3 -m bootstrap check
+      - name: Run offline tests
+        run: python3 -m unittest discover -s tests -v
+      - name: Check whitespace
+        run: git diff --check
+
+# This is ordinary development CI. P09 must implement trusted workflow provenance.
+# No provider secrets, write token, pull_request_target or automatic merge.

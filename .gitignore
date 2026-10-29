@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+!.env.example
+.remora-local/
+build/
+dist/
+*.egg-info/
+.coverage
+htmlcov/
+.DS_Store
