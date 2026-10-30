@@ -345,18 +345,36 @@
       "bypass_actors": [],
       "conditional_bypass_actors": [
         {
-          "actor_type": "RepositoryRole",
-          "actor": "the human integrator only: repository admin role on a user-owned repository whose only admin is the maintainer, or a dedicated integrator Team in an organization",
+          "actor_type": "Team",
+          "actor": "organization repositories: a dedicated integrator Team whose only member is the accountable human (not a secret team: the UI lists 'Teams, excluding secret teams' as bypass actors, S-gh-rules-create; REST actor_type Team, S-gh-rest-rules)",
           "bypass_mode": "pull_request",
           "when": {
             "decision_point": "DP-05",
             "option": "human_integrator_sole_main_bypass"
+          },
+          "owner_condition": {
+            "decision_point": "DP-01",
+            "option": "org_owned"
+          }
+        },
+        {
+          "actor_type": "RepositoryRole",
+          "actor": "personal (user-owned) repositories: the repository admin role, held only by the owning maintainer (personal repositories have no teams and OrganizationAdmin is not applicable, S-gh-rest-rules; owner matching is U-PM-01)",
+          "bypass_mode": "pull_request",
+          "when": {
+            "decision_point": "DP-05",
+            "option": "human_integrator_sole_main_bypass"
+          },
+          "owner_condition": {
+            "decision_point": "DP-01",
+            "option": "user_owned"
           }
         }
       ],
       "parameters": {
         "update_allows_fetch_and_merge": false,
-        "purpose": "Restrict updates: 'only users with bypass permissions can push to' main (S-gh-rules-available). Contents write includes PUT .../pulls/{pull_number}/merge, PUT .../merge-async and POST .../merges (S-gh-fgpat, S-gh-rest-pulls), so without this rule any Contents-write identity can merge an approved, green pull request. Kept separate from RS-main so that the human's bypass does not also skip RS-main's pull-request and required-check rules (bypass applies to the rules in its own ruleset; multiple rulesets aggregate, S-gh-rules-about)"
+        "purpose": "Restrict updates: 'only users with bypass permissions can push to' main (S-gh-rules-available). Contents write includes PUT .../pulls/{pull_number}/merge, PUT .../merge-async and POST .../merges (S-gh-fgpat, S-gh-rest-pulls), so without this rule any Contents-write identity can merge an approved, green pull request. Kept separate from RS-main so that the human's bypass does not also skip RS-main's pull-request and required-check rules (bypass applies to the rules in its own ruleset; multiple rulesets aggregate, S-gh-rules-about)",
+        "bypass_actor_choice": "Exactly one conditional bypass applies, selected by DP-01. A RepositoryRole bypass matches every holder of that role, so on an organization repository it would also let other admins or maintainers merge and is not a sole-human boundary; organizations therefore use a one-member Team. On a personal repository the admin role is held only by the owner."
       },
       "sources": [
         "S-gh-rules-available",
@@ -368,6 +386,7 @@
       "unverified": [
         "U-PM-14: whether Restrict updates on main refuses pull-request merges (web UI, PUT .../pulls/{pull_number}/merge, PUT .../merge-async) and POST .../merges by actors without bypass, and lets a pull_request-mode bypass actor complete a pull-request merge",
         "U-PM-01: whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
+        "U-PM-15: whether a Team bypass actor on an organization repository's ruleset lets only that Team's members bypass in pull_request mode, so that another holder of the same repository role who is not in the Team cannot merge",
         "U-PE-08: two-ruleset layout (bypass of RS-main-integrator must leave RS-main's pull-request and required-check rules enforced for the human)"
       ]
     }
@@ -582,7 +601,7 @@
           "bypass_account_credentials": {
             "policy": "holder_is_bypass_account",
             "exempt_credential_types": [],
-            "note": "The setup credential is the accountable human's own. When that human is the RS-main-integrator bypass actor (DP-05 = human_integrator_sole_main_bypass, the single-maintainer case), the credential is matched by the bypass and can merge through a pull request. It is setup-only, used interactively by the human during init, and never stored for or used by automation."
+            "note": "The setup credential is the accountable human's own. When that human is the RS-main-integrator bypass actor (DP-05 = human_integrator_sole_main_bypass: the owner holding the admin role on a personal repository, or the only member of the integrator Team on an organization repository), the credential is matched by the bypass and can merge through a pull request. It is setup-only, used interactively by the human during init, and never stored for or used by automation."
           },
           "scope": {
             "repository_selection": [
@@ -1520,7 +1539,7 @@
           "unverified": [
             "U-PM-04: whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
-          "repository_role": "write or maintain; admin (or integrator Team member) when DP-05 = human_integrator_sole_main_bypass makes the human the sole RS-main-integrator bypass actor",
+          "repository_role": "write or maintain; under DP-05 = human_integrator_sole_main_bypass also the sole RS-main-integrator bypass actor: the only member of the dedicated integrator Team (organization repository) or the owner holding the admin role (personal repository)",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
           "bypass_account_credentials": {
@@ -2041,7 +2060,7 @@
           "bypass_account_credentials": {
             "policy": "holder_is_bypass_account",
             "exempt_credential_types": [],
-            "note": "The setup credential is the accountable human's own. When that human is the RS-main-integrator bypass actor (DP-05 = human_integrator_sole_main_bypass, the single-maintainer case), the credential is matched by the bypass and can merge through a pull request. It is setup-only, used interactively by the human during init, and never stored for or used by automation."
+            "note": "The setup credential is the accountable human's own. When that human is the RS-main-integrator bypass actor (DP-05 = human_integrator_sole_main_bypass: the owner holding the admin role on a personal repository, or the only member of the integrator Team on an organization repository), the credential is matched by the bypass and can merge through a pull request. It is setup-only, used interactively by the human during init, and never stored for or used by automation."
           },
           "scope": {
             "repository_selection": [
@@ -3080,7 +3099,7 @@
           "unverified": [
             "U-PM-04: whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
-          "repository_role": "write or maintain; admin (or integrator Team member) when DP-05 = human_integrator_sole_main_bypass makes the human the sole RS-main-integrator bypass actor",
+          "repository_role": "write or maintain; under DP-05 = human_integrator_sole_main_bypass also the sole RS-main-integrator bypass actor: the only member of the dedicated integrator Team (organization repository) or the owner holding the admin role (personal repository)",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
           "bypass_account_credentials": {
@@ -3402,11 +3421,11 @@
       "options": [
         {
           "id": "org_owned",
-          "effect": "Project projection can use an App (organization 'Projects') or a FG PAT (organization_projects)"
+          "effect": "Project projection can use an App (organization 'Projects') or a FG PAT (organization_projects). The RS-main-integrator bypass actor is a dedicated integrator Team whose only member is the accountable human (actor_type Team, S-gh-rest-rules)"
         },
         {
           "id": "user_owned",
-          "effect": "Only classic PAT/OAuth 'project' is documented; a separate broad credential is required for projection and its exposure must be stated. That classic token must carry only Project scopes ('project' or 'read:project'): never 'repo' or 'public_repo', both of which grant code write and therefore merge (S-gh-oauth-scopes; the bootstrap repository is public). harness doctor (P10) must verify the X-OAuth-Scopes header. It may then belong to the maintainer, who is the RS-main-integrator bypass actor, or to a separate collaborator account"
+          "effect": "Only classic PAT/OAuth 'project' is documented; a separate broad credential is required for projection and its exposure must be stated. That classic token must carry only Project scopes ('project' or 'read:project'): never 'repo' or 'public_repo', both of which grant code write and therefore merge (S-gh-oauth-scopes; the bootstrap repository is public). harness doctor (P10) must verify the X-OAuth-Scopes header. It may then belong to the maintainer, who is the RS-main-integrator bypass actor through the repository admin role (actor_type RepositoryRole), or to a separate collaborator account"
         }
       ],
       "recommended": "org_owned",
@@ -3498,7 +3517,7 @@
         },
         {
           "id": "human_integrator_sole_main_bypass",
-          "effect": "Only the human integrator is a bypass actor, only on RS-main-integrator, only in bypass_mode pull_request ('an actor can only bypass rules on pull requests', S-gh-rest-rules); every human merge is an audited bypass through a pull request. No bypass on RS-main (pull request and trusted-CI checks still apply to the human), RS-state-* or RS-candidates-*. No App, deploy key or machine account is a bypass actor, and no machine credential that carries Contents write may belong to the bypassing account (a classic token carrying only Project scopes, never 'repo' or 'public_repo', for a user-owned Project is the documented exemption; see bypass_account_credentials)"
+          "effect": "Only the human integrator is a bypass actor, only on RS-main-integrator, only in bypass_mode pull_request. The actor depends on DP-01: on an organization repository a dedicated integrator Team whose only member is the accountable human (actor_type Team); on a personal repository the repository admin role, held only by the owner (actor_type RepositoryRole; U-PM-01). A RepositoryRole bypass on an organization repository is not used because it covers every holder of that role (other admins or maintainers) ('an actor can only bypass rules on pull requests', S-gh-rest-rules); every human merge is an audited bypass through a pull request. No bypass on RS-main (pull request and trusted-CI checks still apply to the human), RS-state-* or RS-candidates-*. No App, deploy key or machine account is a bypass actor, and no machine credential that carries Contents write may belong to the bypassing account (a classic token carrying only Project scopes, never 'repo' or 'public_repo', for a user-owned Project is the documented exemption; see bypass_account_credentials)"
         },
         {
           "id": "keep_admin_bypass_as_visible_override",
@@ -3616,7 +3635,7 @@
               "option": "human_integrator_sole_main_bypass"
             }
           ],
-          "effect": "RS-main-integrator restricts updates of main to the human integrator's pull_request-mode bypass; RS-main keeps pull request and trusted-CI checks with 0 required approvals for a single maintainer (>= 1 once a second human exists). A machine Contents-write holder (supervisor-runtime, actions-publisher-fallback) cannot merge before or after a human approval. Enforcement status: the rule names and bypass modes are documented; that Restrict updates refuses pull-request merges by non-bypass actors is an inference to be proven by P02a F-APPROVE (U-PM-14, U-PM-01, U-PE-08). Until then merge_main rests on trusted code and audit"
+          "effect": "RS-main-integrator restricts updates of main to the human integrator's pull_request-mode bypass (a one-member Team on organization repositories, the admin role on personal repositories; DP-05); RS-main keeps pull request and trusted-CI checks with 0 required approvals for a single maintainer (>= 1 once a second human exists). A machine Contents-write holder (supervisor-runtime, actions-publisher-fallback) cannot merge before or after a human approval. Enforcement status: the rule names and bypass modes are documented; that Restrict updates refuses pull-request merges by non-bypass actors is an inference to be proven by P02a F-APPROVE (U-PM-14, U-PM-01, U-PM-15, U-PE-08). Until then merge_main rests on trusted code and audit"
         },
         {
           "id": "approvals_only",
@@ -3705,7 +3724,7 @@
       "DP-06": "not applicable (no App)",
       "DP-07": "public_any_plan",
       "DP-09": "not applicable (human-operated, no reducer)",
-      "DP-10": "undecided; single maintainer, so RS-main needs 0 required approvals and RS-main-integrator needs the maintainer as sole pull_request-mode bypass actor (recommended)",
+      "DP-10": "undecided; single maintainer on a personal repository, so RS-main needs 0 required approvals and RS-main-integrator needs the maintainer, through the admin RepositoryRole (U-PM-01), as sole pull_request-mode bypass actor (recommended)",
       "DP-11": "undecided; applies only if P02a F-APPROVE fails"
     },
     "autonomous_execution": false,

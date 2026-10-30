@@ -278,13 +278,14 @@
           "type": "array",
           "items": {
             "type": "object",
-            "required": ["actor_type", "actor", "bypass_mode", "when"],
+            "required": ["actor_type", "actor", "bypass_mode", "when", "owner_condition"],
             "additionalProperties": false,
             "properties": {
               "actor_type": {"type": "string"},
               "actor": {"type": "string", "minLength": 1},
               "bypass_mode": {"type": "string"},
-              "when": {"$ref": "#/$defs/decision_ref"}
+              "when": {"$ref": "#/$defs/decision_ref"},
+              "owner_condition": {"$ref": "#/$defs/decision_ref"}
             }
           }
         },

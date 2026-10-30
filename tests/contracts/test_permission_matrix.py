@@ -471,6 +471,24 @@ class RulesetContentTests(Fixtures):
             self.assertEqual(actor["bypass_mode"], "pull_request")
             self.assertIn(actor["when"], requirements, "the bypass must be enabled by the recommended options")
             self.assertEqual(points[actor["when"]["decision_point"]]["recommended"], actor["when"]["option"])
+        # Exactly one human-only bypass per repository owner type (DP-01): a one-member Team on an
+        # organization repository, the admin RepositoryRole on a personal repository. A RepositoryRole
+        # bypass on an organization repository would cover every holder of that role.
+        owner_point = [p for p in points.values() if p["parameter"] == "project_owner"][0]
+        expected_type = {"org_owned": "Team", "user_owned": "RepositoryRole"}
+        self.assertEqual({o["id"] for o in owner_point["options"]}, set(expected_type))
+        for option_id, actor_type in expected_type.items():
+            matching = [a for a in integrator["conditional_bypass_actors"]
+                        if a["owner_condition"] == {"decision_point": owner_point["id"], "option": option_id}]
+            self.assertEqual(len(matching), 1, "exactly one bypass for %s" % option_id)
+            self.assertEqual(matching[0]["actor_type"], actor_type, option_id)
+        self.assertEqual(len(integrator["conditional_bypass_actors"]), len(expected_type),
+                         "no bypass beyond one per owner type")
+        machine_types = {"Integration", "DeployKey", "User"}
+        for ruleset in rulesets.values():
+            if "refs/heads/main" in ruleset["target_refs"]:
+                for actor in ruleset["bypass_actors"] + ruleset.get("conditional_bypass_actors", []):
+                    self.assertNotIn(actor["actor_type"], machine_types, ruleset["id"])
         self.assertEqual(rulesets["RS-main"]["bypass_actors"], [])
         self.assertNotIn("conditional_bypass_actors", rulesets["RS-main"],
                          "a bypass on RS-main would also skip the pull-request and trusted-CI rules")
@@ -555,6 +573,7 @@ class RulesetContentTests(Fixtures):
                 self.assertIn(actor["actor_type"], HUMAN_BYPASS_ACTOR_TYPES)
                 self.assertEqual(actor["bypass_mode"], "pull_request")
                 self.assertIn(actor["when"]["option"], points[actor["when"]["decision_point"]])
+                self.assertIn(actor["owner_condition"]["option"], points[actor["owner_condition"]["decision_point"]])
 
     def test_recommended_options_are_mutually_consistent(self):
         points = {p["id"]: p for p in self.matrix["decision_points"]}

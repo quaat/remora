@@ -612,6 +612,19 @@
         "handoff-P02a.md",
         "README.md"
       ]
+    },
+    {
+      "id": "U-PM-15",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "whether a Team bypass actor on an organization repository's ruleset lets only that Team's members bypass in pull_request mode, so that another holder of the same repository role who is not in the Team cannot merge",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
     }
   ]
 }

@@ -20,8 +20,8 @@ explicit rejection criteria, and forbids two coequal schedulers (plan sections 1
   worker was found (`upstream-surfaces.md` §1.5). Its specs are working drafts and a
   moving remote `compat.json` can disable pinned workflows (§1.1).
 - GitHub tokens have no branch dimension; branch authority comes from rulesets and the
-  trusted publisher, and only GitHub Apps are documented as single-actor bypass entries
-  (`runtime-and-identities.md` §A.0, §D).
+  trusted publisher, and only GitHub Apps are documented as single-machine-actor bypass
+  entries (`runtime-and-identities.md` §A.0, §D).
 - REST ref updates have no expected-old value; `updateRefs` (`beforeOid`),
   `createCommitOnBranch` (`expectedHeadOid`) and `git push --force-with-lease=<ref>:<expect>`
   document expected-old semantics, but none has been tested under races (§C).
