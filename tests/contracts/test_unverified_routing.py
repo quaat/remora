@@ -154,6 +154,15 @@ class DocumentConsistencyTests(unittest.TestCase):
             for reference in ("DP-10", "U-PM-14", "DP-11"):
                 self.assertIn(reference, note)
         self.assertIn("Superseded 2026-10-30", text)
+        # The superseded originals stay visible, not silently rewritten.
+        b2_row = [line for line in text.splitlines() if line.startswith("| `main`: no write |")]
+        self.assertEqual(len(b2_row), 1)
+        for phrase in ("Require a pull request with ≥1 approval", "Without Pull requests write the App cannot approve",
+                       "Superseded 2026-10-30"):
+            self.assertIn(phrase, b2_row[0])
+        b7 = section(text, r"^### B\.7 human-integrator.*$")
+        self.assertIn('Remove "Repository admins"\n  from the bypass list', b7)
+        self.assertIn("is superseded", b7)
 
     def test_every_matrix_decision_point_is_a_readme_question(self):
         readme = read(P01 / "README.md")

@@ -930,7 +930,21 @@
             "exempt_credential_types": [
               "classic_pat"
             ],
-            "note": "Credentials of the RS-main-integrator bypass account are forbidden, except a classic token limited to the 'project' scope (no 'repo', hence no Contents write) for a user-owned Project (DP-01 = user_owned), whose natural holder is the owning maintainer. Alternative: a separate collaborator account without admin role holds that token. Either way the credential cannot merge."
+            "note": "Credentials of the RS-main-integrator bypass account are forbidden, except a classic token that carries only Project scopes ('project' or 'read:project'; never 'repo' or 'public_repo', both of which grant code write and so merge, per S-gh-oauth-scopes) for a user-owned Project (DP-01 = user_owned), whose natural holder is the owning maintainer. harness doctor (P10) verifies the X-OAuth-Scopes header. Alternative: a separate collaborator account without admin role holds that token. Either way the credential cannot merge.",
+            "exempt_scope_rule": {
+              "allowed_scopes": [
+                "project",
+                "read:project"
+              ],
+              "excluded_scopes": [
+                "repo",
+                "public_repo",
+                "workflow"
+              ],
+              "rule": "The exempt classic token may carry only Project scopes ('project' or 'read:project'). 'repo' grants read/write access to code in all repositories and 'public_repo' grants read/write access to code in public repositories (quaat/remora is public), so either would allow a merge; 'workflow' adds workflow-file writes. Any scope other than the allowed Project scopes voids the exemption. gh OAuth tokens cannot qualify: their minimum scopes include 'repo' (S-gh-cli-auth-login).",
+              "verification": "harness doctor (P10) must check that the token's X-OAuth-Scopes response header ('lists the scopes your token has authorized') contains only the allowed Project scopes, and refuse the profile otherwise",
+              "source": "S-gh-oauth-scopes (re-read 2026-10-30T00:45:58Z)"
+            }
           },
           "scope": {
             "repository_selection": [
@@ -1696,7 +1710,21 @@
               "fine_grained_pat",
               "classic_pat"
             ],
-            "note": "The role holds no Contents write in any credential, so even a credential of the bypass account (for example the maintainer's project-only classic token for a user-owned Project) cannot merge. A separate collaborator account is the alternative."
+            "note": "The role holds no Contents write in any credential, so even a credential of the bypass account (for example the maintainer's classic token carrying only Project scopes, never 'repo' or 'public_repo', for a user-owned Project) cannot merge. harness doctor (P10) verifies the X-OAuth-Scopes header. A separate collaborator account is the alternative.",
+            "exempt_scope_rule": {
+              "allowed_scopes": [
+                "project",
+                "read:project"
+              ],
+              "excluded_scopes": [
+                "repo",
+                "public_repo",
+                "workflow"
+              ],
+              "rule": "The exempt classic token may carry only Project scopes ('project' or 'read:project'). 'repo' grants read/write access to code in all repositories and 'public_repo' grants read/write access to code in public repositories (quaat/remora is public), so either would allow a merge; 'workflow' adds workflow-file writes. Any scope other than the allowed Project scopes voids the exemption. gh OAuth tokens cannot qualify: their minimum scopes include 'repo' (S-gh-cli-auth-login).",
+              "verification": "harness doctor (P10) must check that the token's X-OAuth-Scopes response header ('lists the scopes your token has authorized') contains only the allowed Project scopes, and refuse the profile otherwise",
+              "source": "S-gh-oauth-scopes (re-read 2026-10-30T00:45:58Z)"
+            }
           },
           "scope": {
             "repository_selection": [
@@ -2463,7 +2491,21 @@
             "exempt_credential_types": [
               "classic_pat"
             ],
-            "note": "Credentials of the RS-main-integrator bypass account are forbidden, except a classic token limited to the 'project' scope (no 'repo', hence no Contents write) for a user-owned Project (DP-01 = user_owned), whose natural holder is the owning maintainer. Alternative: a separate collaborator account without admin role holds that token. Either way the credential cannot merge."
+            "note": "Credentials of the RS-main-integrator bypass account are forbidden, except a classic token that carries only Project scopes ('project' or 'read:project'; never 'repo' or 'public_repo', both of which grant code write and so merge, per S-gh-oauth-scopes) for a user-owned Project (DP-01 = user_owned), whose natural holder is the owning maintainer. harness doctor (P10) verifies the X-OAuth-Scopes header. Alternative: a separate collaborator account without admin role holds that token. Either way the credential cannot merge.",
+            "exempt_scope_rule": {
+              "allowed_scopes": [
+                "project",
+                "read:project"
+              ],
+              "excluded_scopes": [
+                "repo",
+                "public_repo",
+                "workflow"
+              ],
+              "rule": "The exempt classic token may carry only Project scopes ('project' or 'read:project'). 'repo' grants read/write access to code in all repositories and 'public_repo' grants read/write access to code in public repositories (quaat/remora is public), so either would allow a merge; 'workflow' adds workflow-file writes. Any scope other than the allowed Project scopes voids the exemption. gh OAuth tokens cannot qualify: their minimum scopes include 'repo' (S-gh-cli-auth-login).",
+              "verification": "harness doctor (P10) must check that the token's X-OAuth-Scopes response header ('lists the scopes your token has authorized') contains only the allowed Project scopes, and refuse the profile otherwise",
+              "source": "S-gh-oauth-scopes (re-read 2026-10-30T00:45:58Z)"
+            }
           },
           "scope": {
             "repository_selection": [
@@ -3228,7 +3270,21 @@
               "fine_grained_pat",
               "classic_pat"
             ],
-            "note": "The role holds no Contents write in any credential, so even a credential of the bypass account (for example the maintainer's project-only classic token for a user-owned Project) cannot merge. A separate collaborator account is the alternative."
+            "note": "The role holds no Contents write in any credential, so even a credential of the bypass account (for example the maintainer's classic token carrying only Project scopes, never 'repo' or 'public_repo', for a user-owned Project) cannot merge. harness doctor (P10) verifies the X-OAuth-Scopes header. A separate collaborator account is the alternative.",
+            "exempt_scope_rule": {
+              "allowed_scopes": [
+                "project",
+                "read:project"
+              ],
+              "excluded_scopes": [
+                "repo",
+                "public_repo",
+                "workflow"
+              ],
+              "rule": "The exempt classic token may carry only Project scopes ('project' or 'read:project'). 'repo' grants read/write access to code in all repositories and 'public_repo' grants read/write access to code in public repositories (quaat/remora is public), so either would allow a merge; 'workflow' adds workflow-file writes. Any scope other than the allowed Project scopes voids the exemption. gh OAuth tokens cannot qualify: their minimum scopes include 'repo' (S-gh-cli-auth-login).",
+              "verification": "harness doctor (P10) must check that the token's X-OAuth-Scopes response header ('lists the scopes your token has authorized') contains only the allowed Project scopes, and refuse the profile otherwise",
+              "source": "S-gh-oauth-scopes (re-read 2026-10-30T00:45:58Z)"
+            }
           },
           "scope": {
             "repository_selection": [
@@ -3350,7 +3406,7 @@
         },
         {
           "id": "user_owned",
-          "effect": "Only classic PAT/OAuth 'project' is documented; a separate broad credential is required for projection and its exposure must be stated. That token is limited to the 'project' scope (no 'repo', so no Contents write and no merge); it may belong to the maintainer, who is the RS-main-integrator bypass actor, or to a separate collaborator account"
+          "effect": "Only classic PAT/OAuth 'project' is documented; a separate broad credential is required for projection and its exposure must be stated. That classic token must carry only Project scopes ('project' or 'read:project'): never 'repo' or 'public_repo', both of which grant code write and therefore merge (S-gh-oauth-scopes; the bootstrap repository is public). harness doctor (P10) must verify the X-OAuth-Scopes header. It may then belong to the maintainer, who is the RS-main-integrator bypass actor, or to a separate collaborator account"
         }
       ],
       "recommended": "org_owned",
@@ -3442,7 +3498,7 @@
         },
         {
           "id": "human_integrator_sole_main_bypass",
-          "effect": "Only the human integrator is a bypass actor, only on RS-main-integrator, only in bypass_mode pull_request ('an actor can only bypass rules on pull requests', S-gh-rest-rules); every human merge is an audited bypass through a pull request. No bypass on RS-main (pull request and trusted-CI checks still apply to the human), RS-state-* or RS-candidates-*. No App, deploy key or machine account is a bypass actor, and no machine credential that carries Contents write may belong to the bypassing account (a project-only classic token for a user-owned Project is the documented exemption; see bypass_account_credentials)"
+          "effect": "Only the human integrator is a bypass actor, only on RS-main-integrator, only in bypass_mode pull_request ('an actor can only bypass rules on pull requests', S-gh-rest-rules); every human merge is an audited bypass through a pull request. No bypass on RS-main (pull request and trusted-CI checks still apply to the human), RS-state-* or RS-candidates-*. No App, deploy key or machine account is a bypass actor, and no machine credential that carries Contents write may belong to the bypassing account (a classic token carrying only Project scopes, never 'repo' or 'public_repo', for a user-owned Project is the documented exemption; see bypass_account_credentials)"
         },
         {
           "id": "keep_admin_bypass_as_visible_override",

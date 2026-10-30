@@ -205,7 +205,19 @@
           "properties": {
             "policy": {"enum": ["forbidden", "allowed_without_contents_write", "holder_is_bypass_account", "not_applicable"]},
             "exempt_credential_types": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/credential_type"}},
-            "note": {"type": "string", "minLength": 1}
+            "note": {"type": "string", "minLength": 1},
+            "exempt_scope_rule": {
+              "type": "object",
+              "required": ["allowed_scopes", "excluded_scopes", "rule", "verification", "source"],
+              "additionalProperties": false,
+              "properties": {
+                "allowed_scopes": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+                "excluded_scopes": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+                "rule": {"type": "string", "minLength": 1},
+                "verification": {"type": "string", "minLength": 1},
+                "source": {"type": "string", "minLength": 1}
+              }
+            }
           }
         },
         "scope": {"$ref": "#/$defs/scope"},

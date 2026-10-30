@@ -517,6 +517,34 @@ class RulesetContentTests(Fixtures):
                     relations = {(e["ruleset"], e["relation"]) for e in role["enforcement"]}
                     self.assertNotIn(("RS-main-integrator", "held_by_bypass_account"), relations, where)
 
+    def test_exempt_classic_token_carries_only_project_scopes(self):
+        """public_repo grants code write on public repositories, so it voids the exemption like repo."""
+        checked = 0
+        for name, placement in self.placements():
+            for role in placement["roles"]:
+                policy = role["bypass_account_credentials"]
+                if "classic_pat" not in policy["exempt_credential_types"]:
+                    continue
+                checked += 1
+                where = "%s/%s" % (name, role["id"])
+                rule = policy["exempt_scope_rule"]
+                self.assertLessEqual(set(rule["allowed_scopes"]), {"project", "read:project"}, where)
+                self.assertLessEqual({"repo", "public_repo"}, set(rule["excluded_scopes"]), where)
+                self.assertEqual(set(rule["allowed_scopes"]) & set(rule["excluded_scopes"]), set(), where)
+                self.assertIn("X-OAuth-Scopes", rule["verification"], where)
+                self.assertIn("P10", rule["verification"], where)
+                self.assertTrue(rule["source"].startswith("S-gh-oauth-scopes"), where)
+                for text in (policy["note"], rule["rule"]):
+                    self.assertIn("'repo'", text, where)
+                    self.assertIn("'public_repo'", text, where)
+                classic = [p for p in role["permissions"] if p["credential_type"] == "classic_pat"]
+                self.assertTrue(classic and all(p["resource"].startswith("projects_") for p in classic), where)
+        self.assertGreater(checked, 0)
+        user_owned = [o for p in self.matrix["decision_points"] if p["id"] == "DP-01"
+                      for o in p["options"] if o["id"] == "user_owned"][0]
+        for scope in ("'repo'", "'public_repo'", "X-OAuth-Scopes"):
+            self.assertIn(scope, user_owned["effect"])
+
     def test_conditional_bypass_is_human_only_and_audited(self):
         documented = self.evidence["rulesets"]
         points = {p["id"]: {o["id"] for o in p["options"]} for p in self.matrix["decision_points"]}
