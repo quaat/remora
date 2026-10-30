@@ -221,6 +221,40 @@
           }
         },
         "scope": {"$ref": "#/$defs/scope"},
+        "app_identity": {"enum": [null, "setup_app", "runtime_app", "supervisor_client_app", "ci_app", "projection_app"]},
+        "app_grant_rule": {
+          "type": "object",
+          "required": ["level", "covers", "rule", "verification", "sources"],
+          "additionalProperties": false,
+          "properties": {
+            "level": {"const": "registration_and_installation"},
+            "covers": {"const": "forbidden_permissions"},
+            "rule": {"type": "string", "minLength": 1},
+            "verification": {"type": "string", "minLength": 1},
+            "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_id"}}
+          }
+        },
+        "github_token_rule": {"type": "string", "minLength": 1},
+        "actions_job_binding": {
+          "type": "object",
+          "required": ["environment", "deployment_branches", "deployment_branch_rule", "secret_scope", "secret_rule",
+                       "admin_bypass_of_environment_rules", "runtime_ref_check", "dispatch_exposure", "availability",
+                       "sources", "unverified"],
+          "additionalProperties": false,
+          "properties": {
+            "environment": {"type": "string", "minLength": 1},
+            "deployment_branches": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+            "deployment_branch_rule": {"type": "string", "minLength": 1},
+            "secret_scope": {"const": "environment_secret"},
+            "secret_rule": {"type": "string", "minLength": 1},
+            "admin_bypass_of_environment_rules": {"const": "disabled"},
+            "runtime_ref_check": {"type": "string", "minLength": 1},
+            "dispatch_exposure": {"type": "string", "minLength": 1},
+            "availability": {"type": "string", "minLength": 1},
+            "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_id"}},
+            "unverified": {"type": "array", "items": {"type": "string"}}
+          }
+        },
         "authorities": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/capability"}},
         "must_not_have": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
         "enforcement": {"type": "array", "items": {"$ref": "#/$defs/enforcement"}},
@@ -269,7 +303,8 @@
             "properties": {
               "actor_type": {"type": "string"},
               "actor": {"type": "string", "minLength": 1},
-              "bypass_mode": {"type": "string"}
+              "bypass_mode": {"type": "string"},
+              "app_identity": {"enum": ["dedicated_runtime_app"]}
             }
           }
         },
@@ -285,7 +320,8 @@
               "actor": {"type": "string", "minLength": 1},
               "bypass_mode": {"type": "string"},
               "when": {"$ref": "#/$defs/decision_ref"},
-              "owner_condition": {"$ref": "#/$defs/decision_ref"}
+              "owner_condition": {"$ref": "#/$defs/decision_ref"},
+              "doctor_check": {"type": "string", "minLength": 1}
             }
           }
         },
@@ -339,6 +375,7 @@
               "main_rulesets": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^RS-[a-z-]+$"}},
               "main_update_restricted": {"type": "boolean"},
               "machine_can_merge_without_bypass": {"type": "boolean"},
+              "candidate_can_post_required_check": {"type": "boolean"},
               "requires": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/decision_ref"}}
             }
           }

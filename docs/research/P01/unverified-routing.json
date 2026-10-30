@@ -603,7 +603,7 @@
       "id": "U-PM-14",
       "source": "contracts/permission-matrix.v1.json",
       "source_ref": "rulesets[RS-main-integrator].unverified",
-      "text": "whether Restrict updates on main refuses pull-request merges (web UI, PUT .../pulls/{pull_number}/merge, PUT .../merge-async) and POST .../merges by actors without bypass, and lets a pull_request-mode bypass actor complete a pull-request merge",
+      "text": "whether Restrict updates on main refuses pull-request merges (web UI, PUT .../pulls/{pull_number}/merge, PUT .../merge-async, GraphQL mergePullRequest, and auto-merge enabled with GraphQL enablePullRequestAutoMerge) and POST .../merges by actors without bypass, and lets a pull_request-mode bypass actor complete a pull-request merge",
       "routed_to": [
         "P02a (F-APPROVE)",
         "human DP-11 if it fails"
@@ -618,6 +618,45 @@
       "source": "contracts/permission-matrix.v1.json",
       "source_ref": "rulesets[RS-main-integrator].unverified",
       "text": "whether a Team bypass actor on an organization repository's ruleset lets only that Team's members bypass in pull_request mode, so that another holder of the same repository role who is not in the Team cannot merge",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-16",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "a workflow_dispatch of the reducer workflow on a non-default ref (for example agent/**) must be refused by the environment's deployment-branch rule, so that the job does not obtain the environment secret, and the in-workflow ref check must also refuse it",
+      "routed_to": [
+        "P02a (F-DISPATCH-REF; Actions placement only)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-17",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "fine-grained PAT / App permission required by GraphQL mergePullRequest and enablePullRequestAutoMerge (mutations documented in S-gh-graphql-pulls; permissions not tabulated); presumed to include Contents write, so they are treated as merge paths",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-18",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "whether a Team bypass actor on a ruleset also covers members of that Team's child teams (child teams inherit the parent's access permissions, S-gh-about-teams; bypass inheritance is not stated)",
       "routed_to": [
         "P02a (F-APPROVE)"
       ],

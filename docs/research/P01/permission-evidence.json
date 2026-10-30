@@ -338,6 +338,36 @@
    "url": "https://docs.github.com/en/rest/pulls/pulls",
    "title": "REST API endpoints for pull requests (added during P01 review round 1: 'Merge a pull request' PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge and 'Merge a pull request asynchronously' PUT .../merge-async; required permissions are listed in S-gh-fgpat under Contents write: merge, merge-async and POST /repos/{owner}/{repo}/merges, with no additional permission)",
    "accessed_at": "2026-10-30T00:31:16Z"
+  },
+  {
+   "id": "S-gh-actions-environments",
+   "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments",
+   "title": "Deployments and environments (added during P01 internal check 6; quotes: 'The deployment branch or tag rule is matched against the GITHUB_REF of the workflow run'; 'Secrets stored in an environment are only available to workflow jobs that reference the environment'; 'Allowing administrators to bypass protection rules is only available for public repositories for users on GitHub Free, GitHub Pro, and GitHub Team plans'; deployment branches and tags are available for all public repositories, and for private repositories on GitHub Pro or GitHub Team)",
+   "accessed_at": "2026-10-30T01:03:12Z"
+  },
+  {
+   "id": "S-gh-rest-apps",
+   "url": "https://docs.github.com/en/rest/apps/apps",
+   "title": "REST API endpoints for GitHub Apps (added during P01 internal check 6; 'Get a repository installation for the authenticated app' GET /repos/{owner}/{repo}/installation, JWT required; the installation response schema has a required 'permissions' field)",
+   "accessed_at": "2026-10-30T01:03:46Z"
+  },
+  {
+   "id": "S-gh-graphql-pulls",
+   "url": "https://docs.github.com/en/graphql/reference/pulls",
+   "title": "GraphQL reference, pull requests (added during P01 internal check 6; mutations 'mergePullRequest' ('Merge a pull request.') and 'enablePullRequestAutoMerge' ('Enable the default auto-merge on a pull request.'); required fine-grained/App permissions not stated there)",
+   "accessed_at": "2026-10-30T01:03:46Z"
+  },
+  {
+   "id": "S-gh-about-teams",
+   "url": "https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams",
+   "title": "About organization teams (added during P01 internal check 6; quotes: 'Organization owners and team maintainers can give teams admin, read, or write access to organization repositories'; 'Child teams inherit the parent's access permissions')",
+   "accessed_at": "2026-10-30T01:03:12Z"
+  },
+  {
+   "id": "S-gh-rest-teams",
+   "url": "https://docs.github.com/en/rest/teams/members",
+   "title": "REST API endpoints for team members and teams (added during P01 internal check 6; 'List team members' GET /orgs/{org}/teams/{team_slug}/members: 'Team members will include the members of child teams' with an inherited flag; 'List child teams' GET /orgs/{org}/teams/{team_slug}/teams, documented at https://docs.github.com/en/rest/teams/teams)",
+   "accessed_at": "2026-10-30T01:03:46Z"
   }
  ],
  "permissions": [

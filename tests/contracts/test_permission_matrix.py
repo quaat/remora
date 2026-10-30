@@ -617,6 +617,102 @@ class ScopeTests(Fixtures):
                 self.assertTrue(any("user-owned" in c for c in role["scope"]["caveats"]), role["id"])
 
 
+class ActionsPlacementAndAppIdentityTests(Fixtures):
+    """Internal check 6: dispatch-ref binding, GITHUB_TOKEN never a writer, App grants, CI exposure."""
+
+    def role(self, placement, role_id):
+        return [r for r in self.matrix["placements"][placement]["roles"] if r["id"] == role_id][0]
+
+    def point(self, point_id):
+        return [p for p in self.matrix["decision_points"] if p["id"] == point_id][0]
+
+    def test_reducer_job_is_bound_to_a_default_branch_environment(self):
+        publisher = self.role("actions_hosted", "actions-publisher-fallback")
+        binding = publisher["actions_job_binding"]
+        self.assertEqual(binding["deployment_branches"], ["refs/heads/main"])
+        self.assertEqual(binding["secret_scope"], "environment_secret")
+        self.assertEqual(binding["admin_bypass_of_environment_rules"], "disabled")
+        self.assertLessEqual({"S-gh-actions-environments", "S-gh-actions-events"}, set(binding["sources"]))
+        self.assertLessEqual(set(binding["sources"]), self.source_ids)
+        self.assertIn("U-PM-16", binding["unverified"])
+        self.assertTrue(any(u.startswith("U-PM-16: ") for u in publisher["unverified"]))
+        self.assertTrue(any("GITHUB_REF other than the default branch" in m for m in publisher["must_not_have"]))
+        supervisor = self.role("actions_hosted", "supervisor-runtime")
+        self.assertTrue(any(m.startswith("selecting the ref of a reducer run") for m in supervisor["must_not_have"]))
+        accept = [o for o in self.point("DP-06")["options"] if o["id"] == "accept"][0]
+        self.assertIn("environment secret", accept["effect"])
+        self.assertIn("EXPOSURE", accept["effect"])
+        actions = [o for o in self.point("DP-09")["options"] if o["id"] == "actions_hosted"][0]
+        self.assertIn("actions_job_binding", actions["effect"])
+
+    def test_github_actions_app_is_never_a_writer(self):
+        for name, placement in self.placements():
+            for role in placement["roles"]:
+                token_writes = [p for p in role["permissions"] if p["credential_type"] == "github_token"
+                                and p["resource"] == "contents" and p["level"] in ("write", "full")]
+                self.assertEqual(token_writes, [], "%s/%s" % (name, role["id"]))
+        for ruleset in self.matrix["rulesets"]:
+            for actor in ruleset["bypass_actors"] + ruleset.get("conditional_bypass_actors", []):
+                if actor["actor_type"] == "Integration":
+                    self.assertEqual(actor.get("app_identity"), "dedicated_runtime_app", ruleset["id"])
+                    self.assertIn("Never the GitHub Actions App", actor["actor"], ruleset["id"])
+        rule = self.role("actions_hosted", "actions-publisher-fallback")["github_token_rule"]
+        for fragment in ("never a state or candidate writer", "S-gh-actions-token", "S-gh-workflow-permissions"):
+            self.assertIn(fragment, rule)
+
+    def test_app_grants_are_registration_level_and_identities_distinct(self):
+        for name, placement in self.placements():
+            identities = []
+            for role in placement["roles"]:
+                where = "%s/%s" % (name, role["id"])
+                uses_app = "github_app_installation" in role["credential_types"]
+                self.assertEqual(role["app_identity"] is not None, uses_app, where)
+                if uses_app:
+                    identities.append(role["app_identity"])
+                if uses_app and role["phase"] == "runtime":
+                    grant = role["app_grant_rule"]
+                    self.assertEqual(grant["level"], "registration_and_installation", where)
+                    self.assertEqual(grant["covers"], "forbidden_permissions", where)
+                    self.assertTrue(role["forbidden_permissions"], where)
+                    self.assertLessEqual({"S-gh-app-iat", "S-gh-rest-apps"}, set(grant["sources"]), where)
+                    self.assertIn("P10", grant["verification"], where)
+                    self.assertIn("/installation", grant["verification"], where)
+                if role["id"] == "setup-operator":
+                    self.assertNotIn("app_grant_rule", role)
+            self.assertEqual(len(identities), len(set(identities)), "%s: App identities must be distinct per role" % name)
+            roles = {r["id"]: r for r in placement["roles"]}
+            writer = [r for r in placement["roles"] if "state_branch_write" in r["authorities"]][0]
+            self.assertEqual(writer["app_identity"], "runtime_app", name)
+            self.assertNotEqual(roles["setup-operator"]["app_identity"], writer["app_identity"], name)
+
+    def test_ci_identity_exposure_is_explicit(self):
+        point = self.point("DP-03")
+        for option in point["options"]:
+            self.assertIsInstance(option["candidate_can_post_required_check"], bool, option["id"])
+            self.assertEqual("EXPOSURE" in option["effect"], option["candidate_can_post_required_check"], option["id"])
+        recommended = [o for o in point["options"] if o["id"] == point["recommended"]][0]
+        self.assertFalse(recommended["candidate_can_post_required_check"])
+        self.assertIn("S-gh-workflow-permissions", point["sources"])
+
+    def test_team_bypass_requires_single_member_without_child_teams(self):
+        integrator = self.rulesets()["RS-main-integrator"]
+        team = [a for a in integrator["conditional_bypass_actors"] if a["actor_type"] == "Team"][0]
+        self.assertIn("no child teams", team["doctor_check"])
+        self.assertIn("single direct member", team["doctor_check"])
+        for source in ("S-gh-about-teams", "S-gh-rest-teams"):
+            self.assertIn(source, team["actor"])
+            self.assertIn(source, integrator["sources"])
+        self.assertTrue(any(u.startswith("U-PM-18: ") for u in integrator["unverified"]))
+        self.assertTrue(any("mergePullRequest" in u and "enablePullRequestAutoMerge" in u
+                            for u in integrator["unverified"] if u.startswith("U-PM-14: ")))
+
+    def test_pull_request_mode_quote_follows_the_mode_statement(self):
+        option = [o for o in self.point("DP-05")["options"] if o["id"] == "human_integrator_sole_main_bypass"][0]
+        self.assertIn("only in bypass_mode pull_request ('an actor can only bypass rules on pull requests', "
+                      "S-gh-rest-rules)", option["effect"])
+        self.assertEqual(option["effect"].count("an actor can only bypass rules on pull requests"), 1)
+
+
 class MainRulesetTests(Fixtures):
     """(6) Contents write includes merge, so every holder declares the main ruleset."""
 
