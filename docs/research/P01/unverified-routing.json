@@ -438,7 +438,7 @@
     {
       "id": "U-PM-01",
       "source": "contracts/permission-matrix.v1.json",
-      "source_ref": "rulesets[RS-main].unverified",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
       "text": "whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
       "routed_to": [
         "P02a (F-APPROVE)"
@@ -593,6 +593,20 @@
       "text": "latency/cost of an Actions job per transition (P02a measurement)",
       "routed_to": [
         "P02a (measured quantities)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-14",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "whether Restrict updates on main refuses pull-request merges (web UI, PUT .../pulls/{pull_number}/merge, PUT .../merge-async) and POST .../merges by actors without bypass, and lets a pull_request-mode bypass actor complete a pull-request merge",
+      "routed_to": [
+        "P02a (F-APPROVE)",
+        "human DP-11 if it fails"
       ],
       "documented_in": [
         "handoff-P02a.md",

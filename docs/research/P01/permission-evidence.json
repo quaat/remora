@@ -332,6 +332,12 @@
    "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews",
    "title": "Approving a pull request with required reviews (added during P01 rework; quote: 'Pull request authors cannot approve their own pull requests.')",
    "accessed_at": "2026-10-30T00:02:55Z"
+  },
+  {
+   "id": "S-gh-rest-pulls",
+   "url": "https://docs.github.com/en/rest/pulls/pulls",
+   "title": "REST API endpoints for pull requests (added during P01 review round 1: 'Merge a pull request' PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge and 'Merge a pull request asynchronously' PUT .../merge-async; required permissions are listed in S-gh-fgpat under Contents write: merge, merge-async and POST /repos/{owner}/{repo}/merges, with no additional permission)",
+   "accessed_at": "2026-10-30T00:31:16Z"
   }
  ],
  "permissions": [

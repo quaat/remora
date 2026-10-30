@@ -189,7 +189,7 @@
     },
     {
       "id": "integration",
-      "record": "refs/heads/main via a reviewed pull request",
+      "record": "refs/heads/main via a reviewed pull request, merged only by the human integrator through the RS-main-integrator pull_request-mode bypass (DP-10; enforcement on pull-request merges unverified, U-PM-14)",
       "authoritative": true,
       "required_capability": "merge_main"
     },
@@ -321,7 +321,7 @@
       ],
       "bypass_actors": [],
       "parameters": {
-        "required_approving_review_count": "per DP-10: >= 1 under the recommended options (0 only with option zero_approvals_pr_required, which lets any Contents-write holder merge)",
+        "required_approving_review_count": "0 for a single maintainer (pull request authors cannot approve their own pull requests, S-gh-pr-approve-required); >= 1 when a second human maintainer exists. The approval count does not stop machine merges; RS-main-integrator does",
         "required_status_checks.integration_id": "trusted-CI App (DP-03)"
       },
       "sources": [
@@ -331,19 +331,44 @@
       ],
       "unverified": [
         "U-PE-09: whether an App review counts toward required approvals",
-        "U-PM-01: whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
         "U-PM-04: admin bypass removal on a user-owned repository (DP-05)"
+      ]
+    },
+    {
+      "id": "RS-main-integrator",
+      "target_refs": [
+        "refs/heads/main"
       ],
+      "rules": [
+        "update"
+      ],
+      "bypass_actors": [],
       "conditional_bypass_actors": [
         {
           "actor_type": "RepositoryRole",
-          "actor": "repository admin role (the human maintainer)",
+          "actor": "the human integrator only: repository admin role on a user-owned repository whose only admin is the maintainer, or a dedicated integrator Team in an organization",
           "bypass_mode": "pull_request",
           "when": {
             "decision_point": "DP-05",
-            "option": "admin_bypass_main_pull_request_mode_only"
+            "option": "human_integrator_sole_main_bypass"
           }
         }
+      ],
+      "parameters": {
+        "update_allows_fetch_and_merge": false,
+        "purpose": "Restrict updates: 'only users with bypass permissions can push to' main (S-gh-rules-available). Contents write includes PUT .../pulls/{pull_number}/merge, PUT .../merge-async and POST .../merges (S-gh-fgpat, S-gh-rest-pulls), so without this rule any Contents-write identity can merge an approved, green pull request. Kept separate from RS-main so that the human's bypass does not also skip RS-main's pull-request and required-check rules (bypass applies to the rules in its own ruleset; multiple rulesets aggregate, S-gh-rules-about)"
+      },
+      "sources": [
+        "S-gh-rules-available",
+        "S-gh-rules-about",
+        "S-gh-rest-rules",
+        "S-gh-fgpat",
+        "S-gh-rest-pulls"
+      ],
+      "unverified": [
+        "U-PM-14: whether Restrict updates on main refuses pull-request merges (web UI, PUT .../pulls/{pull_number}/merge, PUT .../merge-async) and POST .../merges by actors without bypass, and lets a pull_request-mode bypass actor complete a pull-request merge",
+        "U-PM-01: whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
+        "U-PE-08: two-ruleset layout (bypass of RS-main-integrator must leave RS-main's pull-request and required-check rules enforced for the human)"
       ]
     }
   ],
@@ -531,6 +556,10 @@
             {
               "ruleset": "RS-candidates-immutable",
               "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main-integrator",
+              "relation": "subject_to"
             }
           ],
           "secret_holder": "accountable human operator session on a trusted workstation, used only for init/import; never a supervisor runtime store or sandbox",
@@ -548,7 +577,7 @@
             "U-PE-11: classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
             "U-PE-03: whether an App can access a user-owned Project (no permission found)"
           ],
-          "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime.",
+          "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime. The setup credential is the human's own and, if the human is the RS-main-integrator bypass actor, can merge to main; it is used only during init and never by automation.",
           "forbidden_permissions": [],
           "scope": {
             "repository_selection": [
@@ -792,7 +821,8 @@
             "Workflows write unless DP-04 = allow_with_workflows_write",
             "classic repo scope at runtime (repository-wide, all repositories of the user)",
             "the setup-operator credential",
-            "exposure to any model sandbox, environment variable, image layer or credential proxy reachable by a model"
+            "exposure to any model sandbox, environment variable, image layer or credential proxy reachable by a model",
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
           ],
           "enforcement": [
             {
@@ -814,6 +844,10 @@
             {
               "ruleset": "RS-main",
               "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main-integrator",
+              "relation": "subject_to"
             }
           ],
           "secret_holder": "enrolled trusted supervisor host, outside every sandbox: App private key (or FG PAT) in a host secret store; installation tokens minted per use",
@@ -830,7 +864,7 @@
             "U-PE-08: two-ruleset layout: bypass of RS-state-writers leaves RS-state-immutable enforced for the same actor",
             "U-PE-07: ruleset enforcement parity across REST, GraphQL and git push",
             "U-PE-01: FG PAT holder as bypass actor via REST actor_type User",
-            "U-PE-09: whether an App pull request review counts toward required approvals on main (relevant if DP-08 = supervisor_opens_pr, or if DP-10 were to rely on an App approval; not recommended)",
+            "U-PE-09: whether an App pull request review counts toward required approvals on main (relevant if DP-08 = supervisor_opens_pr; DP-10 does not rely on App approvals)",
             "U-PM-05: classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository"
           ],
           "notes": "Every enrolled supervisor runs the same pinned reducer; they are concurrent clients of one state branch, not separate ledgers. Fine-grained PATs cannot read the Checks API (S-gh-pat-manage), so a FG-PAT supervisor cannot read trusted-CI check runs; that profile needs DP-02 = github_app for P09.",
@@ -1307,7 +1341,8 @@
             "Contents write",
             "any ruleset bypass",
             "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
-            "candidate-controlled workflow definitions or credentials exposed to candidate code"
+            "candidate-controlled workflow definitions or credentials exposed to candidate code",
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
           ],
           "enforcement": [
             {
@@ -1420,7 +1455,7 @@
           ],
           "must_not_have": [
             "auto-merge",
-            "any ruleset bypass except the RS-main pull_request-mode admin bypass under DP-05 = admin_bypass_main_pull_request_mode_only (or all lists under keep_admin_bypass_as_visible_override)",
+            "any ruleset bypass except the RS-main-integrator pull_request-mode bypass under DP-05 = human_integrator_sole_main_bypass (or all lists under keep_admin_bypass_as_visible_override)",
             "bypass_mode exempt (no audit entry)",
             "own credentials inside any sandbox or supervisor"
           ],
@@ -1428,6 +1463,10 @@
             {
               "ruleset": "RS-main",
               "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main-integrator",
+              "relation": "conditional_bypass_actor"
             }
           ],
           "secret_holder": "the human's own GitHub account",
@@ -1440,7 +1479,7 @@
           "unverified": [
             "U-PM-04: whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
-          "repository_role": "write or maintain; admin when DP-05 grants the RS-main pull_request-mode bypass (single maintainer, DP-10)",
+          "repository_role": "write or maintain; admin (or integrator Team member) when DP-05 = human_integrator_sole_main_bypass makes the human the sole RS-main-integrator bypass actor",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
           "scope": {
@@ -1550,7 +1589,8 @@
             "renewing, reclaiming or releasing leases",
             "acknowledging authoritative outbox/pending-effect state",
             "any ruleset bypass",
-            "classic repo scope"
+            "classic repo scope",
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
           ],
           "enforcement": [
             {
@@ -1906,6 +1946,10 @@
             {
               "ruleset": "RS-candidates-immutable",
               "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main-integrator",
+              "relation": "subject_to"
             }
           ],
           "secret_holder": "accountable human operator session on a trusted workstation, used only for init/import; never a supervisor runtime store or sandbox",
@@ -1923,7 +1967,7 @@
             "U-PE-11: classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
             "U-PE-03: whether an App can access a user-owned Project (no permission found)"
           ],
-          "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime.",
+          "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime. The setup credential is the human's own and, if the human is the RS-main-integrator bypass actor, can merge to main; it is used only during init and never by automation.",
           "forbidden_permissions": [],
           "scope": {
             "repository_selection": [
@@ -2039,7 +2083,8 @@
             "Checks write",
             "any ruleset bypass",
             "the setup-operator credential",
-            "exposure to any model sandbox"
+            "exposure to any model sandbox",
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
           ],
           "enforcement": [
             {
@@ -2265,7 +2310,8 @@
             "Administration write",
             "Checks write",
             "bypass on RS-main or on any *-immutable ruleset",
-            "a second reducer running beside supervisor-hosted reducers"
+            "a second reducer running beside supervisor-hosted reducers",
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
           ],
           "enforcement": [
             {
@@ -2286,6 +2332,10 @@
             },
             {
               "ruleset": "RS-main",
+              "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main-integrator",
               "relation": "subject_to"
             }
           ],
@@ -2777,7 +2827,8 @@
             "Contents write",
             "any ruleset bypass",
             "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
-            "candidate-controlled workflow definitions or credentials exposed to candidate code"
+            "candidate-controlled workflow definitions or credentials exposed to candidate code",
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
           ],
           "enforcement": [
             {
@@ -2890,7 +2941,7 @@
           ],
           "must_not_have": [
             "auto-merge",
-            "any ruleset bypass except the RS-main pull_request-mode admin bypass under DP-05 = admin_bypass_main_pull_request_mode_only (or all lists under keep_admin_bypass_as_visible_override)",
+            "any ruleset bypass except the RS-main-integrator pull_request-mode bypass under DP-05 = human_integrator_sole_main_bypass (or all lists under keep_admin_bypass_as_visible_override)",
             "bypass_mode exempt (no audit entry)",
             "own credentials inside any sandbox or supervisor"
           ],
@@ -2898,6 +2949,10 @@
             {
               "ruleset": "RS-main",
               "relation": "subject_to"
+            },
+            {
+              "ruleset": "RS-main-integrator",
+              "relation": "conditional_bypass_actor"
             }
           ],
           "secret_holder": "the human's own GitHub account",
@@ -2910,7 +2965,7 @@
           "unverified": [
             "U-PM-04: whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
-          "repository_role": "write or maintain; admin when DP-05 grants the RS-main pull_request-mode bypass (single maintainer, DP-10)",
+          "repository_role": "write or maintain; admin (or integrator Team member) when DP-05 = human_integrator_sole_main_bypass makes the human the sole RS-main-integrator bypass actor",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
           "scope": {
@@ -3020,7 +3075,8 @@
             "renewing, reclaiming or releasing leases",
             "acknowledging authoritative outbox/pending-effect state",
             "any ruleset bypass",
-            "classic repo scope"
+            "classic repo scope",
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
           ],
           "enforcement": [
             {
@@ -3291,22 +3347,22 @@
       "id": "DP-05",
       "parameter": "admin_bypass",
       "status": "undecided",
-      "question": "Which bypass may repository admins hold on the main and state/candidate rulesets?",
+      "question": "Which bypass may repository admins or the human integrator hold?",
       "options": [
         {
           "id": "remove_admins_from_bypass",
-          "effect": "No bypass on any ruleset; overrides require editing the ruleset, which is visible. With one required approval (DP-10) a single maintainer cannot merge"
+          "effect": "No bypass on any ruleset. RS-main-integrator then blocks every merge to main, including the human's, so this option cannot be combined with DP-10 = update_restricted_human_bypass"
         },
         {
-          "id": "admin_bypass_main_pull_request_mode_only",
-          "effect": "Repository admins (the human maintainer) bypass only RS-main, only in bypass_mode pull_request, so every merge without an approval is an audited bypass through a pull request; no admin bypass on RS-state-* or RS-candidates-*. No App or PAT identity is ever a bypass actor on main"
+          "id": "human_integrator_sole_main_bypass",
+          "effect": "Only the human integrator is a bypass actor, only on RS-main-integrator, only in bypass_mode pull_request ('an actor can only bypass rules on pull requests', S-gh-rest-rules); every human merge is an audited bypass through a pull request. No bypass on RS-main (pull request and trusted-CI checks still apply to the human), RS-state-* or RS-candidates-*. No App, deploy key or machine account is a bypass actor, and no machine credential may belong to the bypassing account"
         },
         {
           "id": "keep_admin_bypass_as_visible_override",
           "effect": "Admins on every bypass list; overrides are outside the automation guarantee (plan section 3); never bypass_mode exempt"
         }
       ],
-      "recommended": "admin_bypass_main_pull_request_mode_only",
+      "recommended": "human_integrator_sole_main_bypass",
       "sources": [
         "S-gh-rules-create",
         "S-gh-rest-rules"
@@ -3399,42 +3455,79 @@
     },
     {
       "id": "DP-10",
-      "parameter": "main_required_approvals",
+      "parameter": "main_merge_enforcement",
       "status": "undecided",
-      "question": "How many approving reviews does the main ruleset require, given that pull request authors cannot approve their own pull requests?",
+      "question": "How is merging to main restricted to the human integrator, given that Contents write includes the merge endpoints and that pull request authors cannot approve their own pull requests?",
       "options": [
         {
-          "id": "zero_approvals_pr_required",
-          "required_approving_review_count": 0,
-          "machine_can_merge_without_bypass": true,
-          "effect": "Pull request and required trusted-CI checks still gate main and a human can merge alone ('pull requests as a record of changes rather than to gate on approvals', S-gh-rules-available). EXPOSURE: Contents write includes PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge (S-gh-fgpat), so any Contents-write holder (supervisor-runtime, actions-publisher-fallback, the setup credential) can merge any pull request once the checks are green. 'No merge authority' (plan section 4, contract 10) would then rest on trusted code only, not on GitHub. Not recommended"
-        },
-        {
-          "id": "one_approval_second_human",
-          "required_approving_review_count": 1,
-          "machine_can_merge_without_bypass": false,
-          "effect": "At least one approval from a second human account with write access. Machine identities cannot merge: they cannot approve their own pull request and hold no Pull requests write unless DP-08 = supervisor_opens_pr (whether an App review would count is unverified). Use this once the project has two maintainers"
-        },
-        {
-          "id": "one_approval_admin_pull_request_bypass",
-          "required_approving_review_count": 1,
+          "id": "update_restricted_human_bypass",
+          "main_rulesets": [
+            "RS-main",
+            "RS-main-integrator"
+          ],
+          "main_update_restricted": true,
           "machine_can_merge_without_bypass": false,
           "requires": [
             {
               "decision_point": "DP-05",
-              "option": "admin_bypass_main_pull_request_mode_only"
+              "option": "human_integrator_sole_main_bypass"
             }
           ],
-          "effect": "Keep one required approval; the single human maintainer merges through a pull request using the admin bypass in pull_request mode, so every merge is an audited bypass. Apps and PATs are not admins and are not bypass actors, so a machine Contents-write holder still cannot merge main. Assumes no machine credential belongs to an admin account; whether a personal-repository owner is matched by the RepositoryRole admin bypass and how pull_request bypass mode behaves are unverified (P02a F-APPROVE)"
+          "effect": "RS-main-integrator restricts updates of main to the human integrator's pull_request-mode bypass; RS-main keeps pull request and trusted-CI checks with 0 required approvals for a single maintainer (>= 1 once a second human exists). A machine Contents-write holder (supervisor-runtime, actions-publisher-fallback) cannot merge before or after a human approval. Enforcement status: the rule names and bypass modes are documented; that Restrict updates refuses pull-request merges by non-bypass actors is an inference to be proven by P02a F-APPROVE (U-PM-14, U-PM-01, U-PE-08). Until then merge_main rests on trusted code and audit"
+        },
+        {
+          "id": "approvals_only",
+          "main_rulesets": [
+            "RS-main"
+          ],
+          "main_update_restricted": false,
+          "machine_can_merge_without_bypass": true,
+          "effect": "RS-main only (pull request, trusted-CI checks, >= 1 approval). EXPOSURE: once a human has approved and checks pass, any Contents-write holder can merge with PUT .../pulls/{pull_number}/merge, PUT .../merge-async or POST .../merges (Contents write, no additional permission: S-gh-fgpat, S-gh-rest-pulls). A required approval does not prevent machine merges. A single maintainer also cannot satisfy the approval (S-gh-pr-approve-required) without a bypass. Not recommended"
+        },
+        {
+          "id": "zero_approvals_no_update_restriction",
+          "main_rulesets": [
+            "RS-main"
+          ],
+          "main_update_restricted": false,
+          "machine_can_merge_without_bypass": true,
+          "effect": "RS-main with 0 approvals and no update restriction. EXPOSURE: Contents write includes the merge endpoints (S-gh-fgpat), so any Contents-write holder can merge any pull request once trusted-CI checks are green; 'no merge authority' (plan section 4, contract 10) would rest on trusted code only. Not recommended"
         }
       ],
-      "recommended": "one_approval_admin_pull_request_bypass",
-      "interaction": "Pull request authors cannot approve their own pull requests (documented, S-gh-pr-approve-required). With required_approving_review_count >= 1, DP-05 = remove_admins_from_bypass and DP-08 = human_opens_pr, a repository with a single human maintainer cannot merge to main (inference from the reported bootstrap profile, which has one maintainer). With zero required approvals the deadlock disappears, but every Contents-write holder can then merge (Contents write includes the merge endpoint, S-gh-fgpat), so the GitHub-side block on machine merges is lost. The recommended option keeps one approval and gives only the human admin an audited pull_request-mode bypass on main. An App approval is not recommended because it would let automation satisfy the human gate, and whether it counts is unverified.",
+      "recommended": "update_restricted_human_bypass",
+      "interaction": "Contents write includes the merge endpoints (S-gh-fgpat), so neither an approval count nor DP-08 stops a machine Contents-write holder from merging an approved, green pull request; only a rule that GitHub applies to the merge itself can. The recommended option uses Restrict updates in a separate ruleset whose only bypass actor is the human integrator. Pull request authors cannot approve their own pull requests (S-gh-pr-approve-required), so a single maintainer uses 0 required approvals on RS-main; independent review is carried by the Remora review packet and the human's merge decision. If P02a shows the update restriction does not block pull-request merges, DP-11 applies. An App approval is not recommended because it would let automation satisfy a human gate.",
       "sources": [
-        "S-gh-pr-approve-required",
-        "S-gh-rules-available",
         "S-gh-fgpat",
-        "S-gh-rest-rules"
+        "S-gh-rest-pulls",
+        "S-gh-rules-available",
+        "S-gh-rules-about",
+        "S-gh-rest-rules",
+        "S-gh-pr-approve-required"
+      ]
+    },
+    {
+      "id": "DP-11",
+      "parameter": "main_merge_block_unavailable",
+      "status": "undecided",
+      "question": "If P02a shows that no GitHub-side rule stops a Contents-write identity from merging to main (U-PM-14 or U-PE-08 fails), what applies?",
+      "options": [
+        {
+          "id": "disable_autonomous_execution",
+          "effect": "Plan section 4: when the account's protections cannot enforce the selected profile, setup reports the exact gap and disables autonomous execution for that profile"
+        },
+        {
+          "id": "separate_publication_repository",
+          "effect": "Keep the state branch and candidate refs in a separate repository so that machine identities hold no Contents write on the product repository; changes the plan's one-repository layout and needs a plan amendment; cross-repository pull requests and checks are unverified"
+        },
+        {
+          "id": "code_and_audit_exception",
+          "effect": "The human explicitly accepts that merge_main rests on trusted code and audit: reconciliation compares each merge's actor with the human integrator and reports any other merger. A visible exception, not a GitHub guarantee"
+        }
+      ],
+      "recommended": "disable_autonomous_execution",
+      "sources": [
+        "S-gh-fgpat",
+        "S-gh-rules-available"
       ]
     }
   ],
@@ -3469,14 +3562,16 @@
       "DP-06": "not applicable (no App)",
       "DP-07": "public_any_plan",
       "DP-09": "not applicable (human-operated, no reducer)",
-      "DP-10": "undecided; single maintainer, so >= 1 required approval needs the DP-05 admin pull_request-mode bypass on main (recommended) or a second human"
+      "DP-10": "undecided; single maintainer, so RS-main needs 0 required approvals and RS-main-integrator needs the maintainer as sole pull_request-mode bypass actor (recommended)",
+      "DP-11": "undecided; applies only if P02a F-APPROVE fails"
     },
     "autonomous_execution": false,
     "gaps_against_matrix": [
       "a human OAuth token with repo scope is a setup credential; it must not be reused as supervisor-runtime credential",
       "no App exists, so RS-state-writers / RS-candidates-writers cannot name a single machine bypass actor",
       "user-owned Project requires a classic/OAuth 'project' credential for projection (DP-01)",
-      "the bootstrap gh token does not yet carry the 'project' scope (pending), so Project projection is unavailable to it"
+      "the bootstrap gh token does not yet carry the 'project' scope (pending), so Project projection is unavailable to it",
+      "the bootstrap uses the human admin's own gh token, which would match an RS-main-integrator admin bypass; no automation may use it at runtime"
     ]
   },
   "unverified": [

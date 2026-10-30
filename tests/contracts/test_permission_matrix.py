@@ -334,7 +334,9 @@ REQUIRED_RULES = {
     "RS-state-writers": {"creation", "update"},
     "RS-candidates-writers": {"creation", "update"},
     "RS-main": {"pull_request", "required_status_checks", "non_fast_forward", "deletion"},
+    "RS-main-integrator": {"update"},
 }
+HUMAN_BYPASS_ACTOR_TYPES = {"RepositoryRole", "Team"}
 CONTENTS_WRITE_CAPABILITIES = {"state_branch_write", "candidate_publication", "setup"}
 
 
@@ -416,45 +418,81 @@ class RulesetContentTests(Fixtures):
                     must.add(("RS-candidates-immutable", "subject_to"))
                 self.assertLessEqual(must, relations, "%s/%s" % (name, role["id"]))
 
-    def test_main_approval_count_is_an_explicit_decision(self):
-        points = {p["id"]: p for p in self.matrix["decision_points"]}
-        approvals = [p for p in points.values() if p["parameter"] == "main_required_approvals"]
-        self.assertEqual(len(approvals), 1)
-        point = approvals[0]
-        self.assertIn("S-gh-pr-approve-required", point["sources"])
+    def test_main_merge_enforcement_is_an_explicit_decision(self):
+        points = [p for p in self.matrix["decision_points"] if p["parameter"] == "main_merge_enforcement"]
+        self.assertEqual(len(points), 1)
+        point = points[0]
+        for source in ("S-gh-fgpat", "S-gh-rest-pulls", "S-gh-pr-approve-required"):
+            self.assertIn(source, point["sources"])
         self.assertIn("interaction", point)
-        self.assertIn(point["id"], self.rulesets()["RS-main"]["parameters"]["required_approving_review_count"])
+        fallback = [p for p in self.matrix["decision_points"] if p["parameter"] == "main_merge_block_unavailable"]
+        self.assertEqual(len(fallback), 1)
+        self.assertEqual(fallback[0]["recommended"], "disable_autonomous_execution")
 
-    def test_recommended_main_approval_option_keeps_github_merge_block(self):
-        """Contents write includes the merge endpoint, so zero approvals lets machines merge."""
-        point = [p for p in self.matrix["decision_points"] if p["parameter"] == "main_required_approvals"][0]
-        options = {o["id"]: o for o in point["options"]}
-        main = self.rulesets()["RS-main"]
-        unconditional_machine_bypass = [a for a in main["bypass_actors"]
-                                        if a["actor_type"] in ("Integration", "DeployKey", "User")]
-        self.assertEqual(unconditional_machine_bypass, [])
-        for option in options.values():
-            self.assertIsInstance(option["machine_can_merge_without_bypass"], bool, option["id"])
-            self.assertIsInstance(option["required_approving_review_count"], int, option["id"])
-            # No machine identity can approve (authors cannot self-approve; no App approval is
-            # relied on), so machines can merge without a bypass exactly when zero approvals are required.
-            self.assertEqual(option["machine_can_merge_without_bypass"],
-                             option["required_approving_review_count"] == 0, option["id"])
+    def test_approval_count_never_blocks_machine_merges(self):
+        """Contents write includes the merge endpoints; only an update restriction blocks machine merges."""
+        evidence = [p for p in self.evidence["permissions"]
+                    if p["resource"] == "contents" and p["credential"] == "fine_grained_pat"][0]
+        self.assertIn("pulls/{pull_number}/merge", evidence["notes"])
+        point = [p for p in self.matrix["decision_points"] if p["parameter"] == "main_merge_enforcement"][0]
+        rulesets = self.rulesets()
+        for option in point["options"]:
+            self.assertIsInstance(option["main_update_restricted"], bool, option["id"])
+            for ruleset_id in option["main_rulesets"]:
+                self.assertIn("refs/heads/main", rulesets[ruleset_id]["target_refs"], option["id"])
+            restricted = any("update" in rulesets[r]["rules"] for r in option["main_rulesets"])
+            self.assertEqual(option["main_update_restricted"], restricted,
+                             "%s: the restriction must come from the option's rulesets" % option["id"])
+            self.assertEqual(option["machine_can_merge_without_bypass"], not option["main_update_restricted"],
+                             option["id"])
+            self.assertEqual("EXPOSURE" in option["effect"], option["machine_can_merge_without_bypass"], option["id"])
             if option["machine_can_merge_without_bypass"]:
                 self.assertIn("Contents write", option["effect"], option["id"])
                 self.assertIn("merge", option["effect"], option["id"])
-        self.assertFalse(options[point["recommended"]]["machine_can_merge_without_bypass"])
-        self.assertTrue(any(o["machine_can_merge_without_bypass"] for o in options.values()),
-                        "the exposed option must stay visible as a documented alternative")
+        self.assertTrue(any(o["machine_can_merge_without_bypass"] for o in point["options"]),
+                        "the exposed options must stay visible as documented alternatives")
 
-    def test_conditional_main_bypass_is_human_only_and_audited(self):
+    def test_recommended_configuration_keeps_github_merge_block(self):
+        points = {p["id"]: p for p in self.matrix["decision_points"]}
+        point = [p for p in points.values() if p["parameter"] == "main_merge_enforcement"][0]
+        recommended = [o for o in point["options"] if o["id"] == point["recommended"]][0]
+        self.assertFalse(recommended["machine_can_merge_without_bypass"])
+        self.assertTrue(recommended["main_update_restricted"])
+        rulesets = self.rulesets()
+        restricting = [r for r in rulesets.values()
+                       if "refs/heads/main" in r["target_refs"] and "update" in r["rules"]]
+        self.assertEqual([r["id"] for r in restricting], ["RS-main-integrator"])
+        integrator = restricting[0]
+        self.assertEqual(integrator["bypass_actors"], [], "no unconditional bypass on the merge block")
+        self.assertTrue(integrator["conditional_bypass_actors"])
+        requirements = recommended.get("requires", [])
+        for actor in integrator["conditional_bypass_actors"]:
+            self.assertIn(actor["actor_type"], HUMAN_BYPASS_ACTOR_TYPES)
+            self.assertEqual(actor["bypass_mode"], "pull_request")
+            self.assertIn(actor["when"], requirements, "the bypass must be enabled by the recommended options")
+            self.assertEqual(points[actor["when"]["decision_point"]]["recommended"], actor["when"]["option"])
+        self.assertEqual(rulesets["RS-main"]["bypass_actors"], [])
+        self.assertNotIn("conditional_bypass_actors", rulesets["RS-main"],
+                         "a bypass on RS-main would also skip the pull-request and trusted-CI rules")
+        for name, placement in self.placements():
+            for role in placement["roles"]:
+                relations = {(e["ruleset"], e["relation"]) for e in role["enforcement"]}
+                if role["id"] == "human-integrator":
+                    self.assertIn(("RS-main-integrator", "conditional_bypass_actor"), relations)
+                    continue
+                self.assertFalse([r for r in relations if r[1] in ("bypass_actor", "conditional_bypass_actor")
+                                  and r[0] in ("RS-main", "RS-main-integrator")], "%s/%s" % (name, role["id"]))
+                if holds(role, "contents", ("write", "full")):
+                    self.assertIn(("RS-main-integrator", "subject_to"), relations, "%s/%s" % (name, role["id"]))
+
+    def test_conditional_bypass_is_human_only_and_audited(self):
         documented = self.evidence["rulesets"]
         points = {p["id"]: {o["id"] for o in p["options"]} for p in self.matrix["decision_points"]}
         for ruleset in self.matrix["rulesets"]:
             for actor in ruleset.get("conditional_bypass_actors", []):
-                self.assertEqual(ruleset["id"], "RS-main", "conditional bypass only on main")
+                self.assertEqual(ruleset["id"], "RS-main-integrator", "conditional bypass only on the merge block")
                 self.assertIn(actor["actor_type"], documented["bypass_actor_types_rest"])
-                self.assertNotIn(actor["actor_type"], ("Integration", "DeployKey", "User"))
+                self.assertIn(actor["actor_type"], HUMAN_BYPASS_ACTOR_TYPES)
                 self.assertEqual(actor["bypass_mode"], "pull_request")
                 self.assertIn(actor["when"]["option"], points[actor["when"]["decision_point"]])
 
@@ -517,6 +555,8 @@ class MainRulesetTests(Fixtures):
                 checked += 1
                 declared = [e for e in role["enforcement"] if e["ruleset"] in main_rulesets]
                 self.assertTrue(declared, "%s/%s lacks a main ruleset" % (placement, role["id"]))
+                self.assertIn({"ruleset": "RS-main", "relation": "subject_to"}, role["enforcement"],
+                              "%s/%s must be subject to RS-main (pull request and trusted-CI checks)" % (placement, role["id"]))
                 self.assertFalse([e for e in declared if e["relation"] == "bypass_actor"])
         self.assertGreater(checked, 0)
 

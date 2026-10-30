@@ -35,11 +35,14 @@ proposed for the same state.
 Verification: `python3 -m unittest discover -s tests -v` (includes `tests/contracts/`),
 `python3 -m bootstrap check`, `git diff --check`. These are format and consistency checks;
 they do not establish live GitHub or runtime behaviour.
+The bootstrap tests create fixture Git repositories in the temporary directory, so the full
+suite needs a writable `TMPDIR`; in a read-only sandbox, `python3 -m unittest discover -s
+tests/contracts -t tests` runs the contract tests alone.
 
 ## Human decisions required
 
 Recommendations are P01's; the human decides and records the answer and its scope on
-GitHub. Q2-Q10 are the matrix decision points DP-01…DP-09; Q15 is DP-10.
+GitHub. Q2-Q10 are the matrix decision points DP-01…DP-09; Q15 is DP-10 and Q16 is DP-11.
 
 | # | Decision | Options | Recommended | Source |
 | --- | --- | --- | --- | --- |
@@ -48,7 +51,7 @@ GitHub. Q2-Q10 are the matrix decision points DP-01…DP-09; Q15 is DP-10.
 | Q3 | DP-02 State writer / publisher credential | GitHub App / fine-grained PAT / classic PAT | GitHub App (only documented single-actor bypass; can read Checks) | §A.1, §D |
 | Q4 | DP-03 Trusted-CI identity | dedicated CI App / Actions `GITHUB_TOKEN` | dedicated CI App, separate from the publisher | §B.6 |
 | Q5 | DP-04 May candidates modify `.github/workflows/**`? | reject / allow with Workflows write | reject | §G.1 item 6 |
-| Q6 | DP-05 Which bypass may repository admins hold? | none / admin bypass on `main` only, in `pull_request` mode / admins on every list as visible override | admin bypass on `main` only, in `pull_request` mode (needed by the Q15 recommendation for a single maintainer); never on state/candidate rulesets; never `exempt` | §B.7, §D |
+| Q6 | DP-05 Which bypass may repository admins or the human integrator hold? | none / human integrator as sole bypass actor on `RS-main-integrator` in `pull_request` mode / admins on every list as visible override | human integrator as sole bypass actor, only on `RS-main-integrator`, only in `pull_request` mode (required by the Q15 recommendation); no bypass on `RS-main`, state or candidate rulesets; no machine credential may belong to the bypassing account; never `exempt` | §B.7, §D |
 | Q7 | DP-06 App private key as an Actions secret (Actions placement, Actions projection job) | reject / accept | reject unless the Actions placement is required | §B.3, §G.3 item 7 |
 | Q8 | DP-07 Repository visibility and plan | public / private on Pro, Team, Enterprise / private on Free (unsupported) | public, or private on a paid plan | §D |
 | Q9 | DP-08 Who opens integration PRs? | human / supervisor | human for the pilot | §B.2 |
@@ -57,7 +60,8 @@ GitHub. Q2-Q10 are the matrix decision points DP-01…DP-09; Q15 is DP-10.
 | Q12 (U-WI-05) | Preserve the legacy Weave ledger on host `gengar` | archive now / later | archive a read-only copy now and record its digest; it is load-bearing for P12 step 2 and is not on GitHub | `weave-migration-boundaries.md` §2, §5 |
 | Q13 | Remora's distribution licence | maintainer's choice | decide before any upstream code is copied; P01 makes no licence recommendation | `NOTICE.md`, `license-report.md` |
 | Q14 (U-WI-06) | Reuse Weave code by copying with attribution or by re-implementing against the same fixtures | copy with MIT attribution / re-implement | copy-with-adaptation for the modules listed in `weave-migration-boundaries.md` §4, after Q13, with the NOTICE change in `scope-requests.md`; first confirm the Weave rights holder and note the AI co-authorship flag | `license-report.md` |
-| Q15 | DP-10 Required approvals on `main`, given that pull request authors cannot approve their own pull requests (S-gh-pr-approve-required) | one approval plus a human admin bypass in `pull_request` mode / one approval from a second human / zero approvals with PR and required checks | **one approval plus the human admin bypass in `pull_request` mode** while there is one maintainer (every merge is an audited bypass; Apps and PATs cannot merge); one approval from a second human once a second maintainer exists. **Zero approvals is not recommended:** Contents write includes the merge endpoint, so every Contents-write holder (supervisor App, Actions publisher, setup credential) could merge once checks pass, and "no merge authority" would rest on code only. With one approval and no admin bypass (Q6 = none), a single maintainer cannot merge | `contracts/permission-matrix.v1.json` DP-10 |
+| Q15 | DP-10 How is merging to `main` restricted to the human integrator? | update restriction (`RS-main-integrator`, Restrict updates, human-only `pull_request`-mode bypass) / approvals only / zero approvals without update restriction | **update restriction with the human integrator as sole bypass actor**, plus `RS-main` (pull request, trusted-CI checks, 0 required approvals for a single maintainer, at least one once a second human exists). **An approval count never blocks machine merges:** Contents write includes `PUT …/merge`, `PUT …/merge-async` and `POST …/merges` (S-gh-fgpat, S-gh-rest-pulls), so after a human approval a supervisor or Actions publisher could merge. That Restrict updates refuses pull-request merges by non-bypass actors is not explicit in the docs (U-PM-14, P02a F-APPROVE); until it is proven, `merge_main` rests on trusted code and audit | `contracts/permission-matrix.v1.json` DP-10, `RS-main-integrator` |
+| Q16 | DP-11 What applies if P02a shows no GitHub-side rule stops a Contents-write identity merging to `main`? | disable autonomous execution / separate publication repository (plan amendment) / code-and-audit exception | disable autonomous execution for that profile (plan section 4) until the human chooses otherwise | `contracts/permission-matrix.v1.json` DP-11 |
 
 ## Items marked unverified (routed)
 
@@ -115,6 +119,7 @@ that each ID appears here and in the handoff it is routed to.
 | U-PM-11 | App permission for dispatching workflows (no App 'Actions' entry in permission-evidence.json) | P05 (only if the Actions placement is selected) |
 | U-PM-12 | candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09 | P09 |
 | U-PM-13 | latency/cost of an Actions job per transition (P02a measurement) | P02a (measured quantities) |
+| U-PM-14 | whether Restrict updates on main refuses pull-request merges (web UI, PUT .../pulls/{pull_number}/merge, PUT .../merge-async) and POST .../merges by actors without bypass, and lets a pull_request-mode bypass actor complete a pull-request merge | P02a (F-APPROVE); human DP-11 if it fails |
 
 `U-PM-*` items are matrix-level open points on roles and rulesets in
 `contracts/permission-matrix.v1.json`; each matrix `unverified` entry cites its ID (entries
