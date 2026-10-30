@@ -255,12 +255,25 @@ classic `repo` scope covering other repositories.
 | State branch `harness/state`: read | runtime | "Contents" read | App, FG PAT, classic/OAuth | – |
 | State branch: conditional write | runtime | "Contents" write. REST ref PATCH, `createCommitOnBranch` or `updateRefs` (section C). | App (preferred: it can be named as a bypass actor), FG PAT, classic/OAuth | Ruleset on `harness/state`: Restrict deletions; Block force pushes (`non_fast_forward`); Restrict updates (and creations) with bypass only for the supervisor App (`actor_type: Integration`). See D for the two-ruleset layout. |
 | Candidate branches `agent/**/*`: create and update | runtime | "Contents" write. Add "Workflows" write only if candidates may change `.github/workflows/*` (S-gh-fgpat "Workflows" rows for `git/refs` and `contents/{path}`; classic `workflow` scope per S-gh-oauth-scopes). | same | Ruleset on `agent/**/*`: Restrict creations/updates/deletions with bypass = publisher App; Block force pushes for generation-specific immutable names. Per-task branch ownership cannot be enforced by GitHub, because every candidate is published by one identity. The trusted publisher code must enforce it (inference; see D). |
-| `main`: no write | runtime | Not separable. "Contents" write includes `PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge` (listed under Contents write in S-gh-fgpat). | – | Ruleset on `main`: Require a pull request with ≥1 approval; required status checks from the trusted-CI App; supervisor App **not** on the bypass list; Block force pushes; Restrict deletions. Without Pull requests write the App cannot approve. Whether an App review counts toward required approvals is **unverified**. |
+| `main`: no write | runtime | Not separable. "Contents" write includes `PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge` (listed under Contents write in S-gh-fgpat). | – | Ruleset on `main`: Require a pull request with ≥1 approval; required status checks from the trusted-CI App; supervisor App **not** on the bypass list; Block force pushes; Restrict deletions. Without Pull requests write the App cannot approve. Whether an App review counts toward required approvals is **unverified**. **Superseded 2026-10-30; see the correction note below this table.** |
 | Issue comments, labels | runtime | "Issues" write (`POST .../issues/{issue_number}/comments`; S-gh-fgpat) | App, FG PAT, classic/OAuth | – |
 | Human command polling | runtime | "Issues" read (comments) | same | Authenticate the human through the comment author login plus enrollment (plan section 4). The token does not authenticate others. |
 | Project status projection | runtime | Org: App organization "Projects" write or FG `organization_projects` write. User: classic/OAuth `project`. | Org: App/FG. User: classic PAT or OAuth only. | – |
 | Checks and statuses: read (evidence) | runtime | App "Checks" read and "Commit statuses" read | App (FG PATs cannot call the Checks API: S-gh-pat-manage), classic/OAuth `repo` | Evidence identity is checked through the check run's App, not by the reader's token. |
 | Pull requests (optional, opening integration PRs) | runtime (optional) | "Pull requests" write | App, FG, classic | Repository setting "Allow GitHub Actions to create and approve pull requests" applies only to `GITHUB_TOKEN` (S-gh-actions-repo-settings) |
+
+**Correction (2026-10-30, P01 review round 1).** The enforcement given above for "`main`:
+no write" is insufficient and is kept only as the superseded original. A required approval
+never blocks a Contents-write merge: Contents write includes `PUT …/pulls/{pull_number}/merge`,
+`PUT …/merge-async` and `POST /repos/{owner}/{repo}/merges` with no additional permission
+(S-gh-fgpat; S-gh-rest-pulls), so once a human has approved and checks are green, the
+supervisor App could merge without approving anything itself. The current design is in
+`contracts/permission-matrix.v1.json`: DP-10 (`main_merge_enforcement`, recommended
+`update_restricted_human_bypass`), the separate ruleset `RS-main-integrator` (Restrict
+updates, sole bypass actor the human integrator in `pull_request` mode), the unverified
+question U-PM-14 (whether Restrict updates refuses pull-request merges by non-bypass actors;
+P02a F-APPROVE), and DP-11 (what applies if it does not; default: disable autonomous
+execution).
 
 Must not have: "Administration" write, "Checks" write (that belongs to trusted-ci),
 Project `admin`, "Workflows" write unless explicitly approved, and any bypass on
@@ -309,6 +322,15 @@ Must not have: "Contents" write on `harness/state` or `main`, or any bypass.
   automation guarantee" (plan section 3).
 - Bypass mode `exempt` means "rules will not be run for that actor and a bypass
   audit entry will not be created" (S-gh-rest-rules). Avoid it for auditability.
+- **Correction (2026-10-30, P01 review round 1).** The enforcement bullet above
+  (remove admins from the bypass list) is superseded. With machines unable to merge only
+  if `main` restricts updates, the human integrator must be the sole bypass actor of that
+  restriction, and a single maintainer cannot satisfy a required approval
+  (S-gh-pr-approve-required). See DP-05 (recommended `human_integrator_sole_main_bypass`:
+  the human integrator bypasses only `RS-main-integrator`, only in `pull_request` mode;
+  `RS-main` keeps pull request and trusted-CI checks with no bypass), DP-10, U-PM-14 and
+  DP-11 in `contracts/permission-matrix.v1.json`. An approval count never blocks a
+  Contents-write merge (see the B.2 correction).
 
 ---
 

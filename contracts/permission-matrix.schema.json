@@ -183,12 +183,12 @@
       "additionalProperties": false,
       "properties": {
         "ruleset": {"type": "string", "pattern": "^RS-[a-z-]+$"},
-        "relation": {"enum": ["subject_to", "bypass_actor", "conditional_bypass_actor", "required_check_source"]}
+        "relation": {"enum": ["subject_to", "bypass_actor", "conditional_bypass_actor", "held_by_bypass_account", "required_check_source"]}
       }
     },
     "role": {
       "type": "object",
-      "required": ["id", "phase", "credential_types", "permissions", "forbidden_permissions", "authorities", "must_not_have",
+      "required": ["id", "phase", "credential_types", "permissions", "forbidden_permissions", "bypass_account_credentials", "authorities", "must_not_have",
                    "enforcement", "scope", "secret_holder", "expiry_revocation", "unverified"],
       "additionalProperties": false,
       "properties": {
@@ -198,6 +198,16 @@
         "credential_types": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/credential_type"}},
         "permissions": {"type": "array", "items": {"$ref": "#/$defs/permission"}},
         "forbidden_permissions": {"type": "array", "items": {"$ref": "#/$defs/forbidden_permission"}},
+        "bypass_account_credentials": {
+          "type": "object",
+          "required": ["policy", "exempt_credential_types", "note"],
+          "additionalProperties": false,
+          "properties": {
+            "policy": {"enum": ["forbidden", "allowed_without_contents_write", "holder_is_bypass_account", "not_applicable"]},
+            "exempt_credential_types": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/credential_type"}},
+            "note": {"type": "string", "minLength": 1}
+          }
+        },
         "scope": {"$ref": "#/$defs/scope"},
         "authorities": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/capability"}},
         "must_not_have": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},

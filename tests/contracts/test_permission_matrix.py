@@ -480,10 +480,42 @@ class RulesetContentTests(Fixtures):
                 if role["id"] == "human-integrator":
                     self.assertIn(("RS-main-integrator", "conditional_bypass_actor"), relations)
                     continue
+                if role["bypass_account_credentials"]["policy"] == "holder_is_bypass_account":
+                    self.assertEqual(role["id"], "setup-operator")
+                    self.assertIn(("RS-main-integrator", "held_by_bypass_account"), relations)
+                    self.assertEqual(role["phase"], "setup")
+                    continue
                 self.assertFalse([r for r in relations if r[1] in ("bypass_actor", "conditional_bypass_actor")
                                   and r[0] in ("RS-main", "RS-main-integrator")], "%s/%s" % (name, role["id"]))
                 if holds(role, "contents", ("write", "full")):
                     self.assertIn(("RS-main-integrator", "subject_to"), relations, "%s/%s" % (name, role["id"]))
+
+    def test_bypass_account_credentials_cannot_merge(self):
+        """A credential of the RS-main-integrator bypass account may serve a role only without Contents write."""
+        for name, placement in self.placements():
+            for role in placement["roles"]:
+                where = "%s/%s" % (name, role["id"])
+                policy = role["bypass_account_credentials"]
+                writes = holds(role, "contents", ("write", "full"))
+                if role["phase"] == "runtime" and writes:
+                    self.assertEqual(policy["policy"], "forbidden", where)
+                if policy["policy"] == "allowed_without_contents_write":
+                    self.assertEqual(writes, [], where)
+                if policy["policy"] == "holder_is_bypass_account":
+                    self.assertIn(role["id"], ("setup-operator", "human-integrator"), where)
+                if policy["policy"] == "not_applicable":
+                    self.assertEqual(role["credential_types"], ["none"], where)
+                if role["credential_types"] == ["none"]:
+                    self.assertEqual(policy["policy"], "not_applicable", where)
+                for credential_type in policy["exempt_credential_types"]:
+                    self.assertIn(credential_type, role["credential_types"], where)
+                    exempt_writes = [p for p in writes if p["credential_type"] == credential_type]
+                    self.assertEqual(exempt_writes, [], "%s exempts %s, which holds Contents write" % (where, credential_type))
+                if policy["policy"] in ("forbidden", "allowed_without_contents_write"):
+                    self.assertTrue(any("RS-main-integrator bypass actor" in text for text in role["must_not_have"]),
+                                    "%s must state the rule in must_not_have" % where)
+                    relations = {(e["ruleset"], e["relation"]) for e in role["enforcement"]}
+                    self.assertNotIn(("RS-main-integrator", "held_by_bypass_account"), relations, where)
 
     def test_conditional_bypass_is_human_only_and_audited(self):
         documented = self.evidence["rulesets"]

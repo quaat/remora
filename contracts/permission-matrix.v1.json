@@ -559,7 +559,7 @@
             },
             {
               "ruleset": "RS-main-integrator",
-              "relation": "subject_to"
+              "relation": "held_by_bypass_account"
             }
           ],
           "secret_holder": "accountable human operator session on a trusted workstation, used only for init/import; never a supervisor runtime store or sandbox",
@@ -579,6 +579,11 @@
           ],
           "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime. The setup credential is the human's own and, if the human is the RS-main-integrator bypass actor, can merge to main; it is used only during init and never by automation.",
           "forbidden_permissions": [],
+          "bypass_account_credentials": {
+            "policy": "holder_is_bypass_account",
+            "exempt_credential_types": [],
+            "note": "The setup credential is the accountable human's own. When that human is the RS-main-integrator bypass actor (DP-05 = human_integrator_sole_main_bypass, the single-maintainer case), the credential is matched by the bypass and can merge through a pull request. It is setup-only, used interactively by the human during init, and never stored for or used by automation."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -822,7 +827,7 @@
             "classic repo scope at runtime (repository-wide, all repositories of the user)",
             "the setup-operator credential",
             "exposure to any model sandbox, environment variable, image layer or credential proxy reachable by a model",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
           ],
           "enforcement": [
             {
@@ -920,6 +925,13 @@
               }
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "forbidden",
+            "exempt_credential_types": [
+              "classic_pat"
+            ],
+            "note": "Credentials of the RS-main-integrator bypass account are forbidden, except a classic token limited to the 'project' scope (no 'repo', hence no Contents write) for a user-owned Project (DP-01 = user_owned), whose natural holder is the owning maintainer. Alternative: a separate collaborator account without admin role holds that token. Either way the credential cannot merge."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -1103,6 +1115,11 @@
               "reason": "sandboxes hold no GitHub credential"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "not_applicable",
+            "exempt_credential_types": [],
+            "note": "No credential."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -1260,6 +1277,11 @@
               "reason": "sandboxes hold no GitHub credential"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "not_applicable",
+            "exempt_credential_types": [],
+            "note": "No credential."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -1342,7 +1364,7 @@
             "any ruleset bypass",
             "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
             "candidate-controlled workflow definitions or credentials exposed to candidate code",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
           ],
           "enforcement": [
             {
@@ -1415,6 +1437,11 @@
               "reason": "no workflow edits"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "forbidden",
+            "exempt_credential_types": [],
+            "note": "CI identities are Apps or GITHUB_TOKEN, never a human account."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -1482,6 +1509,11 @@
           "repository_role": "write or maintain; admin (or integrator Team member) when DP-05 = human_integrator_sole_main_bypass makes the human the sole RS-main-integrator bypass actor",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
+          "bypass_account_credentials": {
+            "policy": "holder_is_bypass_account",
+            "exempt_credential_types": [],
+            "note": "The human's own account is the bypass actor; its credentials never enter a sandbox or supervisor."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -1590,7 +1622,7 @@
             "acknowledging authoritative outbox/pending-effect state",
             "any ruleset bypass",
             "classic repo scope",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
           ],
           "enforcement": [
             {
@@ -1657,6 +1689,15 @@
               "reason": "no integration authority"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "allowed_without_contents_write",
+            "exempt_credential_types": [
+              "github_app_installation",
+              "fine_grained_pat",
+              "classic_pat"
+            ],
+            "note": "The role holds no Contents write in any credential, so even a credential of the bypass account (for example the maintainer's project-only classic token for a user-owned Project) cannot merge. A separate collaborator account is the alternative."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -1949,7 +1990,7 @@
             },
             {
               "ruleset": "RS-main-integrator",
-              "relation": "subject_to"
+              "relation": "held_by_bypass_account"
             }
           ],
           "secret_holder": "accountable human operator session on a trusted workstation, used only for init/import; never a supervisor runtime store or sandbox",
@@ -1969,6 +2010,11 @@
           ],
           "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime. The setup credential is the human's own and, if the human is the RS-main-integrator bypass actor, can merge to main; it is used only during init and never by automation.",
           "forbidden_permissions": [],
+          "bypass_account_credentials": {
+            "policy": "holder_is_bypass_account",
+            "exempt_credential_types": [],
+            "note": "The setup credential is the accountable human's own. When that human is the RS-main-integrator bypass actor (DP-05 = human_integrator_sole_main_bypass, the single-maintainer case), the credential is matched by the bypass and can merge through a pull request. It is setup-only, used interactively by the human during init, and never stored for or used by automation."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -2084,7 +2130,7 @@
             "any ruleset bypass",
             "the setup-operator credential",
             "exposure to any model sandbox",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
           ],
           "enforcement": [
             {
@@ -2179,6 +2225,11 @@
               "reason": "command ingestion belongs to the Actions publisher"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "forbidden",
+            "exempt_credential_types": [],
+            "note": "No exemption is needed: this role holds no Project credential."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -2311,7 +2362,7 @@
             "Checks write",
             "bypass on RS-main or on any *-immutable ruleset",
             "a second reducer running beside supervisor-hosted reducers",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
           ],
           "enforcement": [
             {
@@ -2407,6 +2458,13 @@
               }
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "forbidden",
+            "exempt_credential_types": [
+              "classic_pat"
+            ],
+            "note": "Credentials of the RS-main-integrator bypass account are forbidden, except a classic token limited to the 'project' scope (no 'repo', hence no Contents write) for a user-owned Project (DP-01 = user_owned), whose natural holder is the owning maintainer. Alternative: a separate collaborator account without admin role holds that token. Either way the credential cannot merge."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -2589,6 +2647,11 @@
               "reason": "sandboxes hold no GitHub credential"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "not_applicable",
+            "exempt_credential_types": [],
+            "note": "No credential."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -2746,6 +2809,11 @@
               "reason": "sandboxes hold no GitHub credential"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "not_applicable",
+            "exempt_credential_types": [],
+            "note": "No credential."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -2828,7 +2896,7 @@
             "any ruleset bypass",
             "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
             "candidate-controlled workflow definitions or credentials exposed to candidate code",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
           ],
           "enforcement": [
             {
@@ -2901,6 +2969,11 @@
               "reason": "no workflow edits"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "forbidden",
+            "exempt_credential_types": [],
+            "note": "CI identities are Apps or GITHUB_TOKEN, never a human account."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -2968,6 +3041,11 @@
           "repository_role": "write or maintain; admin (or integrator Team member) when DP-05 = human_integrator_sole_main_bypass makes the human the sole RS-main-integrator bypass actor",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
+          "bypass_account_credentials": {
+            "policy": "holder_is_bypass_account",
+            "exempt_credential_types": [],
+            "note": "The human's own account is the bypass actor; its credentials never enter a sandbox or supervisor."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -3076,7 +3154,7 @@
             "acknowledging authoritative outbox/pending-effect state",
             "any ruleset bypass",
             "classic repo scope",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token)"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
           ],
           "enforcement": [
             {
@@ -3143,6 +3221,15 @@
               "reason": "no integration authority"
             }
           ],
+          "bypass_account_credentials": {
+            "policy": "allowed_without_contents_write",
+            "exempt_credential_types": [
+              "github_app_installation",
+              "fine_grained_pat",
+              "classic_pat"
+            ],
+            "note": "The role holds no Contents write in any credential, so even a credential of the bypass account (for example the maintainer's project-only classic token for a user-owned Project) cannot merge. A separate collaborator account is the alternative."
+          },
           "scope": {
             "repository_selection": [
               {
@@ -3263,7 +3350,7 @@
         },
         {
           "id": "user_owned",
-          "effect": "Only classic PAT/OAuth 'project' is documented; a separate broad credential is required for projection and its exposure must be stated"
+          "effect": "Only classic PAT/OAuth 'project' is documented; a separate broad credential is required for projection and its exposure must be stated. That token is limited to the 'project' scope (no 'repo', so no Contents write and no merge); it may belong to the maintainer, who is the RS-main-integrator bypass actor, or to a separate collaborator account"
         }
       ],
       "recommended": "org_owned",
@@ -3355,7 +3442,7 @@
         },
         {
           "id": "human_integrator_sole_main_bypass",
-          "effect": "Only the human integrator is a bypass actor, only on RS-main-integrator, only in bypass_mode pull_request ('an actor can only bypass rules on pull requests', S-gh-rest-rules); every human merge is an audited bypass through a pull request. No bypass on RS-main (pull request and trusted-CI checks still apply to the human), RS-state-* or RS-candidates-*. No App, deploy key or machine account is a bypass actor, and no machine credential may belong to the bypassing account"
+          "effect": "Only the human integrator is a bypass actor, only on RS-main-integrator, only in bypass_mode pull_request ('an actor can only bypass rules on pull requests', S-gh-rest-rules); every human merge is an audited bypass through a pull request. No bypass on RS-main (pull request and trusted-CI checks still apply to the human), RS-state-* or RS-candidates-*. No App, deploy key or machine account is a bypass actor, and no machine credential that carries Contents write may belong to the bypassing account (a project-only classic token for a user-owned Project is the documented exemption; see bypass_account_credentials)"
         },
         {
           "id": "keep_admin_bypass_as_visible_override",

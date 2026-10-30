@@ -146,6 +146,15 @@ class DocumentConsistencyTests(unittest.TestCase):
             for stale in (610, 731):
                 self.assertNotRegex(text, r"(?<![0-9.:,-])%d(?![0-9])" % stale, "%s has stale total %d" % (path.name, stale))
 
+    def test_superseded_main_enforcement_research_carries_corrections(self):
+        text = read(P01 / "runtime-and-identities.md")
+        notes = re.findall(r"\*\*Correction \(2026-10-30, P01 review round 1\)\.\*\*(.*?)(?:\n\n|\Z)", text, re.S)
+        self.assertEqual(len(notes), 2, "B.2 and B.7 corrections")
+        for note in notes:
+            for reference in ("DP-10", "U-PM-14", "DP-11"):
+                self.assertIn(reference, note)
+        self.assertIn("Superseded 2026-10-30", text)
+
     def test_every_matrix_decision_point_is_a_readme_question(self):
         readme = read(P01 / "README.md")
         for point in json.loads(read(MATRIX))["decision_points"]:
