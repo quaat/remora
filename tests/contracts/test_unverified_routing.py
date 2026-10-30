@@ -1,0 +1,104 @@
+"""Every unverified item from the P01 research has a stable ID and a documented route.
+
+Standard library only. These tests check document cross-references, not the truth of the
+items themselves.
+"""
+
+import json
+import re
+import unittest
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[2]
+P01 = ROOT / "docs" / "research" / "P01"
+ROUTING = P01 / "unverified-routing.json"
+EVIDENCE = P01 / "permission-evidence.json"
+UPSTREAM = P01 / "upstream-surfaces.md"
+INVENTORY = P01 / "weave-inventory.md"
+MATRIX = ROOT / "contracts" / "permission-matrix.v1.json"
+ROUTE_DOCUMENTS = {"handoff-P02a.md", "handoff-P02b.md", "handoff-P03.md", "README.md"}
+
+
+def read(path):
+    with open(path, encoding="utf-8") as handle:
+        return handle.read()
+
+
+def section(text, heading_pattern):
+    match = re.search(heading_pattern, text, re.M)
+    if not match:
+        raise AssertionError("missing section " + heading_pattern)
+    rest = text[match.end():]
+    end = re.search(r"^## ", rest, re.M)
+    return rest[:end.start()] if end else rest
+
+
+def mentions(text, item_id):
+    return re.search(r"(?<![A-Za-z0-9-])%s(?![0-9])" % re.escape(item_id), text) is not None
+
+
+class RoutingTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.routing = json.loads(read(ROUTING))
+        cls.items = cls.routing["items"]
+        cls.by_source = {}
+        for item in cls.items:
+            cls.by_source.setdefault(item["source"], []).append(item)
+
+    def test_ids_are_unique_and_stable_format(self):
+        ids = [i["id"] for i in self.items]
+        self.assertEqual(len(ids), len(set(ids)))
+        for item_id in ids:
+            self.assertRegex(item_id, r"^U-(PE|US|WI)-[0-9]{2}$")
+
+    def test_every_permission_evidence_item_has_an_id(self):
+        evidence = json.loads(read(EVIDENCE))["unverified"]
+        routed = self.by_source["docs/research/P01/permission-evidence.json"]
+        self.assertEqual([i["text"] for i in routed], evidence)
+        self.assertEqual([i["source_ref"] for i in routed], ["unverified[%d]" % n for n in range(len(evidence))])
+
+    def test_every_upstream_section5_item_has_an_id(self):
+        body = section(read(UPSTREAM), r"^## 5\. Unknowns.*$")
+        numbers = [int(n) for n in re.findall(r"^([0-9]+)\. \*\*", body, re.M)]
+        self.assertTrue(numbers)
+        routed = self.by_source["docs/research/P01/upstream-surfaces.md"]
+        self.assertEqual([i["source_ref"] for i in routed], ["§5 item %d" % n for n in numbers])
+
+    def test_every_inventory_section_h_bullet_has_an_id(self):
+        body = section(read(INVENTORY), r"^## H\. Unknowns.*$")
+        titles = [t.rstrip(".") for t in re.findall(r"^- \*\*(.+?)\*\*", body, re.M)]
+        self.assertTrue(titles)
+        routed = self.by_source["docs/research/P01/weave-inventory.md"]
+        self.assertEqual([i["source_ref"] for i in routed], ["§H '%s'" % t for t in titles])
+
+    def test_each_id_appears_where_it_is_routed(self):
+        readme = read(P01 / "README.md")
+        for item in self.items:
+            self.assertTrue(set(item["documented_in"]) <= ROUTE_DOCUMENTS, item["id"])
+            self.assertTrue(item["documented_in"], item["id"])
+            for name in item["documented_in"]:
+                self.assertTrue(mentions(read(P01 / name), item["id"]), "%s missing from %s" % (item["id"], name))
+            self.assertTrue(mentions(readme, item["id"]), "%s missing from README" % item["id"])
+            for task, handoff in (("P02a", "handoff-P02a.md"), ("P02b", "handoff-P02b.md")):
+                if any(route.startswith(task) for route in item["routed_to"]):
+                    self.assertIn(handoff, item["documented_in"], item["id"])
+
+
+class DocumentConsistencyTests(unittest.TestCase):
+    def test_p02a_weave_sloc_subtotal_is_the_sum_of_its_parts(self):
+        body = section(read(P01 / "handoff-P02a.md"), r"^## 3\. Weave numbers.*$")
+        parts = [int(n) for n in re.findall(r"^\| [^*|][^|]* \| ([0-9]+) \|$", body, re.M)]
+        subtotal = re.search(r"\*\*Subtotal \(upper bound\)\*\* \| \*\*([0-9]+)\*\* \(\+([0-9]+) with `reconcile.py` = ([0-9]+)\)", body)
+        self.assertTrue(parts and subtotal)
+        self.assertEqual(sum(parts), int(subtotal.group(1)))
+        self.assertEqual(int(subtotal.group(1)) + int(subtotal.group(2)), int(subtotal.group(3)))
+
+    def test_every_matrix_decision_point_is_a_readme_question(self):
+        readme = read(P01 / "README.md")
+        for point in json.loads(read(MATRIX))["decision_points"]:
+            self.assertTrue(mentions(readme, point["id"]), point["id"])
+
+
+if __name__ == "__main__":
+    unittest.main()

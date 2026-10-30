@@ -26,13 +26,13 @@ none has been made.
 ## 2. `.remora/bootstrap-policy.json` pointer to the matrix
 
 - Current value: `"permission_matrix": "not yet implemented; P01 deliverable"`.
-- Proposed: `"permission_matrix": "contracts/permission-matrix.v1.json (proposed, matrix_version 1.0.0; human decisions DP-01..DP-09 open)"`,
+- Proposed: `"permission_matrix": "contracts/permission-matrix.v1.json (proposed, matrix_version 1.0.0; human decisions DP-01..DP-10 open)"`,
   after P01 is accepted.
 - Policy file; the review packet binds its digest, so the change needs its own review.
 
 ## 3. `docs/development/validation.md` test count
 
-- It records "45 tests passed". After P01 the suite has 71 tests (45 bootstrap + 26
+- It records "45 tests passed". After P01 the suite has 94 tests (45 bootstrap + 49
   contract tests under `tests/contracts/`). Update the validation record when P01 is
   integrated, with the actual run provenance.
 

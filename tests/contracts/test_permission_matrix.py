@@ -16,6 +16,7 @@ MATRIX = ROOT / "contracts" / "permission-matrix.v1.json"
 SCHEMA = ROOT / "contracts" / "permission-matrix.schema.json"
 PINS = ROOT / "contracts" / "upstream-pins.v1.json"
 INTERFACES = ROOT / "contracts" / "interfaces.v1.json"
+TASKS = ROOT / ".remora" / "tasks.json"
 EVIDENCE = ROOT / "docs" / "research" / "P01" / "permission-evidence.json"
 PINS_WEAVE = ROOT / "docs" / "research" / "P01" / "pins-weave.json"
 PINS_UPSTREAM = ROOT / "docs" / "research" / "P01" / "pins-upstream.json"
@@ -227,6 +228,11 @@ class SingleAuthorityTests(Fixtures):
                 holders = [r["id"] for r in placement["roles"] if capability in r["authorities"]]
                 self.assertLessEqual(len(holders), 1, "%s %s: %s" % (name, capability, holders))
 
+    def test_supervisors_control_execution_in_both_placements(self):
+        for name, placement in self.placements():
+            supervisor = [r for r in placement["roles"] if r["id"] == "supervisor-runtime"][0]
+            self.assertIn("execution_control", supervisor["authorities"], name)
+
     def test_state_branch_writer_differs_by_placement(self):
         writers = {name: [r["id"] for r in p["roles"] if "state_branch_write" in r["authorities"]][0]
                    for name, p in self.placements()}
@@ -322,6 +328,136 @@ class SetupRuntimeSeparationTests(Fixtures):
         self.assertIn(("rulesets_admin", "write"), {(p["resource"], p["level"]) for p in setup["permissions"]})
 
 
+REQUIRED_RULES = {
+    "RS-state-immutable": {"deletion", "non_fast_forward"},
+    "RS-candidates-immutable": {"deletion", "non_fast_forward"},
+    "RS-state-writers": {"creation", "update"},
+    "RS-candidates-writers": {"creation", "update"},
+    "RS-main": {"pull_request", "required_status_checks", "non_fast_forward", "deletion"},
+}
+CONTENTS_WRITE_CAPABILITIES = {"state_branch_write", "candidate_publication", "setup"}
+
+
+def holds(role, resource, levels):
+    return [p for p in role["permissions"] if p["resource"] == resource and p["level"] in levels]
+
+
+class ForbiddenPermissionTests(Fixtures):
+    """must_not_have is backed by machine-checkable forbidden_permissions."""
+
+    def test_permissions_never_match_forbidden_entries(self):
+        for placement, role in self.all_roles():
+            for forbidden in role["forbidden_permissions"]:
+                for perm in holds(role, forbidden["resource"], forbidden["levels"]):
+                    allowed_by = forbidden.get("unless")
+                    self.assertTrue(allowed_by is not None and perm.get("when") == allowed_by,
+                                    "%s/%s holds forbidden %s %s" % (placement, role["id"], perm["resource"], perm["level"]))
+
+    def test_credentialed_runtime_roles_declare_forbidden_permissions(self):
+        for placement, role in self.all_roles():
+            if role["phase"] == "runtime" and role["credential_types"] != ["human_account"]:
+                self.assertTrue(role["forbidden_permissions"], "%s/%s" % (placement, role["id"]))
+
+    def test_forbidden_unless_references_real_decision_options(self):
+        options = {p["id"]: {o["id"] for o in p["options"]} for p in self.matrix["decision_points"]}
+        for placement, role in self.all_roles():
+            for forbidden in role["forbidden_permissions"]:
+                if "unless" in forbidden:
+                    self.assertIn(forbidden["unless"]["option"], options[forbidden["unless"]["decision_point"]])
+
+    def test_contents_write_only_on_publishing_or_setup_roles(self):
+        for placement, role in self.all_roles():
+            if holds(role, "contents", ("write", "full")):
+                self.assertTrue(CONTENTS_WRITE_CAPABILITIES & set(role["authorities"]),
+                                "%s/%s holds Contents write without publication authority" % (placement, role["id"]))
+
+    def test_contents_write_forbidden_for_ci_projection_and_actions_supervisor(self):
+        cases = [("supervisor_hosted", "trusted-ci"), ("actions_hosted", "trusted-ci"),
+                 ("supervisor_hosted", "projection-only"), ("actions_hosted", "projection-only"),
+                 ("actions_hosted", "supervisor-runtime")]
+        for placement, role_id in cases:
+            role = [r for r in self.matrix["placements"][placement]["roles"] if r["id"] == role_id][0]
+            forbidden = {(f["resource"], level) for f in role["forbidden_permissions"] if "unless" not in f
+                         for level in f["levels"]}
+            self.assertLessEqual({("contents", "write"), ("contents", "full")}, forbidden, "%s/%s" % (placement, role_id))
+
+
+class RulesetContentTests(Fixtures):
+    """Rulesets carry their required rules and the writers are subject to the immutable ones."""
+
+    def test_rulesets_contain_required_rules(self):
+        rulesets = self.rulesets()
+        for ruleset_id, required in REQUIRED_RULES.items():
+            self.assertIn(ruleset_id, rulesets)
+            self.assertLessEqual(required, set(rulesets[ruleset_id]["rules"]), ruleset_id)
+
+    def test_writer_rulesets_name_exactly_one_integration_actor(self):
+        rulesets = self.rulesets()
+        for ruleset_id in ("RS-state-writers", "RS-candidates-writers"):
+            actors = rulesets[ruleset_id]["bypass_actors"]
+            self.assertEqual(len(actors), 1, ruleset_id)
+            self.assertEqual(actors[0]["actor_type"], "Integration", ruleset_id)
+
+    def test_target_refs(self):
+        rulesets = self.rulesets()
+        for ruleset_id in ("RS-state-immutable", "RS-state-writers"):
+            self.assertEqual(rulesets[ruleset_id]["target_refs"], ["refs/heads/harness/state"])
+        for ruleset_id in ("RS-candidates-immutable", "RS-candidates-writers"):
+            self.assertEqual(rulesets[ruleset_id]["target_refs"], ["refs/heads/agent/**/*"])
+
+    def test_writers_and_contents_holders_are_subject_to_immutable_rulesets(self):
+        for name, placement in self.placements():
+            for role in placement["roles"]:
+                relations = {(e["ruleset"], e["relation"]) for e in role["enforcement"]}
+                must = set()
+                if "state_branch_write" in role["authorities"] or holds(role, "contents", ("write", "full")):
+                    must.add(("RS-state-immutable", "subject_to"))
+                if "candidate_publication" in role["authorities"] or holds(role, "contents", ("write", "full")):
+                    must.add(("RS-candidates-immutable", "subject_to"))
+                self.assertLessEqual(must, relations, "%s/%s" % (name, role["id"]))
+
+    def test_main_approval_count_is_an_explicit_decision(self):
+        points = {p["id"]: p for p in self.matrix["decision_points"]}
+        approvals = [p for p in points.values() if p["parameter"] == "main_required_approvals"]
+        self.assertEqual(len(approvals), 1)
+        point = approvals[0]
+        self.assertIn("S-gh-pr-approve-required", point["sources"])
+        self.assertIn("interaction", point)
+        self.assertIn(point["id"], self.rulesets()["RS-main"]["parameters"]["required_approving_review_count"])
+
+
+class ScopeTests(Fixtures):
+    """Each role states repository selection and Project scope per credential type (plan section 10)."""
+
+    EXPECTED_SELECTION = {
+        "github_app_installation": "this_repository_only", "fine_grained_pat": "this_repository_only",
+        "classic_pat": "all_accessible_repositories", "oauth_gh_cli": "all_accessible_repositories",
+        "github_token": "workflow_repository_only", "human_account": "repository_role", "none": "none",
+    }
+
+    def test_repository_selection_covers_credentials(self):
+        for placement, role in self.all_roles():
+            selection = {e["credential_type"]: e for e in role["scope"]["repository_selection"]}
+            self.assertEqual(set(selection), set(role["credential_types"]), role["id"])
+            for credential_type, entry in selection.items():
+                self.assertEqual(entry["selection"], self.EXPECTED_SELECTION[credential_type], role["id"])
+                if credential_type not in ("human_account", "none"):
+                    self.assertIn(entry.get("source"), self.source_ids, role["id"])
+
+    def test_project_scope_matches_project_permissions(self):
+        for placement, role in self.all_roles():
+            scopes = {e["credential_type"]: e for e in role["scope"]["project_scope"]}
+            self.assertEqual(set(scopes), set(role["credential_types"]), role["id"])
+            for credential_type, entry in scopes.items():
+                has_project = any(p["credential_type"] == credential_type and p["resource"].startswith("projects_")
+                                  for p in role["permissions"])
+                self.assertEqual(entry["scope"] != "none", has_project, "%s/%s" % (role["id"], credential_type))
+                if has_project:
+                    self.assertIn(entry.get("source"), self.source_ids, role["id"])
+            if any(e["scope"] != "none" for e in scopes.values()):
+                self.assertTrue(any("user-owned" in c for c in role["scope"]["caveats"]), role["id"])
+
+
 class MainRulesetTests(Fixtures):
     """(6) Contents write includes merge, so every holder declares the main ruleset."""
 
@@ -377,7 +513,13 @@ class VersionAndDecisionTests(Fixtures):
         self.assertIsNone(profile["github_app"])
         self.assertFalse(profile["autonomous_execution"])
         self.assertEqual({c["credential_type"] for c in profile["credentials"]}, {"oauth_gh_cli"})
-        self.assertLessEqual({"repo", "project"}, set(profile["credentials"][0]["scopes_reported"]))
+        for credential in profile["credentials"]:
+            reported = credential["scopes_reported"]
+            pending = credential.get("scopes_pending", [])
+            self.assertIn("repo", reported)
+            self.assertTrue(all(isinstance(x, str) and x for x in reported + pending))
+            self.assertEqual(set(reported) & set(pending), set(), "a scope cannot be both reported and pending")
+            self.assertIn("not inspected", credential["note"])
         ids = {p["id"] for p in self.matrix["decision_points"]}
         self.assertLessEqual(set(profile["decision_point_values"]), ids)
 
@@ -408,8 +550,9 @@ class InterfaceIndexTests(unittest.TestCase):
         self.assertEqual(index["schema_version"], 1)
         ids = [i["id"] for i in index["interfaces"]]
         self.assertEqual(len(ids), len(set(ids)))
-        for required in ("state-backend", "publisher", "execution", "reviewer-launch", "command-ingestion",
-                         "board-projection", "plan-compiler", "evidence-records", "trusted-evidence"):
+        for required in ("state-backend", "publisher", "execution", "reviewer-launch", "command-envelope",
+                         "command-ingestion", "board-projection", "plan-compiler", "evidence-records",
+                         "trusted-evidence"):
             self.assertIn(required, ids)
         for interface in index["interfaces"]:
             self.assertTrue(interface["owner_module"].startswith("src/remora/"), interface["id"])
@@ -422,10 +565,56 @@ class InterfaceIndexTests(unittest.TestCase):
             for operation in interface["operations"]:
                 for key in ("inputs", "outputs", "errors"):
                     self.assertIsInstance(operation[key], list, "%s.%s" % (interface["id"], operation["name"]))
+        allowed = {"id", "owner_module", "owner_task", "contract_fixture_task", "consumers", "depends_on_interfaces",
+                   "conforms_to", "status", "operations"}
+        for interface in index["interfaces"]:
+            self.assertLessEqual(set(interface), allowed, "%s carries split-ownership fields" % interface["id"])
+            self.assertIsInstance(interface["owner_task"], str)
         execution = [i for i in index["interfaces"] if i["id"] == "execution"][0]
         self.assertLessEqual({"start", "checkpoint", "stop_request", "stop_confirmed", "authority_lost"},
                              {op["name"] for op in execution["operations"]})
         self.assertIn("P02b", execution["consumers"])
+
+
+class InterfaceOwnershipTests(unittest.TestCase):
+    """One owner per interface, owner modules inside the owner's allocation, dependencies follow the task DAG."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.index = load(INTERFACES)
+        cls.tasks = {t["id"]: t for t in load(TASKS)["tasks"]}
+
+    def prerequisites(self, task_id):
+        seen, stack = set(), list(self.tasks[task_id]["depends_on"])
+        while stack:
+            current = stack.pop()
+            if current not in seen:
+                seen.add(current)
+                stack.extend(self.tasks[current]["depends_on"])
+        return seen
+
+    def test_owner_module_within_owner_task_allowed_paths(self):
+        for interface in self.index["interfaces"]:
+            prefixes = [p[:-2] for p in self.tasks[interface["owner_task"]]["allowed_paths"] if p.endswith("/**")]
+            self.assertTrue(any(interface["owner_module"].startswith(prefix) for prefix in prefixes),
+                            "%s not in %s allocation" % (interface["owner_module"], interface["owner_task"]))
+
+    def test_owner_modules_are_distinct(self):
+        modules = [i["owner_module"] for i in self.index["interfaces"]]
+        self.assertEqual(len(modules), len(set(modules)))
+
+    def test_dependencies_respect_task_order(self):
+        by_id = {i["id"]: i for i in self.index["interfaces"]}
+        for interface in self.index["interfaces"]:
+            owner = interface["owner_task"]
+            for dependency in interface["depends_on_interfaces"]:
+                self.assertIn(dependency, by_id, interface["id"])
+                dep_owner = by_id[dependency]["owner_task"]
+                self.assertTrue(dep_owner == owner or dep_owner in self.prerequisites(owner),
+                                "%s (%s) depends on %s (%s), which is not a prerequisite" %
+                                (interface["id"], owner, dependency, dep_owner))
+            for contract in interface.get("conforms_to", []):
+                self.assertIn(contract, by_id, interface["id"])
 
 
 if __name__ == "__main__":

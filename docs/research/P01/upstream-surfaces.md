@@ -13,12 +13,14 @@ backend or go/no-go decision.** P02a rejection-criterion material is labelled
 | Symphony | `https://github.com/openai/symphony` | `be10a1b79df723d6d7612b5651c8522704dafb2e` (2026-09-15) | 2026-10-29T23:16:42Z | same SHA | `v0.0.3` (`1c0fb6c8…`), ancestor, 1 commit before the pin; the moving `nightly` tag points at the pin |
 | Beads | `https://github.com/gastownhall/beads` | `e226083653b893998614df4225f73b6688ca9166` (2026-10-29) | 2026-10-29T23:16:42Z | same SHA | `v1.3.2` (`9b65b9e1…`) is **not** an ancestor. It is a release-branch merge, forward-ported to main by `02f3349b99429628895e8ff520adcaf5cb0fc29a` |
 
-Method: each repository was cloned under `/tmp/claude-1000/upstream/<name>` with
+Method: each repository was cloned under the ephemeral location `/tmp/claude-1000/upstream/<name>` (not in this repository) with
 `git init` + `git fetch --depth 1 origin <sha>` + `git checkout -q FETCH_HEAD`. Tag
 ancestry came from `git ls-remote --tags` and one bounded treeless fetch per
 repository (`--filter=tree:0 --shallow-since=<tag date>`). No upstream build tool,
 test, hook or interpreter was run. Inspection used `cat`, `sed`, `grep`, `git`, and
-two `python3.12 -I` scripts kept in `/tmp/claude-1000/research-scripts/`. Machine-readable
+two `python3.12 -I` scripts, `scripts/html2text.py` (writes `<input>.txt` next to each
+fetched HTML file) and `scripts/overlap.py` (`<pinned.md> <live.txt> [n]`), copied verbatim
+into `docs/research/P01/scripts/`. Machine-readable
 pins are in `pins-upstream.json`.
 
 Citations use `<repo>:<path>:<lines>` at the pinned commit. For example,

@@ -8,7 +8,8 @@ backend or changes policy.
 Citation conventions:
 
 - `W:path:lines` is a path in Weave at the pinned commit `e7c3f3c`
-  (`/tmp/claude-1000/upstream/weave`).
+  (fetched into the ephemeral, untrusted location `/tmp/claude-1000/upstream/weave`; not in
+  this repository).
 - `I6:<comment id>` is a comment of quaat/weave issue #6 as returned by the GitHub REST API
   (section G).
 - `R:path:lines` is a path in this Remora repository.
@@ -16,9 +17,13 @@ Citation conventions:
 Labels: **[observed]** means I read it in the pinned source or fetched API data.
 **[documented]** means Weave's own documentation says it and I did not test it.
 **[inference]** is my reasoning from observed facts. No Weave code, tests, hooks or build
-tools were executed. Counts come from static parsing (`python3.12 -I` scripts kept under
-`/tmp/claude-1000/research-scripts/`, which read files as text and import nothing from the
-Weave tree).
+tools were executed. Counts come from static parsing with the stdlib-only scripts in
+`docs/research/P01/scripts/` (verbatim copies of the scripts used; run as
+`python3.12 -I scripts/weave_loc.py <weave-checkout> <file>...` and
+`python3.12 -I scripts/weave_range_sloc.py <file> <a-b>...`). They read files as text and
+import nothing from the Weave tree. Re-running them on 2026-10-30 against the same checkout
+reproduced 18 files / 4,468 lines / 3,698 SLOC and 9 test files / 2,327 / 1,930 / 163
+methods.
 
 ---
 
@@ -71,7 +76,7 @@ quoted there.
 
 Counting method: "total" is physical lines. "SLOC" is lines carrying Python code tokens,
 excluding blank, comment-only and docstring lines (tokenizer + AST,
-`research-scripts/weave_loc.py`).
+`scripts/weave_loc.py`).
 
 **Non-generated:** none of these files is listed under `generated_documents` in
 `W:tools/weave_workflow/docmap.json`. The generated targets are `inventory-proof/*`,
@@ -104,7 +109,7 @@ Tests are `unittest` methods named `test*`, counted statically.
 | `tools/weave_workflow/schemas/event.v1.schema.json` | 806 | n/a | 24 event kinds with per-kind required fields | `test_protocol.py` |
 | `tools/weave_workflow/schemas/review-result.v1.schema.json` | 170 | n/a | Reviewer output schema (`PASS`/`REQUEST_CHANGES`/`BLOCKED`) | `test_transitions.py` |
 | `tools/weave_workflow/schemas/task-packet.v1.schema.json` | 146 | n/a | Task packet schema | `test_review_findings.py` |
-| `tools/weave_workflow/tests/*` (8 files) | 2327 | 1930 | 163 test methods: docs_audit 34, transitions 34, scheduler 33, review_findings 25, protocol 16, hooks 15, github_adapter 6; `support.py` 198/157 fixtures | — |
+| `tools/weave_workflow/tests/*` (9 files: 7 test modules, `__init__.py`, `support.py`) | 2327 | 1930 | 163 test methods: docs_audit 34, transitions 34, scheduler 33, review_findings 25, protocol 16, hooks 15, github_adapter 6; `support.py` 198/157 fixtures | — |
 | `.claude/hooks/weave_hook.py` | 9 | 5 | Hook entry shim | `test_hooks.py` (`test_settings_register_every_handler`) |
 | `.claude/settings.json` | 45 | n/a | Registers 9 hook events; deny force-push; ask merge/release | `test_hooks.py` |
 | `.claude/skills/*/SKILL.md` (4), `.claude/agents/*.md` (6) | 343 | n/a | Orchestrator, task, review and docs skills; 6 subagent prompts | — |
@@ -214,7 +219,7 @@ Mapping the plan's retained concepts to code [observed]:
   round N > budget (cli.py:678-681).
 - **Rounds reset across attempts.** "Rounds of a released attempt do not count"
   (W:docs/development/transitions.md:16). Tests assert it: `test_review_budget_counts_the_current_attempt_only`
-  (W:tests/test_transitions.py:143-155).
+  (W:tests/test_transitions.py:152-155).
 - **REQUESTED, not completed, rounds are counted.** A REVIEW_REQUESTED followed by a
   rejected or timed-out result (published as BLOCKED, cli.py:729-734) still consumes a round.
 
@@ -413,7 +418,7 @@ Mapping the plan's retained concepts to code [observed]:
 
 These classifications are judgements [inference]. They depend on P02a outcomes I did not
 test. Line counts are observed: file-level SLOC from section B; sub-ranges use the same SLOC
-method (`research-scripts/weave_range_sloc.py`).
+method (`scripts/weave_range_sloc.py`).
 
 | Module / range | Total / SLOC | Classification | Rationale |
 | --- | --- | --- | --- |
@@ -442,7 +447,7 @@ method (`research-scripts/weave_range_sloc.py`).
 | `report.py` | 122 / 114 | reuse with adapter | Dry-run report. Depends on `cli`/`reconcile`; untested |
 | `schemas/*.json` | 1,122 lines | reuse with adapter | Strict schemas. Need generation, UNVERIFIED, evidence provenance and command IDs |
 | `.claude/skills/**`, `.claude/agents/**` | 343 lines | Weave-specific, stays | Orchestration instructions for one Claude session |
-| `tests/**` | 2,327 / 1,930, 163 methods | reuse with adapter | Retain as behavioural fixtures. Many tests encode per-attempt budgets and single-host assumptions that Remora rejects (e.g. test_transitions.py:143-160) |
+| `tests/**` | 2,327 / 1,930, 163 methods | reuse with adapter | Retain as behavioural fixtures. Many tests encode per-attempt budgets and single-host assumptions that Remora rejects (e.g. test_transitions.py:147-160) |
 
 `cli.py` sub-ranges (SLOC):
 
@@ -463,7 +468,7 @@ method (`research-scripts/weave_range_sloc.py`).
 **Inputs for P02a criterion 3 (not a computed result)** [inference]:
 
 - Production Python that plausibly counts as "coordination/publication" in Weave adds up to
-  610 SLOC:
+  707 SLOC (168 + 106 + 106 + 28 + 34 + 265):
   - `state.py` 168;
   - `publisher.py` 106;
   - `transitions.py` executor 106;
@@ -471,7 +476,7 @@ method (`research-scripts/weave_range_sloc.py`).
   - `events.py` authenticate 34;
   - the claim/transition/outbox/run wiring in `cli.py`, roughly 132-343 + 527-578 + 756-797
     = 184 + 46 + 35 = 265, which also contains packet building, so it is an upper bound.
-- With `reconcile.py` (121) included, the figure is up to ~731 SLOC.
+- With `reconcile.py` (121) included, the figure is up to 828 SLOC.
 - That is an **upper bound** for what a backend could remove. The tests that exercise this
   code are mainly `test_protocol.py` (16 methods) and parts of `test_review_findings.py` and
   `test_transitions.py`.

@@ -27,6 +27,9 @@
         "P11",
         "P12"
       ],
+      "depends_on_interfaces": [
+        "plan-compiler"
+      ],
       "status": "proposed",
       "operations": [
         {
@@ -138,6 +141,9 @@
         "P08",
         "P09"
       ],
+      "depends_on_interfaces": [
+        "state-backend"
+      ],
       "status": "proposed",
       "operations": [
         {
@@ -205,6 +211,10 @@
         "P06",
         "P08",
         "P11"
+      ],
+      "depends_on_interfaces": [
+        "state-backend",
+        "publisher"
       ],
       "status": "proposed",
       "operations": [
@@ -316,6 +326,13 @@
         "P08",
         "P09"
       ],
+      "depends_on_interfaces": [
+        "state-backend",
+        "plan-compiler"
+      ],
+      "conforms_to": [
+        "execution"
+      ],
       "status": "proposed",
       "operations": [
         {
@@ -359,14 +376,57 @@
       ]
     },
     {
+      "id": "command-envelope",
+      "owner_module": "src/remora/commands/",
+      "owner_task": "P05",
+      "consumers": [
+        "P07",
+        "P10",
+        "P11"
+      ],
+      "depends_on_interfaces": [],
+      "status": "proposed",
+      "operations": [
+        {
+          "name": "derive_command_id",
+          "inputs": [
+            "source reference (GitHub comment node ID and body digest, or terminal-posted comment)"
+          ],
+          "outputs": [
+            "stable command_id"
+          ],
+          "errors": [
+            "InvalidInput"
+          ],
+          "notes": "Deterministic; the same delivered command always yields the same ID, so several ingesters deduplicate through state receipts."
+        },
+        {
+          "name": "validate_envelope",
+          "inputs": [
+            "command envelope (command_id, actor, role, verb, target id, question_revision, args)"
+          ],
+          "outputs": [
+            "valid | invalid(reason)"
+          ],
+          "errors": [
+            "InvalidInput",
+            "SchemaUnsupported"
+          ]
+        }
+      ]
+    },
+    {
       "id": "command-ingestion",
       "owner_module": "src/remora/github/commands.py",
       "owner_task": "P07",
       "consumers": [
-        "P05",
         "P07",
         "P10",
         "P11"
+      ],
+      "depends_on_interfaces": [
+        "command-envelope",
+        "state-backend"
       ],
       "status": "proposed",
       "operations": [
@@ -431,9 +491,6 @@
           ],
           "notes": "harness answer posts the same authorized command to the issue; it is not a side channel."
         }
-      ],
-      "related_modules": [
-        "src/remora/commands/ (P05: command envelope schema and command_id deduplication receipts)"
       ]
     },
     {
@@ -444,6 +501,9 @@
         "P07",
         "P10",
         "P11"
+      ],
+      "depends_on_interfaces": [
+        "state-backend"
       ],
       "status": "proposed",
       "operations": [
@@ -500,6 +560,7 @@
         "P09",
         "P10"
       ],
+      "depends_on_interfaces": [],
       "status": "proposed",
       "operations": [
         {
@@ -589,6 +650,10 @@
         "P11",
         "P12"
       ],
+      "depends_on_interfaces": [
+        "plan-compiler",
+        "state-backend"
+      ],
       "status": "proposed",
       "operations": [
         {
@@ -645,8 +710,7 @@
           ],
           "notes": "unverified_pilot only; never rewrites a verdict."
         }
-      ],
-      "schema_owner": "P03 (src/remora/contracts/: evidence and verdict record schemas)"
+      ]
     },
     {
       "id": "trusted-evidence",
@@ -657,6 +721,10 @@
         "P10",
         "P11",
         "P12"
+      ],
+      "depends_on_interfaces": [
+        "evidence-records",
+        "state-backend"
       ],
       "status": "proposed",
       "operations": [
@@ -695,5 +763,6 @@
         }
       ]
     }
-  ]
+  ],
+  "dependency_rule": "depends_on_interfaces: code dependency; the depended-on owner task must be the same task or a transitive prerequisite of the owner task. conforms_to: implements the same contract shape without depending on the other owner's module (reviewer-launch follows the execution contract and the P02b launcher so that P08 does not wait for P06). contract_fixture_task: builds a fixture of the contract in its own experiment paths; it is not an owner."
 }

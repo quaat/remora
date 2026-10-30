@@ -1,0 +1,439 @@
+{
+  "schema_version": 1,
+  "purpose": "Stable IDs for every unverified/unknown item in the P01 research and where it is routed. tests/contracts/test_unverified_routing.py checks that every item of permission-evidence.json 'unverified', upstream-surfaces.md §5 and weave-inventory.md §H has an ID here and that each ID appears in the listed handoff or README file.",
+  "items": [
+    {
+      "id": "U-PE-01",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[0]",
+      "text": "Whether an individual User actor_type works as a repository ruleset bypass actor (REST enum lists it; UI eligible list does not).",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-02",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[1]",
+      "text": "Whether the GitHub Actions GITHUB_TOKEN identity can be a ruleset bypass actor (not found).",
+      "routed_to": [
+        "P02a (Actions placement only)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-03",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[2]",
+      "text": "Whether a GitHub App installation can access user-owned Projects v2 (no App permission found).",
+      "routed_to": [
+        "P02a (setup observation)",
+        "P07",
+        "human DP-01"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-04",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[3]",
+      "text": "Fine-grained PAT / App permission levels required by GraphQL mutations createProjectV2, updateProjectV2Field, linkProjectV2ToRepository, createCommitOnBranch, updateRefs.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-05",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[4]",
+      "text": "Which HTTP status (409 vs 422) REST ref PATCH returns for a non-fast-forward race.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-06",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[5]",
+      "text": "Error shape and race behaviour of createCommitOnBranch expectedHeadOid mismatch and updateRefs beforeOid mismatch.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-07",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[6]",
+      "text": "Whether ruleset Restrict updates / Block force pushes are enforced identically for REST, GraphQL and git push paths.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-08",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[7]",
+      "text": "Whether bypass of one ruleset leaves rules in a separate no-bypass ruleset enforced for the same actor (two-ruleset layout).",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-09",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[8]",
+      "text": "Whether a GitHub App pull request review counts toward required approvals on main.",
+      "routed_to": [
+        "P02a",
+        "human DP-08/DP-10"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-10",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[9]",
+      "text": "GITHUB_TOKEN behaviour when pushing changes to .github/workflows (no workflows permissions key documented).",
+      "routed_to": [
+        "P02a (Actions placement only)",
+        "P09"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-11",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[10]",
+      "text": "Classic PAT/OAuth scope required to create rulesets (not tabulated).",
+      "routed_to": [
+        "P02a (setup observation)",
+        "P10"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-12",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[11]",
+      "text": "Docker Sandboxes actual defaults on target host (docs inconsistent on shared skills mode; SSH agent forwarding on by default; default allowed-domain list not enumerated on defaults page).",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-13",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[12]",
+      "text": "Docker Sandboxes support on non-Ubuntu Linux hosts such as the Debian 11 bootstrap host (not in documented support list).",
+      "routed_to": [
+        "P02b",
+        "human Q11"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-14",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[13]",
+      "text": "Rootless Docker cgroup limit enforcement on target hosts (silently ignored without cgroup v2 + systemd).",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-15",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[14]",
+      "text": "OCI egress enforcement including DNS and IPv6 bypass (not documented; P02b measurement).",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-01",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 1",
+      "text": "External-worker refusal, live",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-02",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 2",
+      "text": "Self-hosted runner question",
+      "routed_to": [
+        "P02a",
+        "human Q1"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-03",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 3",
+      "text": "Git CAS under contention",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-04",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 4",
+      "text": "Pinning reproducibility (compat.json, tagged setup action, v3 additive drift, REST API version 2026-03-10)",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-05",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 5",
+      "text": "Hosted gates upstream marks unverified (immutable-SHA dispatch, hosted Git publication, hosted execution, native delivery)",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-06",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 6",
+      "text": "Latency and request volume; no same-turn grant to the agent (spec :3352)",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-07",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 7",
+      "text": "Admin requirement for steady-state operator operations",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-08",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 8",
+      "text": "Symphony as runner",
+      "routed_to": [
+        "not adopted for the pilot; any later runner adapter needs its own task after P06"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-09",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 9",
+      "text": "Weave-side inventory for criterion 3",
+      "routed_to": [
+        "resolved by weave-inventory.md §E; P02a computes the net figure"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-10",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 10",
+      "text": "Not verified: docs site build revision, upstream binary behaviour, githubnext redirect, meaning of 27 *_checks.cjs files",
+      "routed_to": [
+        "P02a (binary behaviour within its fixtures)",
+        "informational otherwise"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-01",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Test runs'",
+      "text": "Executed status of Weave's controller tests; the '89 passing' figure is not reproducible statically",
+      "routed_to": [
+        "human",
+        "P12 (legacy import)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-02",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Weave docs that are stale or conflict with each other'",
+      "text": "capabilities.md and orchestration-requirements.md conflict with observed behaviour",
+      "routed_to": [
+        "informational; P12 import must not rely on them"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-03",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'gh-aw coverage'",
+      "text": "Whether gh-aw safe outputs/queue could replace publisher.py, state.py, the executor and github.py writes",
+      "routed_to": [
+        "P02a criterion 3"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-04",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Project automation'",
+      "text": "Live Projects automation settings of the Weave board",
+      "routed_to": [
+        "human",
+        "P07",
+        "P12"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-05",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Legacy ledger contents'",
+      "text": "Contents and size of the legacy ledger on host gengar",
+      "routed_to": [
+        "human Q12",
+        "P12"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-06",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Licence'",
+      "text": "Legal effect of AI co-authorship trailers; Weave rights holder vs Remora owner",
+      "routed_to": [
+        "human Q14"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-07",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Shallow clones'",
+      "text": "Per-file history taken from Weave's decision record, not git log",
+      "routed_to": [
+        "informational"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-08",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'No blocker'",
+      "text": "No blocker prevented the inventory",
+      "routed_to": [
+        "informational"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    }
+  ]
+}

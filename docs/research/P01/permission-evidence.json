@@ -326,6 +326,12 @@
    "url": "https://developers.openai.com/codex/noninteractive",
    "title": "Codex: Non-interactive mode (served from https://learn.chatgpt.com/docs/non-interactive-mode after redirect)",
    "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-pr-approve-required",
+   "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews",
+   "title": "Approving a pull request with required reviews (added during P01 rework; quote: 'Pull request authors cannot approve their own pull requests.')",
+   "accessed_at": "2026-10-30T00:02:55Z"
   }
  ],
  "permissions": [

@@ -11,7 +11,7 @@ explicit rejection criteria, and forbids two coequal schedulers (plan sections 1
 
 - Weave's controller is single-host: a local `flock` and a local ledger, with no claim
   generation, renewal or takeover. Its removable coordination/publication code is at most
-  610 SLOC, or about 731 with reconciliation (`weave-inventory.md` §C2, §E).
+  707 SLOC, or 828 with reconciliation (`weave-inventory.md` §C2, §E).
 - gh-aw's work queue implements Git-backed CAS publication, DAG gating and checkpoints,
   but worker authority is bound to the original Actions run, the operator CLI cannot take
   the worker role, and there is no lease or renewal. No supported path for an external
@@ -31,8 +31,9 @@ explicit rejection criteria, and forbids two coequal schedulers (plan sections 1
    effects, verified snapshots).
 2. **Fallback backend candidate: the gh-aw work queue**, assessed concurrently from day one
    within its three-engineer-day box. It is selectable only if it passes all three
-   rejection criteria and the required scenarios. If neither candidate qualifies, P02a
-   reports no-go and dependent implementation pauses.
+   rejection criteria and the required scenarios; if it does, it is selected (see the
+   selection order below). If neither candidate qualifies, P02a reports no-go and dependent
+   implementation pauses.
 3. **Placement default: supervisor-hosted reducer.** Each enrolled trusted supervisor runs
    the same pinned reducer; the state branch is the single authority.
 4. **Placement fallback: Actions-hosted reducer**, separately justified for deployments that
@@ -47,6 +48,20 @@ explicit rejection criteria, and forbids two coequal schedulers (plan sections 1
    human to decide. It would still be an Actions run with an Actions identity, and plan
    section 4 forbids hiding a second authority behind Actions.
 
+**Selection order and the meaning of "preferred".** The plan says to evaluate gh-aw first and
+treats it as the first candidate for reuse (plan section 1: "First evaluate gh-aw's queue
+and safe-output implementation"; section 2: "First candidate for reuse, subject to the M0
+tests"), and AGENTS.md says to prefer existing components when a pinned integration passes
+the contract. P01's labels reverse the plan's order only as an **expectation**, and say so
+here: "preferred" means the outcome expected from the code-level evidence (above all the
+external-worker binding) and the default supervisor-hosted placement. It is **not** a
+tie-break in favour of the narrow adapter. The plan's reuse rule governs selection:
+
+- If gh-aw passes all three rejection criteria **and** A01/A04/A05/A07 plus A17 fencing,
+  gh-aw is selected.
+- Otherwise, the narrow adapter is selected if it passes A01/A04/A05/A07 plus A17 fencing.
+- Otherwise P02a reports no-go and dependent implementation pauses.
+
 ## Consequences
 
 P02a starts both experiments on day one with the same fixtures (`handoff-P02a.md`). The
@@ -55,9 +70,13 @@ assessment, and the narrow adapter must still pass A01/A04/A05/A07 and A17 fenci
 State-writing supervisor credentials are part of the trusted computing base; the
 permission matrix keeps them out of sandboxes and off the `main` bypass list.
 
-If gh-aw is selected, the local state layout is replaced by gh-aw's supported storage and
-checkpoint protocol, its schemas and versions are pinned, and the supervisor-hosted
-placement exists only to the extent criterion 1 passed.
+gh-aw can be selected only if criterion 1 passed, that is, only if P02a demonstrated a
+supported authenticated path by which a process outside Actions holds and exercises a
+Claim. If it is selected: its scheduler and trusted jobs (which run in Actions) are the
+single authority; supervisors take part only through the path that passed criterion 1; the
+local `harness/state` layout and the narrow adapter's Actions-hosted placement do not
+apply; gh-aw's supported storage and checkpoint protocol are used without weakening its
+history verification; and its protocol, schemas and versions are pinned (criterion 2).
 
 ## Rejection-criteria table for P02a to fill
 
@@ -68,6 +87,6 @@ fixtures. "Lead" columns are P01 evidence, not results.
 | --- | --- | --- | --- | --- | --- |
 | 1. A process outside Actions holds and exercises a Claim through a supported authenticated path, without another ledger or a fabricated Actions identity | Toward fail: `work_queue_native.cjs:240-251`, `branch.go:357-391`, `work_command_test.go:52-58`; no lease (`upstream-surfaces.md` §1.5) | | | n/a (supervisor authenticates with its own enrolled credential) | Identity used, ruleset bypass actor, doctor output |
 | 2. Protocol, implementation, schemas and runtime dependencies pinnable to a reproducible compatible version; unsupported versions rejected | Mixed: tags and SHA-pinned locks vs moving `compat.json`, additive v3 schemas, working-draft specs, REST API `2026-03-10` (§1.1, §1.7) | | | Local schema version and refusal of unsupported state (A26) | Fixture IDs |
-| 3. Adoption removes more hand-maintained Weave coordination/publication code than adapter/glue adds, and reduces responsibilities | Weave upper bound 610 SLOC (731 with `reconcile.py`); gh-aw still needs worker workflows, run binding, compile/lock upkeep, engine secrets (`weave-inventory.md` §E; §1.7) | | Files, non-generated SLOC removed/added, retained tests, responsibilities | Adapter SLOC added | Same accounting |
+| 3. Adoption removes more hand-maintained Weave coordination/publication code than adapter/glue adds, and reduces responsibilities | Weave upper bound 707 SLOC (828 with `reconcile.py`); gh-aw still needs worker workflows, run binding, compile/lock upkeep, engine secrets (`weave-inventory.md` §E; §1.7) | | Files, non-generated SLOC removed/added, retained tests, responsibilities | Adapter SLOC added | Same accounting |
 | Required scenarios A01, A04, A05, A07, A17 fencing | Not run | | | | |
 | Time box | 3 engineer-days for gh-aw; any unresolved criterion at the deadline is no-go | Start/end dates | | Runs concurrently; no wait | |

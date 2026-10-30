@@ -27,7 +27,7 @@ counts from WI section B/E.
 | 2 | Claimable only with accepted prerequisite completion evidence and available resources | `scheduler.py:213-270` path overlap (42 SLOC). The rest of `scheduler.py` (345 SLOC) is reuse-with-adapter | `plan-compiler.readiness` fed with accepted completions and reservations from `state-backend.read_state`; Beads-style explanation shape (US §3) | Weave treats "closed-as-completed **and** board Done" as completion (`scheduler.py:401-412`) and board cards as capacity input (`:193-197`); Projects automation can move cards (WI §C7, §F row 2). Resources are path globs only; no hard resources (WI §D2 item 8) | P03 (readiness and explanations), P05 (reservations, hard resources) | observed |
 | 3 | A stale worker's output is not accepted under an old claim generation | None. Review acceptance binding `review.py:148-177` is reuse-with-adapter (144 SLOC file) | Claim generation in every command envelope (`state-backend`), `publisher.publish_candidate` rejects `StaleGeneration`, `execution.authority_lost` | No generation, fencing token or epoch exists (searched `generation`, `fenc`, `epoch`; WI §C2). gh-aw has no lease, renewal or takeover ("There is no background timer or Claim lease", US §1.5 item 3) | P02a (A04, A17 fencing), P05 | observed |
 | 4 | Review applies to an exact candidate and exact task revision | None as-is. Reuse-with-adapter: head/base/requirements binding `review.py:157-168`; tree equality `integration.py:72-81`; digests `model.py:137-160`. The bootstrap `core.review_packet` already binds candidate, base, task digest and per-criterion digests | `plan-compiler.compile_task_revision`, `plan-compiler.build_review_packet` | Weave's "task revision" is a digest of selected issue-body sections, not an approved immutable revision (`model.py:151-160`; WI §F row 4). gh-aw has no review concept (US §4 row 4) | P03 (revision objects, packets), P08 | observed |
-| 5 | Review budget belongs to the task across workers, restarts, branches and amendments | None. Weave **contradicts** the contract: rounds are per attempt, a released attempt resets them, and a test asserts the reset (`transitions.py:177-180`; `test_transitions.py:143-155`) | `review_rounds` records in `state-backend` (reserve slot on dispatch, finalize once); `evidence-records.validate_verdict` | WI §C3, §F row 5; issue #6 released an attempt to widen scope (WI §G). gh-aw only has `retry.max_attempts` per Work (US §4 row 5) | P08 (aggregate rounds), P05 (persistence), P12 (import recount) | observed |
+| 5 | Review budget belongs to the task across workers, restarts, branches and amendments | None. Weave **contradicts** the contract: rounds are per attempt, a released attempt resets them, and a test asserts the reset (`transitions.py:177-180`; `test_transitions.py:152-155`) | `review_rounds` records in `state-backend` (reserve slot on dispatch, finalize once); `evidence-records.validate_verdict` | WI §C3, §F row 5; issue #6 released an attempt to widen scope (WI §G). gh-aw only has `retry.max_attempts` per Work (US §4 row 5) | P08 (aggregate rounds), P05 (persistence), P12 (import recount) | observed |
 | 6 | Timeout, unavailable checker or unverified test cannot become PASS | None as-is. Reuse-with-adapter: Codex timeout/exit/silence → `ReviewRejected` → BLOCKED, never a verdict (`review.py:107-128`; `cli.py:729-734`). Bootstrap `core.check_review` already refuses PASS without independent evidence | `evidence-records.record_check_evidence`, `validate_verdict` (adds `UNVERIFIED`), `reviewer-launch.collect_result` (infrastructure outcome is not a verdict) | A reviewer that cannot run checks may still PASS (`W:docs/development/review.md:66-68`; issue #6 round 3, I6:6503850141); no `UNVERIFIED` verdict; verification is coordinator-run, not trusted CI (WI §C4) | P08 (UNVERIFIED, per-check provenance), P09 (trusted CI) | observed |
 | 7 | Done = integrated deliverable plus accepted completion evidence | None as-is. Reuse-with-adapter: derived integration evidence `integration.py:44-82` (60 SLOC); Done gate `transitions.py:150-206` | Completion record in `state-backend`; `trusted-evidence.verify_trusted_ci`; non-code deliverable location in the task revision (`plan-compiler`) | Strong for code tasks on one host, but no shared-state completion record and no non-code deliverable location (WI §F row 7) | P09 (gate), P05 (record), P03 (deliverable field) | observed |
 | 8 | Human commands authenticated, correlated, auditable; discussion never changes policy | Generic causal ordering `events.py:153-174` (18 SLOC) reusable as-is. `/weave-decision` recognition `events.py:139-150` is removable under the narrow adapter (WI §E) | `command-ingestion.poll_commands`, `parse_and_authenticate`, `submit`, `post_terminal_command`; `command_receipts` in `state-backend` | No command ID, deduplication, question correlation or designated human; the coordinator and maintainer share one account (`policy.json:17-24`); decisions were relayed as orchestrator ANSWER text (WI §C6, §F row 8, §G) | P07 (ingestion), P05 (receipts, dedup) | observed |
@@ -44,7 +44,7 @@ counts from WI section B/E.
 | Symphony runner boundary | Vocabulary only: `WORKFLOW.md` front-matter layout, active/terminal states, `dispatchable`, `blocked_by` (US §2) | An optional runner adapter would need six changes: authority-driven `dispatchable`, neutered `claimed` set, stop/fence mapping, non-Codex runner, hardened sandbox defaults, Elixir/OTP runtime (US §2) | In-memory `claimed` set in one orchestrator; no cross-host exclusivity; tracker state is the eligibility input; the GitHub adapter sets `blocked_by: []`; Draft v1 spec, prototype implementation (US §2) | Not adopted for the pilot; any later runner adapter needs its own task after P06 | documented / observed |
 | Beads (readiness UX) | Explanation shape `ReadyExplanation`/`ReadyItem`/`BlockedItem` (`internal/types/types.go:1935-1985`) as vocabulary | Extra reason kinds (missing completion evidence, resources, Needs human, review budget) in `plan-compiler.readiness` | Claims are replica-local; Dolt is a separate authority; not to be adopted as a second database (US §3; plan section 2) | P03 (explanation output) | observed / documented |
 | Runtime support | Docker Sandboxes (microVM, credential proxy, deny-by-default egress) or ordinary rootless OCI (RI §E) | `execution` interface and a pinned runtime profile with explicit settings (`ssh.agentForwardingEnabled=false`, skills off, browser off, clone mode, trimmed network policy; RI §E.1) | Docker Sandboxes Linux support is Ubuntu 24.04+ only; the bootstrap host is Debian 11; docs disagree on skills mounting and credential defaults; rootless cgroup flags are silently ignored without cgroup v2 + systemd; OCI egress enforcement is undocumented (RI §E, `S-docker-sbx-install`, `S-docker-rootless-tips`) | P02b; human host decision (README Q11) | documented; host checks inconclusive |
-| Required GitHub identities | `contracts/permission-matrix.v1.json` (this task) | `harness init` emits the credential specification from the matrix (P10); `doctor` checks access | User-owned Projects: only classic/OAuth `project` (`S-gh-pat-manage`, `S-gh-oauth-scopes`); Checks API not callable by fine-grained PATs and check-run creation needs an App (`S-gh-rest-checks`); only Apps are documented UI bypass actors (`S-gh-rules-create`); `GITHUB_TOKEN` cannot access Projects and is not a documented bypass actor (RI §G.1) | Human decisions DP-01…DP-09 (README); P02a/P02b live checks; P10 | documented |
+| Required GitHub identities | `contracts/permission-matrix.v1.json` (this task) | `harness init` emits the credential specification from the matrix (P10): per role the credential types, permission names and levels, repository selection and Project scope (`scope`), forbidden permissions, holder, expiry/revocation and ruleset enforcement; `doctor` checks access | User-owned Projects: only classic/OAuth `project` (`S-gh-pat-manage`, `S-gh-oauth-scopes`); Checks API not callable by fine-grained PATs and check-run creation needs an App (`S-gh-rest-checks`); only Apps are documented UI bypass actors (`S-gh-rules-create`); `GITHUB_TOKEN` cannot access Projects and is not a documented bypass actor (RI §G.1). Pull request authors cannot approve their own pull requests (`S-gh-pr-approve-required`), so a required approval count of one blocks a single maintainer unless DP-10 is decided | Human decisions DP-01…DP-10 (README); P02a/P02b live checks; P10 | documented |
 
 ## 3. Preferred backend candidate and fallback (input to P02a, not a selection)
 
@@ -59,7 +59,17 @@ three rejection criteria and A01/A04/A05/A07 plus A17 fencing. If the narrow ada
 fails its fixtures and gh-aw fails any criterion, P02a reports **no-go** and publishes the
 gap (plan section 11); no criterion is weakened.
 
-Why this order, tied to the rejection criteria:
+**Selection order.** The plan evaluates gh-aw first and treats it as the first candidate for
+reuse (plan section 1, "First evaluate gh-aw's queue and safe-output implementation";
+section 2, "First candidate for reuse, subject to the M0 tests"; AGENTS.md, "Prefer existing
+components when a pinned integration passes the contract"). P01 reverses that order only as
+an expectation. "Preferred" means the outcome expected from the code-level evidence and the
+default placement; it is **not** a tie-break. If gh-aw passes all three rejection criteria
+and A01/A04/A05/A07 plus A17 fencing, the plan's reuse rule governs and gh-aw is selected.
+Only otherwise is the narrow adapter selected (if it passes the same scenarios), and
+otherwise P02a reports no-go.
+
+Why P01 expects this outcome, tied to the rejection criteria:
 
 1. **External process holds a Claim (criterion 1).** This is the central finding. Code
    evidence shows no supported path for a process outside Actions to hold or exercise a
@@ -78,9 +88,9 @@ Why this order, tied to the rejection criteria:
    version `2026-03-10`. Unsettled; P02a must test whether the compat check can be pinned
    or neutralized.
 3. **Net reduction of maintained Weave code (criterion 3).** The removable Weave
-   coordination/publication code is at most **610 SLOC** (`state.py` 168, `publisher.py`
+   coordination/publication code is at most **707 SLOC** (`state.py` 168, `publisher.py`
    106, transition executor 106, `github.py` writes 28, `events.py` authenticate 34, plus
-   an upper bound of 265 SLOC of `cli.py` wiring that also builds packets), or **~731 SLOC**
+   an upper bound of 265 SLOC of `cli.py` wiring that also builds packets), or **828 SLOC**
    with `reconcile.py` (WI §E). Both backends replace roughly the same Weave code; gh-aw
    adoption additionally requires worker workflows, Actions-run binding, compile/lock-file
    upkeep and engine secrets, and still an external-supervisor adapter (US §1.7 row 3). No
@@ -108,9 +118,12 @@ delete the state branch is an inference to test (RI §D).
   in the matrix: `GITHUB_TOKEN` as bypass actor not found, an App key as an Actions secret
   (DP-06), how a supervisor without Contents write submits transitions and hands over
   candidate material (unverified).
-- If P02a were to select gh-aw, its scheduler and trusted jobs run in Actions; the
-  supervisor-hosted placement would then exist only if criterion 1 passes. This is one
-  reason the narrow adapter is preferred for the default placement.
+- gh-aw can be selected only if criterion 1 passes. If it is, its scheduler and trusted
+  jobs in Actions are the single authority, supervisors participate only through the
+  authenticated path that passed criterion 1, and the placements above (which describe the
+  narrow adapter's reducer) do not apply. The external-worker evidence makes that outcome
+  unlikely for supervisor-launched sandboxes, which is why the narrow adapter is the
+  expected outcome.
 
 ## 5. Authority map (one authority per state kind)
 
@@ -158,7 +171,7 @@ Rules that keep this single-authority:
 - The runtime profile and supported hosts (P02b; human Q11).
 - Whether an AW worker on a supervisor-operated self-hosted runner satisfies criterion 1
   (P02a with the human; Q1).
-- Every matrix decision point DP-01…DP-09 (human; `README.md` Q2–Q10).
+- Every matrix decision point DP-01…DP-10 (human; `README.md` Q2–Q10, Q15).
 - Remora's licence and whether Weave code is copied or re-implemented (human; Q13, Q14).
 - The concrete state file layout and schemas (P05 for state, P03 for task/review schemas).
 - Adoption of Symphony as a runner, or a hosted coordinator (not in pilot scope).

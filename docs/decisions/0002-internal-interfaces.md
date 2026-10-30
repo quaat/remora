@@ -17,20 +17,24 @@ errors). This ADR records ownership and the rules; the JSON lists the operations
 ## Decision
 
 Product code lives under `src/remora/`, separate from `bootstrap/` (ADR 0001). Owner
-modules follow the proposed allocations in `.remora/tasks.json`. Nine interfaces, each
-with one owner task:
+modules follow the proposed allocations in `.remora/tasks.json`. Ten interfaces, each
+with exactly one owner task. Work another task contributes is expressed as that task
+consuming the owner's interface ("depends on"), never as a shared owner. A dependency is
+allowed only on an interface whose owner is the same task or a transitive prerequisite;
+`tests/contracts/test_permission_matrix.py` checks this against `.remora/tasks.json`.
 
-| Interface | Owner module | Owner task | Consumers | Purpose |
-| --- | --- | --- | --- | --- |
-| `state-backend` | `src/remora/state/` | P05 | P02a (conformance fixtures), P06-P12 | Pure `compute_transition`; `apply_transition` with CAS on an expected head; `read_state`; `lookup_receipt`; `create_snapshot`/`verify_snapshot` |
-| `publisher` | `src/remora/publication/` | P05 | P02a, P06, P07, P08, P09 | `conditional_ref_update` (transport chosen by P02a), `publish_candidate` into generation-specific refs from a clean Git environment, `read_back_effect` |
-| `execution` | `src/remora/runtime/` | P06 (P02b builds the contract fixture) | P02a (joint A17), P02b, P06, P08, P11 | `start`, `checkpoint`, `stop_request`, events `stop_confirmed` and `authority_lost`, `status` |
-| `reviewer-launch` | `src/remora/review/launch.py` | P08 (P02b builds the fixture) | P02b, P08, P09 | `launch_review` (fresh clone, writable scratch, no developer session), `collect_result` (infrastructure outcome separate from verdict) |
-| `command-ingestion` | `src/remora/github/commands.py` (envelope schema and receipts: `src/remora/commands/`, P05) | P07 | P05 (receipt shape), P07, P10, P11 | `poll_commands`, `parse_and_authenticate`, `submit` (dedup by `command_id` in state), `post_terminal_command` |
-| `board-projection` | `src/remora/github/projection.py` | P07 | P07, P10, P11 | Pure `compute_projection`; `read_projection`; `reconcile_projection` that never changes state |
-| `plan-compiler` | `src/remora/plan/` (schemas in `src/remora/contracts/`) | P03 | P04, P05, P07, P08, P09, P10 | `load_plan`, `validate`, `compile_task_revision`, `readiness`, `build_review_packet` |
-| `evidence-records` | `src/remora/review/evidence.py` (record schemas owned by P03) | P08 | P08, P09, P11, P12 | `record_check_evidence`, `validate_verdict`, `record_manual_acceptance` (`unverified_pilot`) |
-| `trusted-evidence` | `src/remora/evidence/` | P09 | P09, P10, P11, P12 | `verify_trusted_ci`, `evaluate_completion_gate` |
+| Interface | Owner module | Owner task | Depends on | Consumers | Purpose |
+| --- | --- | --- | --- | --- | --- |
+| `state-backend` | `src/remora/state/` | P05 | `plan-compiler` | P02a (conformance fixtures), P06-P12 | Pure `compute_transition`; `apply_transition` with CAS on an expected head; `read_state`; `lookup_receipt`; `create_snapshot`/`verify_snapshot` |
+| `publisher` | `src/remora/publication/` | P05 | `state-backend` | P02a, P06, P07, P08, P09 | `conditional_ref_update` (transport chosen by P02a), `publish_candidate` into generation-specific refs from a clean Git environment, `read_back_effect` |
+| `execution` | `src/remora/runtime/` | P06 | `state-backend`, `publisher` | P02a (joint A17), P02b, P06, P08, P11 | `start`, `checkpoint`, `stop_request`, events `stop_confirmed` and `authority_lost`, `status` |
+| `reviewer-launch` | `src/remora/review/launch.py` | P08 | `state-backend`, `plan-compiler`; conforms to the `execution` contract without depending on P06's module | P02b, P08, P09 | `launch_review` (fresh clone, writable scratch, no developer session), `collect_result` (infrastructure outcome separate from verdict) |
+| `command-envelope` | `src/remora/commands/` | P05 | — | P07, P10, P11 | `derive_command_id` (deterministic), `validate_envelope`; receipts are `state-backend` records |
+| `command-ingestion` | `src/remora/github/commands.py` | P07 | `command-envelope`, `state-backend` | P07, P10, P11 | `poll_commands`, `parse_and_authenticate`, `submit` (dedup by `command_id` through state receipts), `post_terminal_command` |
+| `board-projection` | `src/remora/github/projection.py` | P07 | `state-backend` | P07, P10, P11 | Pure `compute_projection`; `read_projection`; `reconcile_projection` that never changes state |
+| `plan-compiler` | `src/remora/plan/` (its schemas in `src/remora/contracts/`, also P03) | P03 | — | P04, P05, P07, P08, P09, P10 | `load_plan`, `validate`, `compile_task_revision`, `readiness`, `build_review_packet` |
+| `evidence-records` | `src/remora/review/evidence.py` | P08 | `plan-compiler` (evidence and verdict record schemas), `state-backend` | P08, P09, P11, P12 | `record_check_evidence`, `validate_verdict`, `record_manual_acceptance` (`unverified_pilot`) |
+| `trusted-evidence` | `src/remora/evidence/` | P09 | `evidence-records`, `state-backend` | P09, P10, P11, P12 | `verify_trusted_ci`, `evaluate_completion_gate` |
 
 Rules:
 
@@ -53,7 +57,11 @@ Rules:
 7. **Shared schemas.** Task, criterion, revision, packet and review schemas are owned by
    P03 (`src/remora/contracts/`); others consume them. A change by a non-owner needs a
    shared-interface reservation and an explicit dependency update.
-8. **Compatibility with the bootstrap.** P03's packet/review fields stay compatible with
+8. **Fixtures are not owners.** P02b builds fixtures of the `execution` and
+   `reviewer-launch` contracts in its own experiment paths (`contract_fixture_task`); P02a
+   builds `state-backend`/`publisher` conformance fixtures likewise. Production owners stay
+   as listed.
+9. **Compatibility with the bootstrap.** P03's packet/review fields stay compatible with
    `bootstrap/core.py` (see `docs/research/P01/handoff-P03.md`) so bootstrap completions
    can be imported with their manual provenance.
 

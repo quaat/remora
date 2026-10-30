@@ -4,6 +4,9 @@ From: P01 (proposed, pending acceptance). P02b runs alongside P02a with a fixtur
 authority, establishes the runtime side of A07/A17 and A19, and joins P02a before M0 exit.
 Runtime failures block P06/P08, not the backend assessment (plan section 11).
 
+Item IDs such as `U-PE-12` refer to `unverified-routing.json`; every unverified item routed
+to P02b appears below.
+
 ## 1. Execution/stop interface (from ADR 0002)
 
 Owner module `src/remora/runtime/` (production owner P06); P02b builds the contract
@@ -40,7 +43,7 @@ Interface `reviewer-launch` (owner P08, `src/remora/review/launch.py`):
 | --- | --- |
 | A19 host credentials | Candidate code cannot read host GitHub tokens, `~/.config/gh`, SSH keys, provider credential files, or the supervisor's environment |
 | A19 Docker socket and mounts | No `/var/run/docker.sock`, home directory or host root mount; mount table recorded |
-| A19 egress | Direct TCP, DNS, IPv6 and proxy-bypass attempts to non-allowed destinations fail under the selected profile; allowed list recorded |
+| A19 egress (U-PE-15) | Direct TCP, DNS, IPv6 and proxy-bypass attempts to non-allowed destinations fail under the selected profile; allowed list recorded |
 | A19 proxy misuse | With Docker Sandboxes, the `github` secret service is **not** configured; any configured provider proxy cannot be used for GitHub writes |
 | A07 runtime | A partitioned supervisor stops execution after the offline-grace interval; the record reports uncertainty instead of confirmation |
 | A17 runtime | Connected stop terminates the process within the documented target; `stop_confirmed` carries evidence; termination of child processes is verified |
@@ -54,7 +57,7 @@ Interface `reviewer-launch` (owner P08, `src/remora/review/launch.py`):
 Prove, under the selected profile:
 
 1. No GitHub token in the sandbox environment, files or keyring; `gh auth status` fails.
-2. Docker Sandboxes `ssh.agentForwardingEnabled=false` (default is `true`), skills off,
+2. (U-PE-12) Docker Sandboxes `ssh.agentForwardingEnabled=false` (default is `true`), skills off,
    `browser.enabled=false`, clone mode or mountless workspace, no local stdio MCP servers,
    no `sbx secret set github`; record `sbx settings ls --json` and `sbx policy ls`.
 3. A model-provider key placed in the sandbox is readable by candidate code; either use a
@@ -68,9 +71,9 @@ Prove, under the selected profile:
   with Windows Hypervisor Platform; Linux **Ubuntu 24.04 or later** on x86-64 or Arm64 with
   KVM and the user in the `kvm` group; nested virtualization inside VMs; `sbx login` required.
   Ubuntu derivatives are not supported.
-- The bootstrap host is **Debian 11**, outside that list; `/dev/kvm` was not visible from
+- (U-PE-13) The bootstrap host is **Debian 11**, outside that list; `/dev/kvm` was not visible from
   the research sandbox, which is inconclusive (README Q11).
-- Rootless OCI (`S-docker-rootless`, `S-docker-rootless-tips`): `newuidmap`/`newgidmap`,
+- (U-PE-14) Rootless OCI (`S-docker-rootless`, `S-docker-rootless-tips`): `newuidmap`/`newgidmap`,
   at least 65,536 subordinate IDs; cgroup limits apply only with cgroup v2 and systemd and are
   otherwise **silently ignored**, so `doctor` must fail closed when limits are not enforced.
 - Record kernel, runtime versions, settings and the exact profile for each supported host.
