@@ -1,0 +1,1258 @@
+{
+ "schema_version": 1,
+ "accessed_at": "2026-10-29T23:30:00Z",
+ "scope": "P01 sub-scope: runtime support and required GitHub identities/permissions (research evidence, not a decision)",
+ "sources": [
+  {
+   "id": "S-gh-fgpat",
+   "url": "https://docs.github.com/en/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens",
+   "title": "Permissions required for fine-grained personal access tokens",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-fg-endpoints",
+   "url": "https://docs.github.com/en/rest/authentication/endpoints-available-for-fine-grained-personal-access-tokens",
+   "title": "Endpoints available for fine-grained personal access tokens",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-appperms",
+   "url": "https://docs.github.com/en/rest/authentication/permissions-required-for-github-apps",
+   "title": "Permissions required for GitHub Apps",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-app-choose",
+   "url": "https://docs.github.com/en/apps/creating-github-apps/registering-a-github-app/choosing-permissions-for-a-github-app",
+   "title": "Choosing permissions for a GitHub App",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-app-iat",
+   "url": "https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/generating-an-installation-access-token-for-a-github-app",
+   "title": "Generating an installation access token for a GitHub App",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-app-auth-inst",
+   "url": "https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation",
+   "title": "Authenticating as a GitHub App installation",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rest-installations",
+   "url": "https://docs.github.com/en/rest/apps/installations",
+   "title": "REST API endpoints for GitHub App installations",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-app-keys",
+   "url": "https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/managing-private-keys-for-github-apps",
+   "title": "Managing private keys for GitHub Apps",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-app-suspend",
+   "url": "https://docs.github.com/en/apps/maintaining-github-apps/suspending-a-github-app-installation",
+   "title": "Suspending a GitHub App installation",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-pat-manage",
+   "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens",
+   "title": "Managing your personal access tokens",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-token-exp",
+   "url": "https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/token-expiration-and-revocation",
+   "title": "Token expiration and revocation",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-org-pat-review",
+   "url": "https://docs.github.com/en/organizations/managing-programmatic-access-to-your-organization/reviewing-and-revoking-personal-access-tokens-in-your-organization",
+   "title": "Reviewing and revoking personal access tokens in your organization",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-org-pat-policy",
+   "url": "https://docs.github.com/en/organizations/managing-programmatic-access-to-your-organization/setting-a-personal-access-token-policy-for-your-organization",
+   "title": "Setting a personal access token policy for your organization",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-oauth-scopes",
+   "url": "https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/scopes-for-oauth-apps",
+   "title": "Scopes for OAuth apps",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-actions-token",
+   "url": "https://docs.github.com/en/actions/concepts/security/github_token",
+   "title": "GITHUB_TOKEN",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-actions-token-howto",
+   "url": "https://docs.github.com/en/actions/tutorials/authenticate-with-github_token",
+   "title": "Use GITHUB_TOKEN for authentication in workflows",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-workflow-permissions",
+   "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#permissions",
+   "title": "Workflow syntax for GitHub Actions: permissions",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-actions-repo-settings",
+   "url": "https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/enabling-features-for-your-repository/managing-github-actions-settings-for-a-repository",
+   "title": "Managing GitHub Actions settings for a repository",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-actions-events",
+   "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows",
+   "title": "Events that trigger workflows",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-projects-api",
+   "url": "https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/using-the-api-to-manage-projects",
+   "title": "Using the API to manage Projects",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-projects-actions",
+   "url": "https://docs.github.com/en/issues/planning-and-tracking-with-projects/automating-your-project/automating-projects-using-actions",
+   "title": "Automating Projects using Actions",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-gql-projects",
+   "url": "https://docs.github.com/en/graphql/reference/projects",
+   "title": "GraphQL reference: Projects",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-gql-forming",
+   "url": "https://docs.github.com/en/graphql/guides/forming-calls-with-graphql",
+   "title": "Forming calls with GraphQL",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rules-available",
+   "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/available-rules-for-rulesets",
+   "title": "Available rules for rulesets",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rules-about",
+   "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/about-rulesets",
+   "title": "About rulesets",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rules-create",
+   "url": "https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository",
+   "title": "Creating rulesets for a repository",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rest-rules",
+   "url": "https://docs.github.com/en/rest/repos/rules",
+   "title": "REST API endpoints for rules",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rest-refs",
+   "url": "https://docs.github.com/en/rest/git/refs",
+   "title": "REST API endpoints for Git references",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-gql-commits",
+   "url": "https://docs.github.com/en/graphql/reference/commits",
+   "title": "GraphQL reference: Commits (createCommitOnBranch)",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-gql-git",
+   "url": "https://docs.github.com/en/graphql/reference/git",
+   "title": "GraphQL reference: Git (updateRefs, RefUpdate)",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rest-checks",
+   "url": "https://docs.github.com/en/rest/checks/runs",
+   "title": "REST API endpoints for check runs",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-rest-statuses",
+   "url": "https://docs.github.com/en/rest/commits/statuses",
+   "title": "REST API endpoints for commit statuses",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-cli-auth-login",
+   "url": "https://cli.github.com/manual/gh_auth_login",
+   "title": "gh auth login",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-cli-auth-refresh",
+   "url": "https://cli.github.com/manual/gh_auth_refresh",
+   "title": "gh auth refresh",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-cli-auth-logout",
+   "url": "https://cli.github.com/manual/gh_auth_logout",
+   "title": "gh auth logout",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-cli-project",
+   "url": "https://cli.github.com/manual/gh_project",
+   "title": "gh project",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-git-push",
+   "url": "https://git-scm.com/docs/git-push",
+   "title": "git-push (last updated in 2.55.0)",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx",
+   "url": "https://docs.docker.com/ai/sandboxes/",
+   "title": "Docker Sandboxes",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-security",
+   "url": "https://docs.docker.com/ai/sandboxes/security/",
+   "title": "Docker Sandboxes: Security model",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-defaults",
+   "url": "https://docs.docker.com/ai/sandboxes/security/defaults/",
+   "title": "Docker Sandboxes: Default security posture",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-isolation",
+   "url": "https://docs.docker.com/ai/sandboxes/security/isolation/",
+   "title": "Docker Sandboxes: Isolation layers",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-install",
+   "url": "https://docs.docker.com/ai/sandboxes/install/",
+   "title": "Install Docker Sandboxes",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-credentials",
+   "url": "https://docs.docker.com/ai/sandboxes/configuration/credentials/",
+   "title": "Docker Sandboxes: Credentials",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-settings",
+   "url": "https://docs.docker.com/ai/sandboxes/configuration/settings/",
+   "title": "Docker Sandboxes settings",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-network",
+   "url": "https://docs.docker.com/ai/sandboxes/governance/access-controls/network/",
+   "title": "Docker Sandboxes: Network access policies",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-sbx-faq",
+   "url": "https://docs.docker.com/ai/sandboxes/faq/",
+   "title": "Docker Sandboxes FAQ",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-engine-security",
+   "url": "https://docs.docker.com/engine/security/",
+   "title": "Docker Engine security",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-rootless",
+   "url": "https://docs.docker.com/engine/security/rootless/",
+   "title": "Rootless mode",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-rootless-tips",
+   "url": "https://docs.docker.com/engine/security/rootless/tips/",
+   "title": "Rootless mode tips",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-docker-build-secrets",
+   "url": "https://docs.docker.com/build/building/secrets/",
+   "title": "Build secrets",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-devcontainer-schema",
+   "url": "https://github.com/devcontainers/spec/blob/d424cc157e9a110f3bf67d311b46c7306d5a465d/schemas/devContainer.base.schema.json",
+   "title": "devContainer.base.schema.json (pinned to latest commit touching the file at access time)",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-claude-auth",
+   "url": "https://code.claude.com/docs/en/authentication.md",
+   "title": "Claude Code: Authentication",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-codex-auth",
+   "url": "https://developers.openai.com/codex/auth",
+   "title": "Codex: Authentication (served from https://learn.chatgpt.com/docs/auth after redirect)",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-codex-noninteractive",
+   "url": "https://developers.openai.com/codex/noninteractive",
+   "title": "Codex: Non-interactive mode (served from https://learn.chatgpt.com/docs/non-interactive-mode after redirect)",
+   "accessed_at": "2026-10-29T23:30:00Z"
+  },
+  {
+   "id": "S-gh-pr-approve-required",
+   "url": "https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/reviewing-changes-in-pull-requests/approving-a-pull-request-with-required-reviews",
+   "title": "Approving a pull request with required reviews (added during P01 rework; quote: 'Pull request authors cannot approve their own pull requests.')",
+   "accessed_at": "2026-10-30T00:02:55Z"
+  },
+  {
+   "id": "S-gh-rest-pulls",
+   "url": "https://docs.github.com/en/rest/pulls/pulls",
+   "title": "REST API endpoints for pull requests (added during P01 review round 1: 'Merge a pull request' PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge and 'Merge a pull request asynchronously' PUT .../merge-async; required permissions are listed in S-gh-fgpat under Contents write: merge, merge-async and POST /repos/{owner}/{repo}/merges, with no additional permission)",
+   "accessed_at": "2026-10-30T00:31:16Z"
+  },
+  {
+   "id": "S-gh-actions-environments",
+   "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/deployments-and-environments",
+   "title": "Deployments and environments (added during P01 internal check 6; quotes: 'The deployment branch or tag rule is matched against the GITHUB_REF of the workflow run'; 'Secrets stored in an environment are only available to workflow jobs that reference the environment'; 'Allowing administrators to bypass protection rules is only available for public repositories for users on GitHub Free, GitHub Pro, and GitHub Team plans'; deployment branches and tags are available for all public repositories, and for private repositories on GitHub Pro or GitHub Team)",
+   "accessed_at": "2026-10-30T01:03:12Z"
+  },
+  {
+   "id": "S-gh-rest-apps",
+   "url": "https://docs.github.com/en/rest/apps/apps",
+   "title": "REST API endpoints for GitHub Apps (added during P01 internal check 6; 'Get a repository installation for the authenticated app' GET /repos/{owner}/{repo}/installation, JWT required; the installation response schema has a required 'permissions' field)",
+   "accessed_at": "2026-10-30T01:03:46Z"
+  },
+  {
+   "id": "S-gh-graphql-pulls",
+   "url": "https://docs.github.com/en/graphql/reference/pulls",
+   "title": "GraphQL reference, pull requests (added during P01 internal check 6; mutations 'mergePullRequest' ('Merge a pull request.') and 'enablePullRequestAutoMerge' ('Enable the default auto-merge on a pull request.'); required fine-grained/App permissions not stated there)",
+   "accessed_at": "2026-10-30T01:03:46Z"
+  },
+  {
+   "id": "S-gh-about-teams",
+   "url": "https://docs.github.com/en/organizations/organizing-members-into-teams/about-teams",
+   "title": "About organization teams (added during P01 internal check 6; quotes: 'Organization owners and team maintainers can give teams admin, read, or write access to organization repositories'; 'Child teams inherit the parent's access permissions')",
+   "accessed_at": "2026-10-30T01:03:12Z"
+  },
+  {
+   "id": "S-gh-rest-teams",
+   "url": "https://docs.github.com/en/rest/teams/members",
+   "title": "REST API endpoints for team members and teams (added during P01 internal check 6; 'List team members' GET /orgs/{org}/teams/{team_slug}/members: 'Team members will include the members of child teams' with an inherited flag; 'List child teams' GET /orgs/{org}/teams/{team_slug}/teams, documented at https://docs.github.com/en/rest/teams/teams)",
+   "accessed_at": "2026-10-30T01:03:46Z"
+  },
+  {
+   "id": "S-gh-actions-script-injections",
+   "url": "https://docs.github.com/en/actions/concepts/security/script-injections",
+   "title": "Script injections (added during P01 internal check 7; quotes: 'You should ensure that these values do not flow directly into workflows, actions, API calls, or anywhere else where they could be interpreted as executable code'; 'Before the shell script is run, the expressions inside ${{ }} are evaluated and then substituted with the resulting values, which can make it vulnerable to shell command injection')",
+   "accessed_at": "2026-10-30T01:15:26Z"
+  },
+  {
+   "id": "S-gh-actions-contexts",
+   "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts",
+   "title": "Contexts reference (added during P01 internal check 7; quotes: github.triggering_actor 'The username of the user that initiated the workflow run'; github.actor 'Any workflow re-runs will use the privileges of github.actor, even if the actor initiating the re-run (github.triggering_actor) has different privileges'; github.run_attempt 'begins at 1 for the workflow run's first attempt, and increments with each re-run'; inputs 'Contains the inputs of a reusable or manually triggered workflow')",
+   "accessed_at": "2026-10-30T01:15:26Z"
+  }
+ ],
+ "permissions": [
+  {
+   "resource": "metadata",
+   "credential": "fine_grained_pat",
+   "permission_name": "Metadata",
+   "levels": [
+    "read"
+   ],
+   "source": "S-gh-fgpat",
+   "notes": "GET /repos/{owner}/{repo}; GET /repos/{owner}/{repo}/rules/branches/{branch}; GET /repos/{owner}/{repo}/rulesets.",
+   "parameter_name": "metadata"
+  },
+  {
+   "resource": "contents",
+   "credential": "fine_grained_pat",
+   "permission_name": "Contents",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-fgpat",
+   "notes": "Write covers POST git/blobs, git/trees, git/commits, POST/PATCH git/refs, and PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge. Repository-wide; no branch dimension.",
+   "parameter_name": "contents"
+  },
+  {
+   "resource": "workflow_files",
+   "credential": "fine_grained_pat",
+   "permission_name": "Workflows",
+   "levels": [
+    "write"
+   ],
+   "source": "S-gh-fgpat",
+   "notes": "Listed as additional permission for PUT contents/{path}, POST/PATCH git/refs when workflow files change. Only 'write' level exists.",
+   "parameter_name": "workflows"
+  },
+  {
+   "resource": "issues",
+   "credential": "fine_grained_pat",
+   "permission_name": "Issues",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-fgpat",
+   "notes": "POST issues, PATCH issues, POST issue comments, POST milestones, GET assignees. Comments/milestones also accept Pull requests (Additional Permissions marked).",
+   "parameter_name": "issues"
+  },
+  {
+   "resource": "pull_requests",
+   "credential": "fine_grained_pat",
+   "permission_name": "Pull requests",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-fgpat",
+   "notes": "POST /repos/{owner}/{repo}/pulls.",
+   "parameter_name": "pull_requests"
+  },
+  {
+   "resource": "commit_statuses",
+   "credential": "fine_grained_pat",
+   "permission_name": "Commit statuses",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-fgpat",
+   "notes": "POST /repos/{owner}/{repo}/statuses/{sha}.",
+   "parameter_name": "statuses"
+  },
+  {
+   "resource": "checks",
+   "credential": "fine_grained_pat",
+   "permission_name": "(none)",
+   "levels": [],
+   "source": "S-gh-pat-manage",
+   "notes": "Documented gap: 'Using fine-grained personal access token to call the Checks API'. No Checks section exists in S-gh-fgpat."
+  },
+  {
+   "resource": "actions",
+   "credential": "fine_grained_pat",
+   "permission_name": "Actions",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-pat-manage",
+   "notes": "Repository permission table.",
+   "parameter_name": "actions"
+  },
+  {
+   "resource": "rulesets_admin",
+   "credential": "fine_grained_pat",
+   "permission_name": "Administration",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-fgpat",
+   "notes": "POST/PUT/DELETE /repos/{owner}/{repo}/rulesets require write. Reading rulesets uses Metadata read.",
+   "parameter_name": "administration"
+  },
+  {
+   "resource": "projects_org",
+   "credential": "fine_grained_pat",
+   "permission_name": "Projects",
+   "levels": [
+    "read",
+    "write",
+    "admin"
+   ],
+   "source": "S-gh-pat-manage",
+   "notes": "Organization permission; 'Organization permissions can only be used if the resource owner is an organization'. REST /orgs/{org}/projectsV2 items/fields/views listed in S-gh-fgpat. GraphQL mutation level requirements not tabulated.",
+   "parameter_name": "organization_projects"
+  },
+  {
+   "resource": "projects_user",
+   "credential": "fine_grained_pat",
+   "permission_name": "(none)",
+   "levels": [],
+   "source": "S-gh-pat-manage",
+   "notes": "Documented gap: 'Using fine-grained personal access token to access Projects owned by a user account'."
+  },
+  {
+   "resource": "metadata",
+   "credential": "github_app_installation",
+   "permission_name": "Metadata",
+   "levels": [
+    "read"
+   ],
+   "source": "S-gh-appperms",
+   "notes": "Repository permission."
+  },
+  {
+   "resource": "contents",
+   "credential": "github_app_installation",
+   "permission_name": "Contents",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-appperms",
+   "notes": "Also required for HTTPS Git with x-access-token (S-gh-app-auth-inst) and for createProjectV2 with repositoryId (S-gh-projects-api)."
+  },
+  {
+   "resource": "workflow_files",
+   "credential": "github_app_installation",
+   "permission_name": "Workflows",
+   "levels": [
+    "write"
+   ],
+   "source": "S-gh-appperms",
+   "notes": "Repository permission section 'Workflows'."
+  },
+  {
+   "resource": "issues",
+   "credential": "github_app_installation",
+   "permission_name": "Issues",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-appperms",
+   "notes": ""
+  },
+  {
+   "resource": "pull_requests",
+   "credential": "github_app_installation",
+   "permission_name": "Pull requests",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-appperms",
+   "notes": ""
+  },
+  {
+   "resource": "checks",
+   "credential": "github_app_installation",
+   "permission_name": "Checks",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-appperms",
+   "notes": "Create check runs: 'To create a check run, you must use a GitHub App' (S-gh-rest-checks)."
+  },
+  {
+   "resource": "commit_statuses",
+   "credential": "github_app_installation",
+   "permission_name": "Commit statuses",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-appperms",
+   "notes": ""
+  },
+  {
+   "resource": "rulesets_admin",
+   "credential": "github_app_installation",
+   "permission_name": "Administration",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-appperms",
+   "notes": "Repository permission section 'Administration'."
+  },
+  {
+   "resource": "projects_org",
+   "credential": "github_app_installation",
+   "permission_name": "Projects",
+   "levels": [
+    "read",
+    "write",
+    "admin"
+   ],
+   "source": "S-gh-appperms",
+   "notes": "Organization permission section 'Projects'; 'You must give permission to read and write organization projects; permission to read and write repository projects will not be sufficient' (S-gh-projects-actions). Levels taken from S-gh-pat-manage parameter table for organization_projects; App UI levels not separately confirmed."
+  },
+  {
+   "resource": "projects_user",
+   "credential": "github_app_installation",
+   "permission_name": "(none found)",
+   "levels": [],
+   "source": "S-gh-appperms",
+   "notes": "No user-owned Projects permission in App 'User permissions' sections (searched S-gh-appperms, S-gh-app-choose). Unverified."
+  },
+  {
+   "resource": "contents",
+   "credential": "classic_pat",
+   "permission_name": "repo",
+   "levels": [
+    "full"
+   ],
+   "source": "S-gh-oauth-scopes",
+   "notes": "'Grants full access to public and private repositories'. Applies to all repositories the user can access (S-gh-pat-manage)."
+  },
+  {
+   "resource": "workflow_files",
+   "credential": "classic_pat",
+   "permission_name": "workflow",
+   "levels": [
+    "write"
+   ],
+   "source": "S-gh-oauth-scopes",
+   "notes": "'Grants the ability to add and update GitHub Actions workflow files.'"
+  },
+  {
+   "resource": "commit_statuses",
+   "credential": "classic_pat",
+   "permission_name": "repo:status",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-oauth-scopes",
+   "notes": "Status access without code access."
+  },
+  {
+   "resource": "checks",
+   "credential": "classic_pat",
+   "permission_name": "repo",
+   "levels": [
+    "read"
+   ],
+   "source": "S-gh-rest-checks",
+   "notes": "Read only; 'OAuth apps and authenticated users can view check runs ... but they are not able to create them'."
+  },
+  {
+   "resource": "projects_org",
+   "credential": "classic_pat",
+   "permission_name": "project",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-oauth-scopes",
+   "notes": "'Grants read/write access to user and organization projects.' read:project for read only."
+  },
+  {
+   "resource": "projects_user",
+   "credential": "classic_pat",
+   "permission_name": "project",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-oauth-scopes",
+   "notes": "Only documented credential path for user-owned Projects. repo also 'grants the ability to manage projects owned by users'."
+  },
+  {
+   "resource": "projects_org",
+   "credential": "oauth_gh_cli",
+   "permission_name": "project",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-cli-project",
+   "notes": "gh project: 'The minimum required scope for the token is: project'; add via gh auth refresh -s project. gh login minimum scopes repo, read:org, gist (S-gh-cli-auth-login)."
+  },
+  {
+   "resource": "projects_user",
+   "credential": "oauth_gh_cli",
+   "permission_name": "project",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-oauth-scopes",
+   "notes": "Same scope for user Projects."
+  },
+  {
+   "resource": "contents",
+   "credential": "oauth_gh_cli",
+   "permission_name": "repo",
+   "levels": [
+    "full"
+   ],
+   "source": "S-gh-cli-auth-login",
+   "notes": "gh minimum scopes: repo, read:org, gist; cannot be removed (S-gh-cli-auth-refresh)."
+  },
+  {
+   "resource": "contents",
+   "credential": "github_token",
+   "permission_name": "contents",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-workflow-permissions",
+   "notes": "Actions permissions key; repository of the workflow only (S-gh-actions-token)."
+  },
+  {
+   "resource": "issues",
+   "credential": "github_token",
+   "permission_name": "issues",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-workflow-permissions",
+   "notes": ""
+  },
+  {
+   "resource": "pull_requests",
+   "credential": "github_token",
+   "permission_name": "pull-requests",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-workflow-permissions",
+   "notes": "Repository setting can block creating/approving PRs (S-gh-actions-repo-settings)."
+  },
+  {
+   "resource": "checks",
+   "credential": "github_token",
+   "permission_name": "checks",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-workflow-permissions",
+   "notes": ""
+  },
+  {
+   "resource": "commit_statuses",
+   "credential": "github_token",
+   "permission_name": "statuses",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-workflow-permissions",
+   "notes": ""
+  },
+  {
+   "resource": "actions",
+   "credential": "github_token",
+   "permission_name": "actions",
+   "levels": [
+    "read",
+    "write"
+   ],
+   "source": "S-gh-workflow-permissions",
+   "notes": ""
+  },
+  {
+   "resource": "projects_org",
+   "credential": "github_token",
+   "permission_name": "(none)",
+   "levels": [],
+   "source": "S-gh-projects-actions",
+   "notes": "'GITHUB_TOKEN is scoped to the repository level and cannot access projects.'"
+  },
+  {
+   "resource": "projects_user",
+   "credential": "github_token",
+   "permission_name": "(none)",
+   "levels": [],
+   "source": "S-gh-projects-actions",
+   "notes": "Same."
+  },
+  {
+   "resource": "rulesets_admin",
+   "credential": "github_token",
+   "permission_name": "(none)",
+   "levels": [],
+   "source": "S-gh-workflow-permissions",
+   "notes": "No administration key in documented permissions list."
+  },
+  {
+   "resource": "workflow_files",
+   "credential": "github_token",
+   "permission_name": "(none found)",
+   "levels": [],
+   "source": "S-gh-workflow-permissions",
+   "notes": "No workflows key in documented permissions list; behaviour when pushing workflow changes unverified."
+  }
+ ],
+ "roles": [
+  {
+   "role": "setup-operator",
+   "phase": "setup-only",
+   "holder": "trusted human operator session (bootstrap: operator gh auth)",
+   "needs": [
+    {
+     "resource": "metadata",
+     "level": "read",
+     "why": "GET repos/{repo} identity/archived/has_issues check",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "fine_grained_pat",
+      "github_app_installation",
+      "classic_pat",
+      "oauth_gh_cli"
+     ]
+    },
+    {
+     "resource": "issues",
+     "level": "write",
+     "why": "list/create milestones and issues, assignee check",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "fine_grained_pat",
+      "github_app_installation",
+      "classic_pat",
+      "oauth_gh_cli"
+     ]
+    },
+    {
+     "resource": "projects_org|projects_user",
+     "level": "write",
+     "why": "create/list Project, link to repo, create fields, set Status options (GraphQL updateProjectV2Field), add items, set Todo",
+     "source": "S-gh-cli-project",
+     "status": "documented for scope 'project'; FG/App level for GraphQL mutations unverified",
+     "credential_types": [
+      "org-owned: github_app_installation (Projects) or fine_grained_pat (organization_projects); user-owned: classic_pat or oauth_gh_cli (project) only"
+     ]
+    },
+    {
+     "resource": "contents",
+     "level": "write",
+     "why": "App createProjectV2 with repositoryId requires Contents on that repository",
+     "source": "S-gh-projects-api",
+     "status": "documented for Apps; applies only if Project is created with repositoryId",
+     "credential_types": [
+      "github_app_installation"
+     ]
+    },
+    {
+     "resource": "rulesets_admin",
+     "level": "write",
+     "why": "create state-branch, agent/** and main rulesets",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "fine_grained_pat",
+      "github_app_installation",
+      "classic_pat (admin user)"
+     ],
+     "enforcement": "actor must have repository admin or 'edit repository rules' role (S-gh-rules-about); rulesets need public repo or Pro/Team/Enterprise for private"
+    }
+   ],
+   "must_not_have": [
+    "setup credential reused as runtime credential",
+    "setup credential inside any model sandbox"
+   ]
+  },
+  {
+   "role": "supervisor-runtime",
+   "phase": "runtime",
+   "holder": "enrolled trusted supervisor host, outside sandboxes",
+   "needs": [
+    {
+     "resource": "contents",
+     "level": "read",
+     "why": "read harness/state and base/candidate commits",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "github_app_installation",
+      "fine_grained_pat",
+      "classic_pat",
+      "oauth_gh_cli"
+     ]
+    },
+    {
+     "resource": "contents",
+     "level": "write",
+     "why": "conditional commit to harness/state; publish agent/* candidates",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "github_app_installation (preferred)",
+      "fine_grained_pat",
+      "classic_pat"
+     ],
+     "enforcement": "ruleset A on harness/state and agent/**/*: restrict deletions + block force pushes (non_fast_forward), empty bypass; ruleset B: restrict creations/updates, bypass = supervisor App (actor_type Integration) only. main ruleset must not list this identity as bypass."
+    },
+    {
+     "resource": "workflow_files",
+     "level": "write",
+     "why": "only if candidates may modify .github/workflows/*",
+     "source": "S-gh-fgpat",
+     "status": "conditional; maintainer decision",
+     "credential_types": [
+      "github_app_installation",
+      "fine_grained_pat",
+      "classic_pat (workflow scope)"
+     ]
+    },
+    {
+     "resource": "issues",
+     "level": "write",
+     "why": "post issue comments/projections; read human commands",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "github_app_installation",
+      "fine_grained_pat",
+      "classic_pat",
+      "oauth_gh_cli"
+     ]
+    },
+    {
+     "resource": "projects_org|projects_user",
+     "level": "write",
+     "why": "Project Status/field projection (updateProjectV2ItemFieldValue)",
+     "source": "S-gh-projects-actions",
+     "status": "documented",
+     "credential_types": [
+      "org-owned: github_app_installation (Projects) or fine_grained_pat (organization_projects); user-owned: classic_pat or oauth_gh_cli (project) only"
+     ]
+    },
+    {
+     "resource": "checks",
+     "level": "read",
+     "why": "read trusted-CI evidence",
+     "source": "S-gh-pat-manage",
+     "status": "fine_grained_pat cannot call Checks API",
+     "credential_types": [
+      "github_app_installation",
+      "classic_pat",
+      "oauth_gh_cli"
+     ]
+    },
+    {
+     "resource": "commit_statuses",
+     "level": "read",
+     "why": "read status evidence",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "github_app_installation",
+      "fine_grained_pat",
+      "classic_pat",
+      "oauth_gh_cli"
+     ]
+    },
+    {
+     "resource": "pull_requests",
+     "level": "write",
+     "why": "optional: open integration PR for human",
+     "source": "S-gh-fgpat",
+     "status": "optional",
+     "credential_types": [
+      "github_app_installation",
+      "fine_grained_pat",
+      "classic_pat"
+     ]
+    }
+   ],
+   "must_not_have": [
+    "administration write",
+    "checks write",
+    "Projects admin",
+    "bypass on main ruleset",
+    "pull_requests write if PR approvals by the App could count toward required reviews (unverified)"
+   ]
+  },
+  {
+   "role": "actions-publisher-fallback",
+   "phase": "runtime",
+   "holder": "GitHub Actions job (GITHUB_TOKEN) plus App installation token minted in-job",
+   "needs": [
+    {
+     "resource": "contents",
+     "level": "write",
+     "why": "conditional state commit and candidate publication",
+     "source": "S-gh-workflow-permissions",
+     "status": "documented permission; bypass identity unverified",
+     "credential_types": [
+      "github_token",
+      "github_app_installation"
+     ],
+     "enforcement": "state-branch bypass must name the publisher; GITHUB_TOKEN as bypass actor not found -> prefer in-job App installation token"
+    },
+    {
+     "resource": "issues",
+     "level": "write",
+     "why": "comments",
+     "source": "S-gh-workflow-permissions",
+     "status": "documented",
+     "credential_types": [
+      "github_token"
+     ]
+    },
+    {
+     "resource": "projects_org|projects_user",
+     "level": "write",
+     "why": "Project projection",
+     "source": "S-gh-projects-actions",
+     "status": "GITHUB_TOKEN cannot access projects",
+     "credential_types": [
+      "github_app_installation (org)",
+      "classic_pat secret (user)"
+     ]
+    },
+    {
+     "resource": "checks",
+     "level": "read",
+     "why": "read evidence",
+     "source": "S-gh-workflow-permissions",
+     "status": "documented",
+     "credential_types": [
+      "github_token"
+     ]
+    }
+   ],
+   "must_not_have": [
+    "pull_request_target trigger for reducer",
+    "scheduled runs as authority for claims/renewals",
+    "workflow edits without review (anyone with write can change permissions key)"
+   ]
+  },
+  {
+   "role": "developer-sandbox",
+   "phase": "runtime",
+   "holder": "model sandbox",
+   "needs": [],
+   "read_access": "none required; supervisor supplies exact checkout. Public repos are readable anonymously; private repo read tokens would be exposed to the model.",
+   "must_not_have": [
+    "any GitHub token",
+    "Docker Sandboxes 'github' secret service (proxy injects host token into api.github.com/github.com requests)",
+    "SSH agent forwarding (sbx default ssh.agentForwardingEnabled=true)",
+    "host Docker socket",
+    "home directory mount",
+    "controller or merge credential"
+   ]
+  },
+  {
+   "role": "reviewer-sandbox",
+   "phase": "runtime",
+   "holder": "model sandbox (fresh per review job)",
+   "needs": [],
+   "read_access": "none required; supervisor supplies exact candidate SHA checkout.",
+   "must_not_have": [
+    "any GitHub token",
+    "Docker Sandboxes 'github' secret service",
+    "SSH agent forwarding",
+    "developer caches or session",
+    "host Docker socket"
+   ]
+  },
+  {
+   "role": "trusted-ci",
+   "phase": "runtime",
+   "holder": "dedicated CI GitHub App or Actions workflow identity, separate from publisher",
+   "needs": [
+    {
+     "resource": "contents",
+     "level": "read",
+     "why": "read candidate at exact SHA",
+     "source": "S-gh-workflow-permissions",
+     "status": "documented",
+     "credential_types": [
+      "github_app_installation",
+      "github_token"
+     ]
+    },
+    {
+     "resource": "checks",
+     "level": "write",
+     "why": "publish verification check runs",
+     "source": "S-gh-rest-checks",
+     "status": "documented",
+     "credential_types": [
+      "github_app_installation",
+      "github_token"
+     ],
+     "enforcement": "ruleset required_status_checks with integration_id pinned to the CI App (S-gh-rest-rules); app must be installed with statuses:write and have recently submitted a check run (S-gh-rules-available)"
+    },
+    {
+     "resource": "commit_statuses",
+     "level": "write",
+     "why": "optional status contexts",
+     "source": "S-gh-fgpat",
+     "status": "documented",
+     "credential_types": [
+      "github_app_installation",
+      "github_token",
+      "fine_grained_pat",
+      "classic_pat"
+     ],
+     "enforcement": "statuses from 'any source' can be set by any writer; pin source App"
+    }
+   ],
+   "must_not_have": [
+    "contents write on harness/state or main",
+    "ruleset bypass"
+   ]
+  },
+  {
+   "role": "human-integrator",
+   "phase": "runtime",
+   "holder": "human GitHub account (write/maintain role), own credentials, never in sandboxes",
+   "needs": [
+    {
+     "resource": "pull_requests",
+     "level": "merge via UI",
+     "why": "authorize integration of reviewed candidate",
+     "source": "S-gh-rules-available",
+     "status": "documented",
+     "credential_types": [
+      "human account"
+     ],
+     "enforcement": "main ruleset: require pull request with >=1 approval, required status checks from trusted-CI App, block force pushes, restrict deletions; minimal bypass list; avoid bypass_mode exempt (no audit entry, S-gh-rest-rules)"
+    }
+   ],
+   "must_not_have": [
+    "auto-merge",
+    "ruleset bypass unless explicitly accepted as visible override"
+   ]
+  }
+ ],
+ "transports": [
+  {
+   "id": "rest_ref_patch",
+   "endpoint": "PATCH /repos/{owner}/{repo}/git/refs/{ref}",
+   "params": [
+    "sha",
+    "force"
+   ],
+   "expected_old_value": false,
+   "documented": "force=false ensures fast-forward; responses 200, 409 Conflict, 422 'Validation failed, or the endpoint has been spammed'",
+   "source": "S-gh-rest-refs",
+   "permission": "Contents write (+Workflows write when workflow files change)"
+  },
+  {
+   "id": "gql_createCommitOnBranch",
+   "endpoint": "GraphQL mutation createCommitOnBranch",
+   "params": [
+    "branch",
+    "expectedHeadOid (required)",
+    "fileChanges",
+    "message"
+   ],
+   "expected_old_value": true,
+   "documented": "commit parent is branch HEAD; expectedHeadOid is 'The git commit oid expected at the head of the branch prior to the commit'; author is credential owner; GitHub-signed if supported",
+   "source": "S-gh-gql-commits",
+   "permission": "not tabulated (inferred Contents write; unverified)"
+  },
+  {
+   "id": "gql_updateRefs",
+   "endpoint": "GraphQL mutation updateRefs",
+   "params": [
+    "repositoryId",
+    "refUpdates[].name",
+    "refUpdates[].beforeOid",
+    "refUpdates[].afterOid",
+    "refUpdates[].force"
+   ],
+   "expected_old_value": true,
+   "documented": "atomic across refs; beforeOid must match; zero OID asserts ref must not exist",
+   "source": "S-gh-gql-git",
+   "permission": "not tabulated (unverified)"
+  },
+  {
+   "id": "git_push_force_with_lease",
+   "endpoint": "git push --force-with-lease=<refname>:<expect> [--atomic]",
+   "params": [
+    "refname",
+    "expect"
+   ],
+   "expected_old_value": true,
+   "documented": "updates only if remote ref equals expect; empty expect = must not exist; only explicit form is non-experimental; --atomic all-or-nothing if server supports",
+   "source": "S-git-push",
+   "permission": "Contents write over HTTPS (PAT HTTPS only; App x-access-token)"
+  }
+ ],
+ "rulesets": {
+  "rule_types": [
+   "creation",
+   "update",
+   "deletion",
+   "non_fast_forward",
+   "required_status_checks",
+   "required_linear_history",
+   "pull_request"
+  ],
+  "bypass_actor_types_rest": [
+   "Integration",
+   "OrganizationAdmin",
+   "RepositoryRole",
+   "Team",
+   "DeployKey",
+   "User"
+  ],
+  "bypass_actor_types_ui": [
+   "Repository admins, organization owners, and enterprise owners",
+   "The maintain or write role, or custom repository roles based on the write role",
+   "Teams, excluding secret teams",
+   "GitHub Apps",
+   "Dependabot"
+  ],
+  "bypass_modes": [
+   "always",
+   "pull_request",
+   "exempt"
+  ],
+  "availability": "public repositories on Free; public and private on Pro, Team, Enterprise Cloud",
+  "pattern_syntax": "fnmatch with File::FNM_PATHNAME; '*' does not match '/'; use agent/**/*",
+  "sources": [
+   "S-gh-rules-available",
+   "S-gh-rules-create",
+   "S-gh-rules-about",
+   "S-gh-rest-rules"
+  ]
+ },
+ "unverified": [
+  "Whether an individual User actor_type works as a repository ruleset bypass actor (REST enum lists it; UI eligible list does not).",
+  "Whether the GitHub Actions GITHUB_TOKEN identity can be a ruleset bypass actor (not found).",
+  "Whether a GitHub App installation can access user-owned Projects v2 (no App permission found).",
+  "Fine-grained PAT / App permission levels required by GraphQL mutations createProjectV2, updateProjectV2Field, linkProjectV2ToRepository, createCommitOnBranch, updateRefs.",
+  "Which HTTP status (409 vs 422) REST ref PATCH returns for a non-fast-forward race.",
+  "Error shape and race behaviour of createCommitOnBranch expectedHeadOid mismatch and updateRefs beforeOid mismatch.",
+  "Whether ruleset Restrict updates / Block force pushes are enforced identically for REST, GraphQL and git push paths.",
+  "Whether bypass of one ruleset leaves rules in a separate no-bypass ruleset enforced for the same actor (two-ruleset layout).",
+  "Whether a GitHub App pull request review counts toward required approvals on main.",
+  "GITHUB_TOKEN behaviour when pushing changes to .github/workflows (no workflows permissions key documented).",
+  "Classic PAT/OAuth scope required to create rulesets (not tabulated).",
+  "Docker Sandboxes actual defaults on target host (docs inconsistent on shared skills mode; SSH agent forwarding on by default; default allowed-domain list not enumerated on defaults page).",
+  "Docker Sandboxes support on non-Ubuntu Linux hosts such as the Debian 11 bootstrap host (not in documented support list).",
+  "Rootless Docker cgroup limit enforcement on target hosts (silently ignored without cgroup v2 + systemd).",
+  "OCI egress enforcement including DNS and IPv6 bypass (not documented; P02b measurement)."
+ ]
+}

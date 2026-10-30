@@ -1,0 +1,415 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "contracts/permission-matrix.schema.json",
+  "title": "Remora permission matrix",
+  "description": "Structure of contracts/permission-matrix.v1.json. Semantic rules (evidence resolution, single authority, sandbox and setup/runtime separation) are checked by tests/contracts/test_permission_matrix.py.",
+  "type": "object",
+  "required": ["schema_version", "matrix_version", "status", "task", "purpose", "evidence", "evidence_accessed_at",
+               "credential_types", "write_levels", "expiry_revocation_procedures", "setup_only_permissions",
+               "authority_capabilities", "single_authority_capabilities", "state_kinds", "rulesets", "placements",
+               "decision_points", "bootstrap_profile", "unverified", "versioning"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {"const": 1},
+    "matrix_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "status": {"enum": ["proposed", "accepted"]},
+    "task": {"const": "P01"},
+    "purpose": {"type": "string", "minLength": 1},
+    "evidence": {"const": "docs/research/P01/permission-evidence.json"},
+    "evidence_accessed_at": {"type": "string", "minLength": 1},
+    "credential_types": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/credential_type"}},
+    "write_levels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+    "expiry_revocation_procedures": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": ["sources", "procedure"],
+        "additionalProperties": false,
+        "properties": {
+          "sources": {"type": "array", "items": {"$ref": "#/$defs/source_id"}},
+          "procedure": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "setup_only_permissions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["resource", "levels", "reason"],
+        "additionalProperties": false,
+        "properties": {
+          "resource": {"$ref": "#/$defs/resource"},
+          "levels": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "authority_capabilities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/capability"}},
+    "single_authority_capabilities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/capability"}},
+    "state_kinds": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/state_kind"}},
+    "rulesets": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/ruleset"}},
+    "placements": {
+      "type": "object",
+      "required": ["supervisor_hosted", "actions_hosted"],
+      "additionalProperties": false,
+      "properties": {
+        "supervisor_hosted": {"$ref": "#/$defs/placement"},
+        "actions_hosted": {"$ref": "#/$defs/placement"}
+      }
+    },
+    "decision_points": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/decision_point"}},
+    "bootstrap_profile": {
+      "type": "object",
+      "required": ["description", "repository", "owner_type", "visibility", "project_owner", "credentials",
+                   "github_app", "rulesets", "decision_point_values", "autonomous_execution", "gaps_against_matrix"],
+      "additionalProperties": false,
+      "properties": {
+        "description": {"type": "string", "minLength": 1},
+        "repository": {"type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"},
+        "owner_type": {"enum": ["user", "organization"]},
+        "visibility": {"enum": ["public", "private"]},
+        "project_owner": {"type": "string", "minLength": 1},
+        "credentials": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["holder", "credential_type", "scopes_reported", "note"],
+            "additionalProperties": false,
+            "properties": {
+              "holder": {"type": "string", "minLength": 1},
+              "credential_type": {"$ref": "#/$defs/credential_type"},
+              "scopes_reported": {"type": "array", "items": {"type": "string"}},
+              "scopes_pending": {"type": "array", "items": {"type": "string"}},
+              "note": {"type": "string"}
+            }
+          }
+        },
+        "github_app": {"type": ["null", "string"]},
+        "rulesets": {"type": "string"},
+        "decision_point_values": {"type": "object", "additionalProperties": {"type": "string"}},
+        "autonomous_execution": {"const": false},
+        "gaps_against_matrix": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "unverified": {"type": "array", "items": {"type": "string"}},
+    "versioning": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "source_id": {"type": "string", "pattern": "^S-[a-z0-9-]+$"},
+    "credential_type": {"enum": ["github_app_installation", "fine_grained_pat", "classic_pat", "oauth_gh_cli",
+                                 "github_token", "human_account", "none"]},
+    "resource": {"enum": ["metadata", "contents", "workflow_files", "issues", "pull_requests", "commit_statuses",
+                          "checks", "actions", "rulesets_admin", "projects_org", "projects_user"]},
+    "capability": {"enum": ["state_branch_write", "candidate_publication", "ci_evidence", "merge_main", "human_commands",
+                            "command_ingestion", "board_projection", "pending_effects", "execution_control", "setup"]},
+    "permission": {
+      "type": "object",
+      "required": ["credential_type", "resource", "permission_name", "level", "source", "purpose"],
+      "additionalProperties": false,
+      "properties": {
+        "credential_type": {"$ref": "#/$defs/credential_type"},
+        "resource": {"$ref": "#/$defs/resource"},
+        "permission_name": {"type": "string", "minLength": 1},
+        "parameter_name": {"type": "string", "minLength": 1},
+        "level": {"enum": ["read", "write", "admin", "full"]},
+        "source": {"$ref": "#/$defs/source_id"},
+        "purpose": {"type": "string", "minLength": 1},
+        "when": {"$ref": "#/$defs/decision_ref"}
+      }
+    },
+    "decision_ref": {
+      "type": "object",
+      "required": ["decision_point", "option"],
+      "additionalProperties": false,
+      "properties": {
+        "decision_point": {"type": "string", "pattern": "^DP-[0-9]{2}$"},
+        "option": {"type": "string", "minLength": 1}
+      }
+    },
+    "forbidden_permission": {
+      "type": "object",
+      "required": ["resource", "levels", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "resource": {"$ref": "#/$defs/resource"},
+        "levels": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["read", "write", "admin", "full"]}},
+        "reason": {"type": "string", "minLength": 1},
+        "unless": {"$ref": "#/$defs/decision_ref"}
+      }
+    },
+    "scope": {
+      "type": "object",
+      "required": ["repository_selection", "project_scope", "target", "caveats"],
+      "additionalProperties": false,
+      "properties": {
+        "repository_selection": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["credential_type", "selection"],
+            "additionalProperties": false,
+            "properties": {
+              "credential_type": {"$ref": "#/$defs/credential_type"},
+              "selection": {"enum": ["this_repository_only", "all_accessible_repositories", "workflow_repository_only", "repository_role", "none"]},
+              "source": {"$ref": "#/$defs/source_id"}
+            }
+          }
+        },
+        "project_scope": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["credential_type", "scope"],
+            "additionalProperties": false,
+            "properties": {
+              "credential_type": {"$ref": "#/$defs/credential_type"},
+              "scope": {"enum": ["none", "organization_wide", "all_accessible_projects"]},
+              "source": {"$ref": "#/$defs/source_id"}
+            }
+          }
+        },
+        "target": {"type": "string", "minLength": 1},
+        "caveats": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "enforcement": {
+      "type": "object",
+      "required": ["ruleset", "relation"],
+      "additionalProperties": false,
+      "properties": {
+        "ruleset": {"type": "string", "pattern": "^RS-[a-z-]+$"},
+        "relation": {"enum": ["subject_to", "bypass_actor", "conditional_bypass_actor", "held_by_bypass_account", "required_check_source"]}
+      }
+    },
+    "role": {
+      "type": "object",
+      "required": ["id", "phase", "credential_types", "permissions", "forbidden_permissions", "bypass_account_credentials", "authorities", "must_not_have",
+                   "enforcement", "scope", "secret_holder", "expiry_revocation", "unverified"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"enum": ["setup-operator", "supervisor-runtime", "actions-publisher-fallback", "developer-sandbox",
+                        "reviewer-sandbox", "trusted-ci", "human-integrator", "projection-only"]},
+        "phase": {"enum": ["setup", "runtime"]},
+        "credential_types": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/credential_type"}},
+        "permissions": {"type": "array", "items": {"$ref": "#/$defs/permission"}},
+        "forbidden_permissions": {"type": "array", "items": {"$ref": "#/$defs/forbidden_permission"}},
+        "bypass_account_credentials": {
+          "type": "object",
+          "required": ["policy", "exempt_credential_types", "note"],
+          "additionalProperties": false,
+          "properties": {
+            "policy": {"enum": ["forbidden", "allowed_without_contents_write", "holder_is_bypass_account", "not_applicable"]},
+            "exempt_credential_types": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/credential_type"}},
+            "note": {"type": "string", "minLength": 1},
+            "exempt_scope_rule": {
+              "type": "object",
+              "required": ["allowed_scopes", "excluded_scopes", "rule", "verification", "source"],
+              "additionalProperties": false,
+              "properties": {
+                "allowed_scopes": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+                "excluded_scopes": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+                "rule": {"type": "string", "minLength": 1},
+                "verification": {"type": "string", "minLength": 1},
+                "source": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        },
+        "scope": {"$ref": "#/$defs/scope"},
+        "app_identity": {"enum": [null, "setup_app", "runtime_app", "supervisor_client_app", "ci_app", "projection_app"]},
+        "app_grant_rule": {
+          "type": "object",
+          "required": ["level", "mode", "allowed_grants", "never_grant", "rule", "verification", "sources"],
+          "additionalProperties": false,
+          "properties": {
+            "level": {"const": "registration_and_installation"},
+            "mode": {"const": "allowlist"},
+            "allowed_grants": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["resource", "permission_name", "level"],
+                "additionalProperties": false,
+                "properties": {
+                  "resource": {"$ref": "#/$defs/resource"},
+                  "permission_name": {"type": "string", "minLength": 1},
+                  "level": {"enum": ["read", "write", "admin"]},
+                  "when": {"$ref": "#/$defs/decision_ref"}
+                }
+              }
+            },
+            "never_grant": {"const": "forbidden_permissions"},
+            "rule": {"type": "string", "minLength": 1},
+            "verification": {"type": "string", "minLength": 1},
+            "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_id"}}
+          }
+        },
+        "github_token_rule": {"type": "string", "minLength": 1},
+        "actions_job_binding": {
+          "type": "object",
+          "required": ["environment", "applies_when", "allowed_triggers", "deployment_branches", "deployment_branch_rule",
+                       "secret_scope", "secret_rule", "admin_bypass_of_environment_rules", "runtime_ref_check",
+                       "rerun_rule", "clean_import_rule", "dispatch_exposure", "availability", "sources", "unverified"],
+          "additionalProperties": false,
+          "properties": {
+            "environment": {"type": "string", "minLength": 1},
+            "applies_when": {"type": "string", "minLength": 1},
+            "allowed_triggers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["workflow_dispatch", "schedule"]}},
+            "pinned_revision_location": {"enum": ["environment_variable", "state_branch"]},
+            "input_rule": {"type": "string", "minLength": 1},
+            "dispatcher_rule": {"type": "string", "minLength": 1},
+            "rerun_rule": {"type": "string", "minLength": 1},
+            "repin_rule": {"type": "string", "minLength": 1},
+            "clean_import_rule": {"type": "string", "minLength": 1},
+            "deployment_branches": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+            "deployment_branch_rule": {"type": "string", "minLength": 1},
+            "secret_scope": {"const": "environment_secret"},
+            "secret_rule": {"type": "string", "minLength": 1},
+            "admin_bypass_of_environment_rules": {"const": "disabled"},
+            "runtime_ref_check": {"type": "string", "minLength": 1},
+            "dispatch_exposure": {"type": "string", "minLength": 1},
+            "availability": {"type": "string", "minLength": 1},
+            "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_id"}},
+            "unverified": {"type": "array", "items": {"type": "string"}}
+          }
+        },
+        "authorities": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/capability"}},
+        "must_not_have": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "enforcement": {"type": "array", "items": {"$ref": "#/$defs/enforcement"}},
+        "secret_holder": {"type": "string", "minLength": 1},
+        "expiry_revocation": {
+          "type": "object",
+          "required": ["procedures", "table"],
+          "additionalProperties": false,
+          "properties": {
+            "procedures": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/credential_type"}},
+            "table": {"const": "expiry_revocation_procedures"}
+          }
+        },
+        "unverified": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "read_access": {"type": "string"},
+        "repository_role": {"type": "string"},
+        "notes": {"type": "string"}
+      }
+    },
+    "state_kind": {
+      "type": "object",
+      "required": ["id", "record", "authoritative"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z_]+$"},
+        "record": {"type": "string", "minLength": 1},
+        "authoritative": {"type": "boolean"},
+        "required_capability": {"$ref": "#/$defs/capability"},
+        "derived_from": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+    "ruleset": {
+      "type": "object",
+      "required": ["id", "target_refs", "rules", "bypass_actors", "sources", "unverified"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^RS-[a-z-]+$"},
+        "target_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^refs/heads/"}},
+        "rules": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string"}},
+        "bypass_actors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["actor_type", "actor", "bypass_mode"],
+            "additionalProperties": false,
+            "properties": {
+              "actor_type": {"type": "string"},
+              "actor": {"type": "string", "minLength": 1},
+              "bypass_mode": {"type": "string"},
+              "app_identity": {"enum": ["runtime_app"]}
+            }
+          }
+        },
+        "parameters": {"type": "object"},
+        "conditional_bypass_actors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["actor_type", "actor", "bypass_mode", "when", "owner_condition"],
+            "additionalProperties": false,
+            "properties": {
+              "actor_type": {"type": "string"},
+              "actor": {"type": "string", "minLength": 1},
+              "bypass_mode": {"type": "string"},
+              "when": {"$ref": "#/$defs/decision_ref"},
+              "owner_condition": {"$ref": "#/$defs/decision_ref"},
+              "doctor_check": {"type": "string", "minLength": 1}
+            }
+          }
+        },
+        "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_id"}},
+        "unverified": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "placement": {
+      "type": "object",
+      "required": ["default", "description", "roles", "authority_map"],
+      "additionalProperties": false,
+      "properties": {
+        "default": {"type": "boolean"},
+        "description": {"type": "string", "minLength": 1},
+        "roles": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/role"}},
+        "authority_map": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "object",
+            "required": ["writer_role"],
+            "additionalProperties": false,
+            "properties": {
+              "writer_role": {"type": ["string", "null"]},
+              "projection_writers": {"type": "array", "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    "decision_point": {
+      "type": "object",
+      "required": ["id", "parameter", "status", "question", "options", "recommended", "sources"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^DP-[0-9]{2}$"},
+        "parameter": {"type": "string", "minLength": 1},
+        "status": {"enum": ["undecided", "decided"]},
+        "question": {"type": "string", "minLength": 1},
+        "options": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["id", "effect"],
+            "additionalProperties": false,
+            "properties": {
+              "id": {"type": "string", "minLength": 1},
+              "effect": {"type": "string", "minLength": 1},
+              "required_approving_review_count": {"type": "integer"},
+              "main_rulesets": {"type": "array", "minItems": 1, "items": {"type": "string", "pattern": "^RS-[a-z-]+$"}},
+              "main_update_restricted": {"type": "boolean"},
+              "machine_can_merge_without_bypass": {"type": "boolean"},
+              "candidate_can_post_required_check": {"type": "boolean"},
+              "requires": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/decision_ref"}}
+            }
+          }
+        },
+        "recommended": {"type": "string"},
+        "interaction": {"type": "string", "minLength": 1},
+        "decision": {"type": "string"},
+        "decision_record": {"type": "string"},
+        "sources": {"type": "array", "items": {"$ref": "#/$defs/source_id"}}
+      }
+    }
+  }
+}

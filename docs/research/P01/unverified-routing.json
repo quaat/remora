@@ -1,0 +1,873 @@
+{
+  "schema_version": 1,
+  "purpose": "Stable IDs for every unverified/unknown item in the P01 research and where it is routed. tests/contracts/test_unverified_routing.py checks that every item of permission-evidence.json 'unverified', upstream-surfaces.md §5 and weave-inventory.md §H has an ID here and that each ID appears in the listed handoff or README file. Matrix-level open points on roles and rulesets (U-PM-*) are cited by ID in the matrix's role/ruleset 'unverified' entries; entries that restate a research item reuse its U-PE/U-US/U-WI ID. 'fixtures' lists every P02a fixture id with the item ids its handoff row carries; items routed to a named fixture must be covered by it.",
+  "items": [
+    {
+      "id": "U-PE-01",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[0]",
+      "text": "Whether an individual User actor_type works as a repository ruleset bypass actor (REST enum lists it; UI eligible list does not).",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-02",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[1]",
+      "text": "Whether the GitHub Actions GITHUB_TOKEN identity can be a ruleset bypass actor (not found).",
+      "routed_to": [
+        "P02a (Actions placement only)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-03",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[2]",
+      "text": "Whether a GitHub App installation can access user-owned Projects v2 (no App permission found).",
+      "routed_to": [
+        "P02a (setup observation)",
+        "P07",
+        "human DP-01"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-04",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[3]",
+      "text": "Fine-grained PAT / App permission levels required by GraphQL mutations createProjectV2, updateProjectV2Field, linkProjectV2ToRepository, createCommitOnBranch, updateRefs.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-05",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[4]",
+      "text": "Which HTTP status (409 vs 422) REST ref PATCH returns for a non-fast-forward race.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-06",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[5]",
+      "text": "Error shape and race behaviour of createCommitOnBranch expectedHeadOid mismatch and updateRefs beforeOid mismatch.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-07",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[6]",
+      "text": "Whether ruleset Restrict updates / Block force pushes are enforced identically for REST, GraphQL and git push paths.",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-08",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[7]",
+      "text": "Whether bypass of one ruleset leaves rules in a separate no-bypass ruleset enforced for the same actor (two-ruleset layout).",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-09",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[8]",
+      "text": "Whether a GitHub App pull request review counts toward required approvals on main.",
+      "routed_to": [
+        "P02a",
+        "human DP-08/DP-10"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-10",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[9]",
+      "text": "GITHUB_TOKEN behaviour when pushing changes to .github/workflows (no workflows permissions key documented).",
+      "routed_to": [
+        "P02a (Actions placement only)",
+        "P09"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-11",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[10]",
+      "text": "Classic PAT/OAuth scope required to create rulesets (not tabulated).",
+      "routed_to": [
+        "P02a (setup observation)",
+        "P10"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-12",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[11]",
+      "text": "Docker Sandboxes actual defaults on target host (docs inconsistent on shared skills mode; SSH agent forwarding on by default; default allowed-domain list not enumerated on defaults page).",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-13",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[12]",
+      "text": "Docker Sandboxes support on non-Ubuntu Linux hosts such as the Debian 11 bootstrap host (not in documented support list).",
+      "routed_to": [
+        "P02b",
+        "human Q11"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-14",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[13]",
+      "text": "Rootless Docker cgroup limit enforcement on target hosts (silently ignored without cgroup v2 + systemd).",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PE-15",
+      "source": "docs/research/P01/permission-evidence.json",
+      "source_ref": "unverified[14]",
+      "text": "OCI egress enforcement including DNS and IPv6 bypass (not documented; P02b measurement).",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-01",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 1",
+      "text": "External-worker refusal, live",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-02",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 2",
+      "text": "Self-hosted runner question",
+      "routed_to": [
+        "P02a",
+        "human Q1"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-03",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 3",
+      "text": "Git CAS under contention",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-04",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 4",
+      "text": "Pinning reproducibility (compat.json, tagged setup action, v3 additive drift, REST API version 2026-03-10)",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-05",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 5",
+      "text": "Hosted gates upstream marks unverified (immutable-SHA dispatch, hosted Git publication, hosted execution, native delivery)",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-06",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 6",
+      "text": "Latency and request volume; no same-turn grant to the agent (spec :3352)",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-07",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 7",
+      "text": "Admin requirement for steady-state operator operations",
+      "routed_to": [
+        "P02a"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-08",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 8",
+      "text": "Symphony as runner",
+      "routed_to": [
+        "not adopted for the pilot; any later runner adapter needs its own task after P06"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-09",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 9",
+      "text": "Weave-side inventory for criterion 3",
+      "routed_to": [
+        "resolved by weave-inventory.md §E; P02a computes the net figure"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-US-10",
+      "source": "docs/research/P01/upstream-surfaces.md",
+      "source_ref": "§5 item 10",
+      "text": "Not verified: docs site build revision, upstream binary behaviour, githubnext redirect, meaning of 27 *_checks.cjs files",
+      "routed_to": [
+        "P02a (binary behaviour within its fixtures)",
+        "informational otherwise"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-01",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Test runs'",
+      "text": "Executed status of Weave's controller tests; the '89 passing' figure is not reproducible statically",
+      "routed_to": [
+        "human",
+        "P12 (legacy import)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-02",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Weave docs that are stale or conflict with each other'",
+      "text": "capabilities.md and orchestration-requirements.md conflict with observed behaviour",
+      "routed_to": [
+        "informational; P12 import must not rely on them"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-03",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'gh-aw coverage'",
+      "text": "Whether gh-aw safe outputs/queue could replace publisher.py, state.py, the executor and github.py writes",
+      "routed_to": [
+        "P02a criterion 3"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-04",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Project automation'",
+      "text": "Live Projects automation settings of the Weave board",
+      "routed_to": [
+        "human",
+        "P07",
+        "P12"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-05",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Legacy ledger contents'",
+      "text": "Contents and size of the legacy ledger on host gengar",
+      "routed_to": [
+        "human Q12",
+        "P12"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-06",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Licence'",
+      "text": "Legal effect of AI co-authorship trailers; Weave rights holder vs Remora owner",
+      "routed_to": [
+        "human Q14"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-07",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'Shallow clones'",
+      "text": "Per-file history taken from Weave's decision record, not git log",
+      "routed_to": [
+        "informational"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-WI-08",
+      "source": "docs/research/P01/weave-inventory.md",
+      "source_ref": "§H 'No blocker'",
+      "text": "No blocker prevented the inventory",
+      "routed_to": [
+        "informational"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-01",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-02",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-candidates-immutable].unverified",
+      "text": "candidate-ref cleanup procedure under a no-bypass deletion rule",
+      "routed_to": [
+        "P05 (publication)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-03",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-candidates-writers].unverified",
+      "text": "per-task branch ownership is not enforceable by GitHub; the trusted publisher must enforce it",
+      "routed_to": [
+        "P05/P06 trusted publisher (documented limitation; enforced in code)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-04",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.human-integrator.unverified; placements.supervisor_hosted.human-integrator.unverified; rulesets[RS-main].unverified",
+      "text": "admin bypass removal on a user-owned repository (DP-05)",
+      "routed_to": [
+        "P02a (F-APPROVE)",
+        "human DP-05"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-05",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.supervisor_hosted.supervisor-runtime.unverified",
+      "text": "classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository",
+      "routed_to": [
+        "P02a (F-SETUP observation)",
+        "P07"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-06",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.reviewer-sandbox.unverified; placements.supervisor_hosted.reviewer-sandbox.unverified",
+      "text": "writable reviewer scratch under the selected runtime (P02b)",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-07",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.trusted-ci.unverified; placements.supervisor_hosted.trusted-ci.unverified",
+      "text": "whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')",
+      "routed_to": [
+        "P09",
+        "human DP-03"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-08",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.projection-only.unverified; placements.supervisor_hosted.projection-only.unverified",
+      "text": "for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
+      "routed_to": [
+        "human DP-01/DP-07"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-09",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.projection-only.unverified; placements.supervisor_hosted.projection-only.unverified",
+      "text": "DP-06 applies when the job's App key or PAT is stored as an environment secret of the bound environment (actions_job_binding)",
+      "routed_to": [
+        "human DP-06"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-10",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.supervisor-runtime.unverified",
+      "text": "channel by which a supervisor without Contents write submits transition requests and hands candidate material to the Actions publisher (workflow_dispatch/repository_dispatch permission mapping not in the evidence)",
+      "routed_to": [
+        "P05 (only if the Actions placement is selected)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-11",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.supervisor-runtime.unverified",
+      "text": "App permission for dispatching workflows (no App 'Actions' entry in permission-evidence.json)",
+      "routed_to": [
+        "P05 (only if the Actions placement is selected)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-12",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09",
+      "routed_to": [
+        "P09"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-13",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "latency/cost of an Actions job per transition (P02a measurement)",
+      "routed_to": [
+        "P02a (measured quantities)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-14",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "whether Restrict updates on main refuses pull-request merges (web UI, PUT .../pulls/{pull_number}/merge, PUT .../merge-async, GraphQL mergePullRequest, and auto-merge enabled with GraphQL enablePullRequestAutoMerge) and POST .../merges by actors without bypass, and lets a pull_request-mode bypass actor complete a pull-request merge",
+      "routed_to": [
+        "P02a (F-APPROVE)",
+        "human DP-11 if it fails"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-15",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "whether a Team bypass actor on an organization repository's ruleset lets only that Team's members bypass in pull_request mode, so that another holder of the same repository role who is not in the Team cannot merge",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-16",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "a workflow_dispatch of the reducer workflow on a non-default ref (for example agent/**) must be refused by the environment's deployment-branch rule, so that the job does not obtain the environment secret, and the in-workflow ref check must also refuse it",
+      "routed_to": [
+        "P02a (F-DISPATCH-REF; Actions placement only)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-17",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "fine-grained PAT / App permission required by GraphQL mergePullRequest and enablePullRequestAutoMerge (mutations documented in S-gh-graphql-pulls; permissions not tabulated); presumed to include Contents write, so they are treated as merge paths",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-18",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main-integrator].unverified",
+      "text": "whether a Team bypass actor on a ruleset also covers members of that Team's child teams (child teams inherit the parent's access permissions, S-gh-about-teams; bypass inheritance is not stated)",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-19",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "on the default branch, whether the reducer's input, dispatcher and re-run rules hold in practice: a dispatch with injection-shaped inputs runs no injected code, a dispatch by an unenrolled actor is refused, and a re-run (run_attempt 2) or a run at a SHA other than the pinned revision is refused before the App token is minted",
+      "routed_to": [
+        "P02a (F-DISPATCH-REF; Actions placement only)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-20",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.trusted-ci.unverified; placements.supervisor_hosted.trusted-ci.unverified",
+      "text": "CI App key custody and the token-minting job (a trusted default-branch workflow job that neither checks out nor executes candidate code, with no key reachable from candidate-running jobs) are P09's deliverable; the concrete GitHub workflow design that achieves this is not established by P01",
+      "routed_to": [
+        "P09",
+        "human DP-03"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "F-A01",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-03"
+      ]
+    },
+    {
+      "id": "F-A04a",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A04b",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A05",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A07",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A17f",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-SKEW",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-SNAP",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-T1",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-05"
+      ]
+    },
+    {
+      "id": "F-T2",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-04",
+        "U-PE-06"
+      ]
+    },
+    {
+      "id": "F-T3",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-04",
+        "U-PE-06"
+      ]
+    },
+    {
+      "id": "F-T4",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-03"
+      ]
+    },
+    {
+      "id": "F-RS",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-07",
+        "U-PE-08"
+      ]
+    },
+    {
+      "id": "F-GA1",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-01",
+        "U-US-10"
+      ]
+    },
+    {
+      "id": "F-GA2",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-04"
+      ]
+    },
+    {
+      "id": "F-GA3",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-07"
+      ]
+    },
+    {
+      "id": "F-RS-USER",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-01"
+      ]
+    },
+    {
+      "id": "F-RS-TOKEN",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-02"
+      ]
+    },
+    {
+      "id": "F-WF-TOKEN",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-10"
+      ]
+    },
+    {
+      "id": "F-APPROVE",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-09",
+        "U-PM-01",
+        "U-PM-04",
+        "U-PM-14",
+        "U-PM-15",
+        "U-PM-17",
+        "U-PM-18",
+        "U-PE-08"
+      ]
+    },
+    {
+      "id": "F-DISPATCH-REF",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PM-16",
+        "U-PM-19"
+      ]
+    },
+    {
+      "id": "F-SETUP",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-03",
+        "U-PE-04",
+        "U-PE-11",
+        "U-PM-05"
+      ]
+    },
+    {
+      "id": "F-GA4",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-05"
+      ]
+    },
+    {
+      "id": "F-GA5",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-06"
+      ]
+    },
+    {
+      "id": "F-API",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-04"
+      ]
+    }
+  ]
+}
