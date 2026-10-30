@@ -48,7 +48,7 @@ GitHub. Q2-Q10 are the matrix decision points DP-01…DP-09; Q15 is DP-10.
 | Q3 | DP-02 State writer / publisher credential | GitHub App / fine-grained PAT / classic PAT | GitHub App (only documented single-actor bypass; can read Checks) | §A.1, §D |
 | Q4 | DP-03 Trusted-CI identity | dedicated CI App / Actions `GITHUB_TOKEN` | dedicated CI App, separate from the publisher | §B.6 |
 | Q5 | DP-04 May candidates modify `.github/workflows/**`? | reject / allow with Workflows write | reject | §G.1 item 6 |
-| Q6 | DP-05 Admins on `main`/state-branch bypass lists? | remove / keep as visible override | remove; never `exempt` | §B.7 |
+| Q6 | DP-05 Which bypass may repository admins hold? | none / admin bypass on `main` only, in `pull_request` mode / admins on every list as visible override | admin bypass on `main` only, in `pull_request` mode (needed by the Q15 recommendation for a single maintainer); never on state/candidate rulesets; never `exempt` | §B.7, §D |
 | Q7 | DP-06 App private key as an Actions secret (Actions placement, Actions projection job) | reject / accept | reject unless the Actions placement is required | §B.3, §G.3 item 7 |
 | Q8 | DP-07 Repository visibility and plan | public / private on Pro, Team, Enterprise / private on Free (unsupported) | public, or private on a paid plan | §D |
 | Q9 | DP-08 Who opens integration PRs? | human / supervisor | human for the pilot | §B.2 |
@@ -57,7 +57,7 @@ GitHub. Q2-Q10 are the matrix decision points DP-01…DP-09; Q15 is DP-10.
 | Q12 (U-WI-05) | Preserve the legacy Weave ledger on host `gengar` | archive now / later | archive a read-only copy now and record its digest; it is load-bearing for P12 step 2 and is not on GitHub | `weave-migration-boundaries.md` §2, §5 |
 | Q13 | Remora's distribution licence | maintainer's choice | decide before any upstream code is copied; P01 makes no licence recommendation | `NOTICE.md`, `license-report.md` |
 | Q14 (U-WI-06) | Reuse Weave code by copying with attribution or by re-implementing against the same fixtures | copy with MIT attribution / re-implement | copy-with-adaptation for the modules listed in `weave-migration-boundaries.md` §4, after Q13, with the NOTICE change in `scope-requests.md`; first confirm the Weave rights holder and note the AI co-authorship flag | `license-report.md` |
-| Q15 | DP-10 Required approvals on `main`, given that pull request authors cannot approve their own pull requests (S-gh-pr-approve-required) | zero approvals with PR and required checks / one approval from a second human / one approval plus admin bypass in `pull_request` mode | zero approvals with PR and trusted-CI checks for a single-maintainer repository (the human's merge is the authorization); one approval from a second human once a second maintainer exists. With one approval required, admins removed from bypass (Q6) and the human opening PRs (Q9), a single maintainer cannot merge | `contracts/permission-matrix.v1.json` DP-10 |
+| Q15 | DP-10 Required approvals on `main`, given that pull request authors cannot approve their own pull requests (S-gh-pr-approve-required) | one approval plus a human admin bypass in `pull_request` mode / one approval from a second human / zero approvals with PR and required checks | **one approval plus the human admin bypass in `pull_request` mode** while there is one maintainer (every merge is an audited bypass; Apps and PATs cannot merge); one approval from a second human once a second maintainer exists. **Zero approvals is not recommended:** Contents write includes the merge endpoint, so every Contents-write holder (supervisor App, Actions publisher, setup credential) could merge once checks pass, and "no merge authority" would rest on code only. With one approval and no admin bypass (Q6 = none), a single maintainer cannot merge | `contracts/permission-matrix.v1.json` DP-10 |
 
 ## Items marked unverified (routed)
 
@@ -107,4 +107,10 @@ supervisors under one App (per-host keys) → P02a (`handoff-P02a.md` §5); in t
 placement, how a supervisor without Contents write submits transitions and hands over
 candidate material, and the App permission for workflow dispatch → P02a/P05 if that
 placement is selected; projection-only on a private user-owned repository cannot be
-expressed (classic `repo` includes Contents write) → DP-01/DP-07.
+expressed (classic `repo` includes Contents write) → DP-01/DP-07; whether the owner of a
+personal repository is matched by a `RepositoryRole` admin bypass on `main`, and how
+`pull_request` bypass mode behaves → P02a (`handoff-P02a.md` F-APPROVE).
+
+Matrix versioning: `matrix_version` stays 1.0.0 for every change made while the P01
+candidate is under review; the first bump follows human acceptance of P01 (rule recorded in
+the matrix's `versioning` field and tested).

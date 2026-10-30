@@ -321,7 +321,7 @@
       ],
       "bypass_actors": [],
       "parameters": {
-        "required_approving_review_count": "per DP-10: 0 (pull request still required) or >= 1 (needs a second human with write access)",
+        "required_approving_review_count": "per DP-10: >= 1 under the recommended options (0 only with option zero_approvals_pr_required, which lets any Contents-write holder merge)",
         "required_status_checks.integration_id": "trusted-CI App (DP-03)"
       },
       "sources": [
@@ -331,7 +331,19 @@
       ],
       "unverified": [
         "whether an App review counts toward required approvals",
+        "whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
         "admin bypass removal on a user-owned repository (DP-05)"
+      ],
+      "conditional_bypass_actors": [
+        {
+          "actor_type": "RepositoryRole",
+          "actor": "repository admin role (the human maintainer)",
+          "bypass_mode": "pull_request",
+          "when": {
+            "decision_point": "DP-05",
+            "option": "admin_bypass_main_pull_request_mode_only"
+          }
+        }
       ]
     }
   ],
@@ -1408,7 +1420,7 @@
           ],
           "must_not_have": [
             "auto-merge",
-            "ruleset bypass unless DP-05 = keep_admin_bypass_as_visible_override",
+            "any ruleset bypass except the RS-main pull_request-mode admin bypass under DP-05 = admin_bypass_main_pull_request_mode_only (or all lists under keep_admin_bypass_as_visible_override)",
             "bypass_mode exempt (no audit entry)",
             "own credentials inside any sandbox or supervisor"
           ],
@@ -1428,7 +1440,7 @@
           "unverified": [
             "whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
-          "repository_role": "write or maintain (admin only if DP-05 keeps admin bypass)",
+          "repository_role": "write or maintain; admin when DP-05 grants the RS-main pull_request-mode bypass (single maintainer, DP-10)",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
           "scope": {
@@ -2878,7 +2890,7 @@
           ],
           "must_not_have": [
             "auto-merge",
-            "ruleset bypass unless DP-05 = keep_admin_bypass_as_visible_override",
+            "any ruleset bypass except the RS-main pull_request-mode admin bypass under DP-05 = admin_bypass_main_pull_request_mode_only (or all lists under keep_admin_bypass_as_visible_override)",
             "bypass_mode exempt (no audit entry)",
             "own credentials inside any sandbox or supervisor"
           ],
@@ -2898,7 +2910,7 @@
           "unverified": [
             "whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
-          "repository_role": "write or maintain (admin only if DP-05 keeps admin bypass)",
+          "repository_role": "write or maintain; admin when DP-05 grants the RS-main pull_request-mode bypass (single maintainer, DP-10)",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
           "forbidden_permissions": [],
           "scope": {
@@ -3279,18 +3291,22 @@
       "id": "DP-05",
       "parameter": "admin_bypass",
       "status": "undecided",
-      "question": "Keep repository admins on the main / state-branch bypass lists?",
+      "question": "Which bypass may repository admins hold on the main and state/candidate rulesets?",
       "options": [
         {
           "id": "remove_admins_from_bypass",
-          "effect": "Overrides require editing the ruleset, which is visible"
+          "effect": "No bypass on any ruleset; overrides require editing the ruleset, which is visible. With one required approval (DP-10) a single maintainer cannot merge"
+        },
+        {
+          "id": "admin_bypass_main_pull_request_mode_only",
+          "effect": "Repository admins (the human maintainer) bypass only RS-main, only in bypass_mode pull_request, so every merge without an approval is an audited bypass through a pull request; no admin bypass on RS-state-* or RS-candidates-*. No App or PAT identity is ever a bypass actor on main"
         },
         {
           "id": "keep_admin_bypass_as_visible_override",
-          "effect": "Admin override is outside the automation guarantee (plan section 3); never bypass_mode exempt"
+          "effect": "Admins on every bypass list; overrides are outside the automation guarantee (plan section 3); never bypass_mode exempt"
         }
       ],
-      "recommended": "remove_admins_from_bypass",
+      "recommended": "admin_bypass_main_pull_request_mode_only",
       "sources": [
         "S-gh-rules-create",
         "S-gh-rest-rules"
@@ -3389,22 +3405,36 @@
       "options": [
         {
           "id": "zero_approvals_pr_required",
-          "effect": "Pull request and required trusted-CI checks still gate main; the human's merge is the authorization act; documented as 'pull requests as a record of changes rather than to gate on approvals' (S-gh-rules-available). Works for a single maintainer"
+          "required_approving_review_count": 0,
+          "machine_can_merge_without_bypass": true,
+          "effect": "Pull request and required trusted-CI checks still gate main and a human can merge alone ('pull requests as a record of changes rather than to gate on approvals', S-gh-rules-available). EXPOSURE: Contents write includes PUT /repos/{owner}/{repo}/pulls/{pull_number}/merge (S-gh-fgpat), so any Contents-write holder (supervisor-runtime, actions-publisher-fallback, the setup credential) can merge any pull request once the checks are green. 'No merge authority' (plan section 4, contract 10) would then rest on trusted code only, not on GitHub. Not recommended"
         },
         {
           "id": "one_approval_second_human",
-          "effect": "At least one approval from a second human account with write access; required when the project has two maintainers"
+          "required_approving_review_count": 1,
+          "machine_can_merge_without_bypass": false,
+          "effect": "At least one approval from a second human account with write access. Machine identities cannot merge: they cannot approve their own pull request and hold no Pull requests write unless DP-08 = supervisor_opens_pr (whether an App review would count is unverified). Use this once the project has two maintainers"
         },
         {
           "id": "one_approval_admin_pull_request_bypass",
-          "effect": "Keep one approval and let the maintainer bypass in pull_request mode on every merge; requires DP-05 = keep_admin_bypass_as_visible_override; every merge is an audited bypass"
+          "required_approving_review_count": 1,
+          "machine_can_merge_without_bypass": false,
+          "requires": [
+            {
+              "decision_point": "DP-05",
+              "option": "admin_bypass_main_pull_request_mode_only"
+            }
+          ],
+          "effect": "Keep one required approval; the single human maintainer merges through a pull request using the admin bypass in pull_request mode, so every merge is an audited bypass. Apps and PATs are not admins and are not bypass actors, so a machine Contents-write holder still cannot merge main. Assumes no machine credential belongs to an admin account; whether a personal-repository owner is matched by the RepositoryRole admin bypass and how pull_request bypass mode behaves are unverified (P02a F-APPROVE)"
         }
       ],
-      "recommended": "zero_approvals_pr_required",
-      "interaction": "With required_approving_review_count >= 1, DP-05 = remove_admins_from_bypass and DP-08 = human_opens_pr, a repository with a single human maintainer cannot merge to main: the author cannot approve their own pull request (documented, S-gh-pr-approve-required) and no other human with write access exists (inference from the reported bootstrap profile, which has one maintainer). An App approval is not recommended because it would let automation satisfy the human gate, and whether it counts is unverified.",
+      "recommended": "one_approval_admin_pull_request_bypass",
+      "interaction": "Pull request authors cannot approve their own pull requests (documented, S-gh-pr-approve-required). With required_approving_review_count >= 1, DP-05 = remove_admins_from_bypass and DP-08 = human_opens_pr, a repository with a single human maintainer cannot merge to main (inference from the reported bootstrap profile, which has one maintainer). With zero required approvals the deadlock disappears, but every Contents-write holder can then merge (Contents write includes the merge endpoint, S-gh-fgpat), so the GitHub-side block on machine merges is lost. The recommended option keeps one approval and gives only the human admin an audited pull_request-mode bypass on main. An App approval is not recommended because it would let automation satisfy the human gate, and whether it counts is unverified.",
       "sources": [
         "S-gh-pr-approve-required",
-        "S-gh-rules-available"
+        "S-gh-rules-available",
+        "S-gh-fgpat",
+        "S-gh-rest-rules"
       ]
     }
   ],
@@ -3439,7 +3469,7 @@
       "DP-06": "not applicable (no App)",
       "DP-07": "public_any_plan",
       "DP-09": "not applicable (human-operated, no reducer)",
-      "DP-10": "undecided; single maintainer, so >= 1 required approval would block merges unless DP-05 keeps an admin bypass"
+      "DP-10": "undecided; single maintainer, so >= 1 required approval needs the DP-05 admin pull_request-mode bypass on main (recommended) or a second human"
     },
     "autonomous_execution": false,
     "gaps_against_matrix": [
@@ -3465,5 +3495,6 @@
     "Docker Sandboxes support on non-Ubuntu Linux hosts such as the Debian 11 bootstrap host (not in documented support list).",
     "Rootless Docker cgroup limit enforcement on target hosts (silently ignored without cgroup v2 + systemd).",
     "OCI egress enforcement including DNS and IPv6 bypass (not documented; P02b measurement)."
-  ]
+  ],
+  "versioning": "matrix_version follows semver. Changes made while the P01 candidate is under review (before human acceptance) do not bump the version; the first bump follows human acceptance of P01. After acceptance, removing or renaming fields or roles, or changing a permission or authority, is a major bump; adding optional fields or decision points is a minor bump; wording-only changes are a patch bump."
 }

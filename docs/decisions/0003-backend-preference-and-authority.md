@@ -11,7 +11,9 @@ explicit rejection criteria, and forbids two coequal schedulers (plan sections 1
 
 - Weave's controller is single-host: a local `flock` and a local ledger, with no claim
   generation, renewal or takeover. Its removable coordination/publication code is at most
-  707 SLOC, or 828 with reconciliation (`weave-inventory.md` §C2, §E).
+  707 SLOC (`state.py` 168, `publisher.py` 106, transition executor 106, `github.py`
+  writes 28, `events.py` authenticate 34, `cli.py` wiring at most 265), or 828 with
+  `reconcile.py` (121) (`weave-inventory.md` §C2, §E).
 - gh-aw's work queue implements Git-backed CAS publication, DAG gating and checkpoints,
   but worker authority is bound to the original Actions run, the operator CLI cannot take
   the worker role, and there is no lease or renewal. No supported path for an external
@@ -77,6 +79,10 @@ single authority; supervisors take part only through the path that passed criter
 local `harness/state` layout and the narrow adapter's Actions-hosted placement do not
 apply; gh-aw's supported storage and checkpoint protocol are used without weakening its
 history verification; and its protocol, schemas and versions are pinned (criterion 2).
+
+Permission-matrix versioning: `contracts/permission-matrix.v1.json` keeps `matrix_version`
+1.0.0 for all changes made while the P01 candidate is under review; the first version bump
+follows human acceptance of P01 (rule in the matrix's `versioning` field).
 
 ## Rejection-criteria table for P02a to fill
 

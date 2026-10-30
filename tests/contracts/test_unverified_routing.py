@@ -94,6 +94,20 @@ class DocumentConsistencyTests(unittest.TestCase):
         self.assertEqual(sum(parts), int(subtotal.group(1)))
         self.assertEqual(int(subtotal.group(1)) + int(subtotal.group(2)), int(subtotal.group(3)))
 
+    def test_weave_sloc_totals_and_parts_agree_across_documents(self):
+        documents = [P01 / "handoff-P02a.md", P01 / "contract-comparison.md", P01 / "weave-inventory.md",
+                     ROOT / "docs" / "decisions" / "0003-backend-preference-and-authority.md"]
+        parts = [168, 106, 106, 28, 34, 265]
+        reconcile = 121
+        subtotal, total = sum(parts), sum(parts) + reconcile
+        self.assertEqual((subtotal, total), (707, 828))
+        for path in documents:
+            text = read(path)
+            for number in set(parts) | {reconcile, subtotal, total}:
+                self.assertRegex(text, r"(?<![0-9.:-])%d(?![0-9])" % number, "%s lacks %d" % (path.name, number))
+            for stale in (610, 731):
+                self.assertNotRegex(text, r"(?<![0-9.:,-])%d(?![0-9])" % stale, "%s has stale total %d" % (path.name, stale))
+
     def test_every_matrix_decision_point_is_a_readme_question(self):
         readme = read(P01 / "README.md")
         for point in json.loads(read(MATRIX))["decision_points"]:

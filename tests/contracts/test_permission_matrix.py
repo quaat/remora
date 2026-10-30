@@ -425,6 +425,48 @@ class RulesetContentTests(Fixtures):
         self.assertIn("interaction", point)
         self.assertIn(point["id"], self.rulesets()["RS-main"]["parameters"]["required_approving_review_count"])
 
+    def test_recommended_main_approval_option_keeps_github_merge_block(self):
+        """Contents write includes the merge endpoint, so zero approvals lets machines merge."""
+        point = [p for p in self.matrix["decision_points"] if p["parameter"] == "main_required_approvals"][0]
+        options = {o["id"]: o for o in point["options"]}
+        main = self.rulesets()["RS-main"]
+        unconditional_machine_bypass = [a for a in main["bypass_actors"]
+                                        if a["actor_type"] in ("Integration", "DeployKey", "User")]
+        self.assertEqual(unconditional_machine_bypass, [])
+        for option in options.values():
+            self.assertIsInstance(option["machine_can_merge_without_bypass"], bool, option["id"])
+            self.assertIsInstance(option["required_approving_review_count"], int, option["id"])
+            # No machine identity can approve (authors cannot self-approve; no App approval is
+            # relied on), so machines can merge without a bypass exactly when zero approvals are required.
+            self.assertEqual(option["machine_can_merge_without_bypass"],
+                             option["required_approving_review_count"] == 0, option["id"])
+            if option["machine_can_merge_without_bypass"]:
+                self.assertIn("Contents write", option["effect"], option["id"])
+                self.assertIn("merge", option["effect"], option["id"])
+        self.assertFalse(options[point["recommended"]]["machine_can_merge_without_bypass"])
+        self.assertTrue(any(o["machine_can_merge_without_bypass"] for o in options.values()),
+                        "the exposed option must stay visible as a documented alternative")
+
+    def test_conditional_main_bypass_is_human_only_and_audited(self):
+        documented = self.evidence["rulesets"]
+        points = {p["id"]: {o["id"] for o in p["options"]} for p in self.matrix["decision_points"]}
+        for ruleset in self.matrix["rulesets"]:
+            for actor in ruleset.get("conditional_bypass_actors", []):
+                self.assertEqual(ruleset["id"], "RS-main", "conditional bypass only on main")
+                self.assertIn(actor["actor_type"], documented["bypass_actor_types_rest"])
+                self.assertNotIn(actor["actor_type"], ("Integration", "DeployKey", "User"))
+                self.assertEqual(actor["bypass_mode"], "pull_request")
+                self.assertIn(actor["when"]["option"], points[actor["when"]["decision_point"]])
+
+    def test_recommended_options_are_mutually_consistent(self):
+        points = {p["id"]: p for p in self.matrix["decision_points"]}
+        for point in points.values():
+            recommended = [o for o in point["options"] if o["id"] == point["recommended"]][0]
+            for requirement in recommended.get("requires", []):
+                self.assertEqual(points[requirement["decision_point"]]["recommended"], requirement["option"],
+                                 "%s recommends %s, which requires %s=%s" % (
+                                     point["id"], recommended["id"], requirement["decision_point"], requirement["option"]))
+
 
 class ScopeTests(Fixtures):
     """Each role states repository selection and Project scope per credential type (plan section 10)."""
@@ -485,6 +527,12 @@ class VersionAndDecisionTests(Fixtures):
     def test_matrix_version_is_semver(self):
         self.assertRegex(self.matrix["matrix_version"], SEMVER)
         self.assertEqual(self.matrix["schema_version"], 1)
+
+    def test_versioning_rule_is_recorded(self):
+        note = self.matrix["versioning"]
+        self.assertIn("acceptance", note)
+        if self.matrix["status"] == "proposed":
+            self.assertEqual(self.matrix["matrix_version"], "1.0.0", "no bump before human acceptance")
 
     def test_decision_points_present_and_undecided_ones_are_open(self):
         points = self.matrix["decision_points"]
