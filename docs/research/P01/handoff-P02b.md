@@ -47,7 +47,7 @@ Interface `reviewer-launch` (owner P08, `src/remora/review/launch.py`):
 | A19 proxy misuse | With Docker Sandboxes, the `github` secret service is **not** configured; any configured provider proxy cannot be used for GitHub writes |
 | A07 runtime | A partitioned supervisor stops execution after the offline-grace interval; the record reports uncertainty instead of confirmation |
 | A17 runtime | Connected stop terminates the process within the documented target; `stop_confirmed` carries evidence; termination of child processes is verified |
-| Writable reviewer scratch | Reviewer runs the fixture checks in scratch with the root filesystem otherwise read-only where the toolchain allows |
+| Writable reviewer scratch (U-PM-06) | Reviewer runs the fixture checks in scratch with the root filesystem otherwise read-only where the toolchain allows |
 | Devcontainer refusal | `initializeCommand`, `mounts`, `workspaceMount`, `privileged`, `capAdd`, `securityOpt`, `runArgs`, Compose files and Features are refused or require human approval (`runtime-and-identities.md` §E.3) |
 | Candidate hooks | Publication imports candidate material into a clean Git environment; candidate Git hooks, credential helpers and filters never run with publication credentials |
 

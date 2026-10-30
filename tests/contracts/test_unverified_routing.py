@@ -50,7 +50,7 @@ class RoutingTests(unittest.TestCase):
         ids = [i["id"] for i in self.items]
         self.assertEqual(len(ids), len(set(ids)))
         for item_id in ids:
-            self.assertRegex(item_id, r"^U-(PE|US|WI)-[0-9]{2}$")
+            self.assertRegex(item_id, r"^U-(PE|US|WI|PM)-[0-9]{2}$")
 
     def test_every_permission_evidence_item_has_an_id(self):
         evidence = json.loads(read(EVIDENCE))["unverified"]
@@ -83,6 +83,44 @@ class RoutingTests(unittest.TestCase):
             for task, handoff in (("P02a", "handoff-P02a.md"), ("P02b", "handoff-P02b.md")):
                 if any(route.startswith(task) for route in item["routed_to"]):
                     self.assertIn(handoff, item["documented_in"], item["id"])
+
+
+class MatrixUnverifiedTests(unittest.TestCase):
+    """Role- and ruleset-level unverified entries in the matrix carry a routed ID."""
+
+    ENTRY = re.compile(r"^(U-(?:PE|US|WI|PM)-[0-9]{2})(?:, (U-(?:PE|US|WI|PM)-[0-9]{2}))*: \S")
+
+    @classmethod
+    def setUpClass(cls):
+        cls.matrix = json.loads(read(MATRIX))
+        cls.routing = {i["id"]: i for i in json.loads(read(ROUTING))["items"]}
+        cls.entries = []
+        for ruleset in cls.matrix["rulesets"]:
+            cls.entries += [("ruleset " + ruleset["id"], u) for u in ruleset["unverified"]]
+        for name, placement in cls.matrix["placements"].items():
+            for role in placement["roles"]:
+                cls.entries += [("%s/%s" % (name, role["id"]), u) for u in role["unverified"]]
+
+    def cited(self, entry):
+        return re.findall(r"U-(?:PE|US|WI|PM)-[0-9]{2}", entry.split(": ", 1)[0])
+
+    def test_every_matrix_entry_cites_a_routed_id(self):
+        self.assertTrue(self.entries)
+        for where, entry in self.entries:
+            self.assertRegex(entry, self.ENTRY, where)
+            for item_id in self.cited(entry):
+                self.assertIn(item_id, self.routing, "%s cites unknown %s" % (where, item_id))
+
+    def test_every_matrix_level_item_is_cited_and_documented(self):
+        cited = {i for _, entry in self.entries for i in self.cited(entry)}
+        for item_id, item in self.routing.items():
+            if item["source"] == "contracts/permission-matrix.v1.json":
+                self.assertIn(item_id, cited, "%s is not cited by any matrix entry" % item_id)
+                self.assertTrue(any(item["text"] in entry for _, entry in self.entries), item_id)
+
+    def test_evidence_list_is_carried_verbatim_at_top_level(self):
+        evidence = json.loads(read(EVIDENCE))["unverified"]
+        self.assertLessEqual(set(evidence), set(self.matrix["unverified"]))
 
 
 class DocumentConsistencyTests(unittest.TestCase):

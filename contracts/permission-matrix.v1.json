@@ -238,7 +238,7 @@
         "S-gh-rest-rules"
       ],
       "unverified": [
-        "two-ruleset layout (bypass on RS-state-writers must not lift these rules)"
+        "U-PE-08: two-ruleset layout (bypass on RS-state-writers must not lift these rules)"
       ]
     },
     {
@@ -263,7 +263,7 @@
         "S-gh-rest-rules"
       ],
       "unverified": [
-        "User actor_type for a PAT holder"
+        "U-PE-01: User actor_type for a PAT holder"
       ]
     },
     {
@@ -281,7 +281,7 @@
         "S-gh-rules-create"
       ],
       "unverified": [
-        "candidate-ref cleanup procedure under a no-bypass deletion rule"
+        "U-PM-02: candidate-ref cleanup procedure under a no-bypass deletion rule"
       ]
     },
     {
@@ -305,7 +305,7 @@
         "S-gh-rules-create"
       ],
       "unverified": [
-        "per-task branch ownership is not enforceable by GitHub; the trusted publisher must enforce it"
+        "U-PM-03: per-task branch ownership is not enforceable by GitHub; the trusted publisher must enforce it"
       ]
     },
     {
@@ -330,9 +330,9 @@
         "S-gh-pr-approve-required"
       ],
       "unverified": [
-        "whether an App review counts toward required approvals",
-        "whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
-        "admin bypass removal on a user-owned repository (DP-05)"
+        "U-PE-09: whether an App review counts toward required approvals",
+        "U-PM-01: whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
+        "U-PM-04: admin bypass removal on a user-owned repository (DP-05)"
       ],
       "conditional_bypass_actors": [
         {
@@ -544,9 +544,9 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "FG/App permission level required by GraphQL createProjectV2, updateProjectV2Field and linkProjectV2ToRepository (not tabulated)",
-            "classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
-            "whether an App can access a user-owned Project (no permission found)"
+            "U-PE-04: FG/App permission level required by GraphQL createProjectV2, updateProjectV2Field and linkProjectV2ToRepository (not tabulated)",
+            "U-PE-11: classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
+            "U-PE-03: whether an App can access a user-owned Project (no permission found)"
           ],
           "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime.",
           "forbidden_permissions": [],
@@ -826,12 +826,12 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "permission required by GraphQL createCommitOnBranch and updateRefs (not tabulated; Contents write inferred)",
-            "two-ruleset layout: bypass of RS-state-writers leaves RS-state-immutable enforced for the same actor",
-            "ruleset enforcement parity across REST, GraphQL and git push",
-            "FG PAT holder as bypass actor via REST actor_type User",
-            "whether an App pull request review counts toward required approvals on main (relevant if DP-08 = supervisor_opens_pr, or if DP-10 were to rely on an App approval; not recommended)",
-            "classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository"
+            "U-PE-04: permission required by GraphQL createCommitOnBranch and updateRefs (not tabulated; Contents write inferred)",
+            "U-PE-08: two-ruleset layout: bypass of RS-state-writers leaves RS-state-immutable enforced for the same actor",
+            "U-PE-07: ruleset enforcement parity across REST, GraphQL and git push",
+            "U-PE-01: FG PAT holder as bypass actor via REST actor_type User",
+            "U-PE-09: whether an App pull request review counts toward required approvals on main (relevant if DP-08 = supervisor_opens_pr, or if DP-10 were to rely on an App approval; not recommended)",
+            "U-PM-05: classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository"
           ],
           "notes": "Every enrolled supervisor runs the same pinned reducer; they are concurrent clients of one state branch, not separate ledgers. Fine-grained PATs cannot read the Checks API (S-gh-pat-manage), so a FG-PAT supervisor cannot read trusted-CI check runs; that profile needs DP-02 = github_app for P09.",
           "forbidden_permissions": [
@@ -953,8 +953,8 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "actual Docker Sandboxes defaults on the target host (P02b)",
-            "OCI egress enforcement including DNS/IPv6 bypass (P02b)"
+            "U-PE-12: actual Docker Sandboxes defaults on the target host (P02b)",
+            "U-PE-15: OCI egress enforcement including DNS/IPv6 bypass (P02b)"
           ],
           "read_access": "none required; the supervisor supplies the exact checkout and immutable packet",
           "forbidden_permissions": [
@@ -1111,7 +1111,7 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "writable reviewer scratch under the selected runtime (P02b)"
+            "U-PM-06: writable reviewer scratch under the selected runtime (P02b)"
           ],
           "read_access": "none required; the supervisor supplies the exact candidate SHA checkout in a fresh clone per job",
           "forbidden_permissions": [
@@ -1324,7 +1324,7 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
+            "U-PM-07: whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
           ],
           "notes": "Statuses from 'any source' are spoofable by any writer (S-gh-rules-available); pin the source App with integration_id.",
           "forbidden_permissions": [
@@ -1438,7 +1438,7 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
+            "U-PM-04: whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
           "repository_role": "write or maintain; admin when DP-05 grants the RS-main pull_request-mode bypass (single maintainer, DP-10)",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
@@ -1568,8 +1568,8 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
-            "DP-06 applies when the job's App key or PAT is stored as an Actions secret"
+            "U-PM-08: for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
+            "U-PM-09: DP-06 applies when the job's App key or PAT is stored as an Actions secret"
           ],
           "notes": "Optional idle refresh job (plan section 10). It derives projections from accepted state and never changes authority; it cannot substitute for a running supervisor.",
           "forbidden_permissions": [
@@ -1919,9 +1919,9 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "FG/App permission level required by GraphQL createProjectV2, updateProjectV2Field and linkProjectV2ToRepository (not tabulated)",
-            "classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
-            "whether an App can access a user-owned Project (no permission found)"
+            "U-PE-04: FG/App permission level required by GraphQL createProjectV2, updateProjectV2Field and linkProjectV2ToRepository (not tabulated)",
+            "U-PE-11: classic PAT/OAuth scope needed to create rulesets (not tabulated; admin user assumed)",
+            "U-PE-03: whether an App can access a user-owned Project (no permission found)"
           ],
           "notes": "Calls mirror bootstrap/github.py (REST repo/milestones/issues/assignees; gh project list/view/create/item-list/field-list/field-create/link/item-add/item-edit; GraphQL updateProjectV2Field) plus ruleset creation required by plan section 10. Classic/OAuth repo held by an admin also carries administration capability; never reuse it at runtime.",
           "forbidden_permissions": [],
@@ -2064,8 +2064,8 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "channel by which a supervisor without Contents write submits transition requests and hands candidate material to the Actions publisher (workflow_dispatch/repository_dispatch permission mapping not in the evidence)",
-            "App permission for dispatching workflows (no App 'Actions' entry in permission-evidence.json)"
+            "U-PM-10: channel by which a supervisor without Contents write submits transition requests and hands candidate material to the Actions publisher (workflow_dispatch/repository_dispatch permission mapping not in the evidence)",
+            "U-PM-11: App permission for dispatching workflows (no App 'Actions' entry in permission-evidence.json)"
           ],
           "notes": "Read-only client of the authoritative state. Launches/stops sandboxes and reports stop-confirmed; all state transitions are applied by actions-publisher-fallback.",
           "forbidden_permissions": [
@@ -2299,10 +2299,10 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "GITHUB_TOKEN as a ruleset bypass actor (not found)",
-            "GITHUB_TOKEN behaviour when pushing .github/workflows changes (no workflows key)",
-            "candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09",
-            "latency/cost of an Actions job per transition (P02a measurement)"
+            "U-PE-02: GITHUB_TOKEN as a ruleset bypass actor (not found)",
+            "U-PE-10: GITHUB_TOKEN behaviour when pushing .github/workflows changes (no workflows key)",
+            "U-PM-12: candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09",
+            "U-PM-13: latency/cost of an Actions job per transition (P02a measurement)"
           ],
           "notes": "Selected only for deployments that cannot trust state-writing supervisors (plan section 4). Same protocol and state branch as the default placement; switching placement is an explicit pause/fence/drain operation, never concurrent.",
           "forbidden_permissions": [
@@ -2423,8 +2423,8 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "actual Docker Sandboxes defaults on the target host (P02b)",
-            "OCI egress enforcement including DNS/IPv6 bypass (P02b)"
+            "U-PE-12: actual Docker Sandboxes defaults on the target host (P02b)",
+            "U-PE-15: OCI egress enforcement including DNS/IPv6 bypass (P02b)"
           ],
           "read_access": "none required; the supervisor supplies the exact checkout and immutable packet",
           "forbidden_permissions": [
@@ -2581,7 +2581,7 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "writable reviewer scratch under the selected runtime (P02b)"
+            "U-PM-06: writable reviewer scratch under the selected runtime (P02b)"
           ],
           "read_access": "none required; the supervisor supplies the exact candidate SHA checkout in a fresh clone per job",
           "forbidden_permissions": [
@@ -2794,7 +2794,7 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
+            "U-PM-07: whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
           ],
           "notes": "Statuses from 'any source' are spoofable by any writer (S-gh-rules-available); pin the source App with integration_id.",
           "forbidden_permissions": [
@@ -2908,7 +2908,7 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
+            "U-PM-04: whether repository admins can be removed from bypass on a user-owned repository without losing recovery ability"
           ],
           "repository_role": "write or maintain; admin when DP-05 grants the RS-main pull_request-mode bypass (single maintainer, DP-10)",
           "notes": "Also the accountable maintainer whose authenticated issue comments are human-command inputs (plan section 9). Permissions are a repository role, not a token permission.",
@@ -3038,8 +3038,8 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
-            "DP-06 applies when the job's App key or PAT is stored as an Actions secret"
+            "U-PM-08: for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
+            "U-PM-09: DP-06 applies when the job's App key or PAT is stored as an Actions secret"
           ],
           "notes": "Optional idle refresh job (plan section 10). It derives projections from accepted state and never changes authority; it cannot substitute for a running supervisor.",
           "forbidden_permissions": [

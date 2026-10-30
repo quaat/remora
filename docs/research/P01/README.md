@@ -63,8 +63,9 @@ GitHub. Q2-Q10 are the matrix decision points DP-01…DP-09; Q15 is DP-10.
 
 Stable IDs are defined in `unverified-routing.json`; `tests/contracts/test_unverified_routing.py`
 checks that every unverified item in `permission-evidence.json`, every item of
-`upstream-surfaces.md` §5 and every bullet of `weave-inventory.md` §H has an ID, and that
-each ID appears here and in the handoff it is routed to.
+`upstream-surfaces.md` §5, every bullet of `weave-inventory.md` §H and every role- or
+ruleset-level `unverified` entry in `contracts/permission-matrix.v1.json` has an ID, and
+that each ID appears here and in the handoff it is routed to.
 
 | ID | Item | Routed to |
 | --- | --- | --- |
@@ -101,15 +102,25 @@ each ID appears here and in the handoff it is routed to.
 | U-WI-06 | Legal effect of AI co-authorship trailers; Weave rights holder vs Remora owner | human Q14 |
 | U-WI-07 | Per-file history taken from Weave's decision record, not git log | informational |
 | U-WI-08 | No blocker prevented the inventory | informational |
+| U-PM-01 | whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request | P02a (F-APPROVE) |
+| U-PM-02 | candidate-ref cleanup procedure under a no-bypass deletion rule | P05 (publication) |
+| U-PM-03 | per-task branch ownership is not enforceable by GitHub; the trusted publisher must enforce it | P05/P06 trusted publisher (documented limitation; enforced in code) |
+| U-PM-04 | admin bypass removal on a user-owned repository (DP-05) | P02a (F-APPROVE); human DP-05 |
+| U-PM-05 | classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository | P02a (F-SETUP observation); P07 |
+| U-PM-06 | writable reviewer scratch under the selected runtime (P02b) | P02b |
+| U-PM-07 | whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?') | P09; human DP-03 |
+| U-PM-08 | for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled | human DP-01/DP-07 |
+| U-PM-09 | DP-06 applies when the job's App key or PAT is stored as an Actions secret | human DP-06 |
+| U-PM-10 | channel by which a supervisor without Contents write submits transition requests and hands candidate material to the Actions publisher (workflow_dispatch/repository_dispatch permission mapping not in the evidence) | P05 (only if the Actions placement is selected) |
+| U-PM-11 | App permission for dispatching workflows (no App 'Actions' entry in permission-evidence.json) | P05 (only if the Actions placement is selected) |
+| U-PM-12 | candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09 | P09 |
+| U-PM-13 | latency/cost of an Actions job per transition (P02a measurement) | P02a (measured quantities) |
 
-Matrix-level open points not in the research lists: identity granularity of several
-supervisors under one App (per-host keys) → P02a (`handoff-P02a.md` §5); in the Actions
-placement, how a supervisor without Contents write submits transitions and hands over
-candidate material, and the App permission for workflow dispatch → P02a/P05 if that
-placement is selected; projection-only on a private user-owned repository cannot be
-expressed (classic `repo` includes Contents write) → DP-01/DP-07; whether the owner of a
-personal repository is matched by a `RepositoryRole` admin bypass on `main`, and how
-`pull_request` bypass mode behaves → P02a (`handoff-P02a.md` F-APPROVE).
+`U-PM-*` items are matrix-level open points on roles and rulesets in
+`contracts/permission-matrix.v1.json`; each matrix `unverified` entry cites its ID (entries
+that restate a research item cite that item's `U-PE`/`U-US`/`U-WI` ID instead). One further
+open point is not a matrix entry: identity granularity of several supervisors under one App
+(per-host keys) → P02a (`handoff-P02a.md` §5).
 
 Matrix versioning: `matrix_version` stays 1.0.0 for every change made while the P01
 candidate is under review; the first bump follows human acceptance of P01 (rule recorded in

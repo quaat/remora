@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "purpose": "Stable IDs for every unverified/unknown item in the P01 research and where it is routed. tests/contracts/test_unverified_routing.py checks that every item of permission-evidence.json 'unverified', upstream-surfaces.md §5 and weave-inventory.md §H has an ID here and that each ID appears in the listed handoff or README file.",
+  "purpose": "Stable IDs for every unverified/unknown item in the P01 research and where it is routed. tests/contracts/test_unverified_routing.py checks that every item of permission-evidence.json 'unverified', upstream-surfaces.md §5 and weave-inventory.md §H has an ID here and that each ID appears in the listed handoff or README file. Matrix-level open points on roles and rulesets (U-PM-*) are cited by ID in the matrix's role/ruleset 'unverified' entries; entries that restate a research item reuse its U-PE/U-US/U-WI ID.",
   "items": [
     {
       "id": "U-PE-01",
@@ -432,6 +432,170 @@
         "informational"
       ],
       "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-01",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-main].unverified",
+      "text": "whether the owner of a personal (user-owned) repository is matched by a RepositoryRole admin bypass actor, and the exact behaviour of bypass_mode pull_request",
+      "routed_to": [
+        "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-02",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-candidates-immutable].unverified",
+      "text": "candidate-ref cleanup procedure under a no-bypass deletion rule",
+      "routed_to": [
+        "P05 (publication)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-03",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "rulesets[RS-candidates-writers].unverified",
+      "text": "per-task branch ownership is not enforceable by GitHub; the trusted publisher must enforce it",
+      "routed_to": [
+        "P05/P06 trusted publisher (documented limitation; enforced in code)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-04",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.human-integrator.unverified; placements.supervisor_hosted.human-integrator.unverified; rulesets[RS-main].unverified",
+      "text": "admin bypass removal on a user-owned repository (DP-05)",
+      "routed_to": [
+        "P02a (F-APPROVE)",
+        "human DP-05"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-05",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.supervisor_hosted.supervisor-runtime.unverified",
+      "text": "classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository",
+      "routed_to": [
+        "P02a (F-SETUP observation)",
+        "P07"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-06",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.reviewer-sandbox.unverified; placements.supervisor_hosted.reviewer-sandbox.unverified",
+      "text": "writable reviewer scratch under the selected runtime (P02b)",
+      "routed_to": [
+        "P02b"
+      ],
+      "documented_in": [
+        "handoff-P02b.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-07",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.trusted-ci.unverified; placements.supervisor_hosted.trusted-ci.unverified",
+      "text": "whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')",
+      "routed_to": [
+        "P09",
+        "human DP-03"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-08",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.projection-only.unverified; placements.supervisor_hosted.projection-only.unverified",
+      "text": "for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
+      "routed_to": [
+        "human DP-01/DP-07"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-09",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.projection-only.unverified; placements.supervisor_hosted.projection-only.unverified",
+      "text": "DP-06 applies when the job's App key or PAT is stored as an Actions secret",
+      "routed_to": [
+        "human DP-06"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-10",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.supervisor-runtime.unverified",
+      "text": "channel by which a supervisor without Contents write submits transition requests and hands candidate material to the Actions publisher (workflow_dispatch/repository_dispatch permission mapping not in the evidence)",
+      "routed_to": [
+        "P05 (only if the Actions placement is selected)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-11",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.supervisor-runtime.unverified",
+      "text": "App permission for dispatching workflows (no App 'Actions' entry in permission-evidence.json)",
+      "routed_to": [
+        "P05 (only if the Actions placement is selected)"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-12",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09",
+      "routed_to": [
+        "P09"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-13",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "latency/cost of an Actions job per transition (P02a measurement)",
+      "routed_to": [
+        "P02a (measured quantities)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
         "README.md"
       ]
     }
