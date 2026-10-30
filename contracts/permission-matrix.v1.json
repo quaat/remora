@@ -255,7 +255,7 @@
           "actor_type": "Integration",
           "actor": "the state-writer App of the active placement only; in the Actions placement the dedicated App whose installation token is minted in the reducer job. Never the GitHub Actions App (GITHUB_TOKEN), which is installed once per repository and used by every workflow (S-gh-actions-token)",
           "bypass_mode": "always",
-          "app_identity": "dedicated_runtime_app"
+          "app_identity": "runtime_app"
         }
       ],
       "sources": [
@@ -299,7 +299,7 @@
           "actor_type": "Integration",
           "actor": "the candidate-publisher App of the active placement only; in the Actions placement the dedicated App whose installation token is minted in the reducer job. Never the GitHub Actions App (GITHUB_TOKEN), which is installed once per repository and used by every workflow (S-gh-actions-token)",
           "bypass_mode": "always",
-          "app_identity": "dedicated_runtime_app"
+          "app_identity": "runtime_app"
         }
       ],
       "sources": [
@@ -977,9 +977,64 @@
           "app_identity": "runtime_app",
           "app_grant_rule": {
             "level": "registration_and_installation",
-            "covers": "forbidden_permissions",
-            "rule": "The App identified by app_identity must not be granted any permission listed in forbidden_permissions (unless its 'unless' decision applies) when it is registered or installed. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
-            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (the response has a required 'permissions' field; S-gh-rest-apps) and fails if any forbidden permission is granted",
+            "mode": "allowlist",
+            "allowed_grants": [
+              {
+                "resource": "metadata",
+                "permission_name": "Metadata",
+                "level": "read"
+              },
+              {
+                "resource": "contents",
+                "permission_name": "Contents",
+                "level": "write"
+              },
+              {
+                "resource": "issues",
+                "permission_name": "Issues",
+                "level": "write"
+              },
+              {
+                "resource": "checks",
+                "permission_name": "Checks",
+                "level": "read"
+              },
+              {
+                "resource": "commit_statuses",
+                "permission_name": "Commit statuses",
+                "level": "read"
+              },
+              {
+                "resource": "projects_org",
+                "permission_name": "Projects",
+                "level": "write",
+                "when": {
+                  "decision_point": "DP-01",
+                  "option": "org_owned"
+                }
+              },
+              {
+                "resource": "pull_requests",
+                "permission_name": "Pull requests",
+                "level": "write",
+                "when": {
+                  "decision_point": "DP-08",
+                  "option": "supervisor_opens_pr"
+                }
+              },
+              {
+                "resource": "workflow_files",
+                "permission_name": "Workflows",
+                "level": "write",
+                "when": {
+                  "decision_point": "DP-04",
+                  "option": "allow_with_workflows_write"
+                }
+              }
+            ],
+            "never_grant": "forbidden_permissions",
+            "rule": "The App identified by app_identity is registered and installed with exactly allowed_grants (conditional grants only when their decision applies) and nothing else; forbidden_permissions must never be granted. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
+            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (required 'permissions' field; S-gh-rest-apps) and fails if any granted permission or level is not in allowed_grants (least privilege), and in particular if any forbidden permission is granted",
             "sources": [
               "S-gh-app-iat",
               "S-gh-rest-apps"
@@ -1364,6 +1419,14 @@
           "permissions": [
             {
               "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "repository identity; explicit so that the installation allowlist is complete"
+            },
+            {
+              "credential_type": "github_app_installation",
               "resource": "contents",
               "permission_name": "Contents",
               "level": "read",
@@ -1500,9 +1563,32 @@
           "app_identity": "ci_app",
           "app_grant_rule": {
             "level": "registration_and_installation",
-            "covers": "forbidden_permissions",
-            "rule": "The App identified by app_identity must not be granted any permission listed in forbidden_permissions (unless its 'unless' decision applies) when it is registered or installed. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
-            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (the response has a required 'permissions' field; S-gh-rest-apps) and fails if any forbidden permission is granted",
+            "mode": "allowlist",
+            "allowed_grants": [
+              {
+                "resource": "metadata",
+                "permission_name": "Metadata",
+                "level": "read"
+              },
+              {
+                "resource": "contents",
+                "permission_name": "Contents",
+                "level": "read"
+              },
+              {
+                "resource": "checks",
+                "permission_name": "Checks",
+                "level": "write"
+              },
+              {
+                "resource": "commit_statuses",
+                "permission_name": "Commit statuses",
+                "level": "write"
+              }
+            ],
+            "never_grant": "forbidden_permissions",
+            "rule": "The App identified by app_identity is registered and installed with exactly allowed_grants (conditional grants only when their decision applies) and nothing else; forbidden_permissions must never be granted. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
+            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (required 'permissions' field; S-gh-rest-apps) and fails if any granted permission or level is not in allowed_grants (least privilege), and in particular if any forbidden permission is granted",
             "sources": [
               "S-gh-app-iat",
               "S-gh-rest-apps"
@@ -1609,6 +1695,14 @@
           "permissions": [
             {
               "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "repository identity; explicit so that the installation allowlist is complete"
+            },
+            {
+              "credential_type": "github_app_installation",
               "resource": "contents",
               "permission_name": "Contents",
               "level": "read",
@@ -1689,7 +1783,9 @@
             "acknowledging authoritative outbox/pending-effect state",
             "any ruleset bypass",
             "classic repo scope",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials",
+            "a workflow_dispatch, pull_request or pull_request_target trigger on the projection job (allowed_triggers: schedule only)",
+            "the projection App key or Project token as a repository or organization secret, or in an environment whose deployment branches include anything other than the default branch, or whose protection rules administrators may bypass"
           ],
           "enforcement": [
             {
@@ -1697,7 +1793,7 @@
               "relation": "subject_to"
             }
           ],
-          "secret_holder": "optional scheduled Actions job or one-shot reconcile host; App key or PAT secret subject to DP-06",
+          "secret_holder": "optional scheduled Actions job or one-shot reconcile host; App key or Project-scoped classic token only as an environment secret of the bound environment (actions_job_binding; DP-06)",
           "expiry_revocation": {
             "procedures": [
               "github_app_installation",
@@ -1708,7 +1804,7 @@
           },
           "unverified": [
             "U-PM-08: for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
-            "U-PM-09: DP-06 applies when the job's App key or PAT is stored as an Actions secret"
+            "U-PM-09: DP-06 applies when the job's App key or PAT is stored as an environment secret of the bound environment (actions_job_binding)"
           ],
           "notes": "Optional idle refresh job (plan section 10). It derives projections from accepted state and never changes authority; it cannot substitute for a running supervisor.",
           "forbidden_permissions": [
@@ -1782,9 +1878,36 @@
           "app_identity": "projection_app",
           "app_grant_rule": {
             "level": "registration_and_installation",
-            "covers": "forbidden_permissions",
-            "rule": "The App identified by app_identity must not be granted any permission listed in forbidden_permissions (unless its 'unless' decision applies) when it is registered or installed. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
-            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (the response has a required 'permissions' field; S-gh-rest-apps) and fails if any forbidden permission is granted",
+            "mode": "allowlist",
+            "allowed_grants": [
+              {
+                "resource": "metadata",
+                "permission_name": "Metadata",
+                "level": "read"
+              },
+              {
+                "resource": "contents",
+                "permission_name": "Contents",
+                "level": "read"
+              },
+              {
+                "resource": "issues",
+                "permission_name": "Issues",
+                "level": "write"
+              },
+              {
+                "resource": "projects_org",
+                "permission_name": "Projects",
+                "level": "write",
+                "when": {
+                  "decision_point": "DP-01",
+                  "option": "org_owned"
+                }
+              }
+            ],
+            "never_grant": "forbidden_permissions",
+            "rule": "The App identified by app_identity is registered and installed with exactly allowed_grants (conditional grants only when their decision applies) and nothing else; forbidden_permissions must never be granted. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
+            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (required 'permissions' field; S-gh-rest-apps) and fails if any granted permission or level is not in allowed_grants (least privilege), and in particular if any forbidden permission is granted",
             "sources": [
               "S-gh-app-iat",
               "S-gh-rest-apps"
@@ -1830,6 +1953,34 @@
               "classic PAT / gh OAuth tokens cannot be narrowed to one repository; harness init must state this exposure and keep such credentials to the minimum scope (e.g. 'project' only)",
               "no per-Project token restriction was found in the evidence (unverified); targeting the single configured Project is enforced by trusted configuration, not by the token",
               "user-owned Projects are reachable only with classic/OAuth 'project', which covers every Project the user can access (DP-01)"
+            ]
+          },
+          "actions_job_binding": {
+            "environment": "a dedicated environment (for example 'harness-projection') referenced only by the projection job",
+            "applies_when": "whenever projection-only runs as a GitHub Actions job (optional idle refresh)",
+            "allowed_triggers": [
+              "schedule"
+            ],
+            "deployment_branches": [
+              "refs/heads/main"
+            ],
+            "deployment_branch_rule": "Selected branches and tags = the default branch only, matched against GITHUB_REF (S-gh-actions-environments). The job has only a schedule trigger: 'Scheduled workflows will only run on the default branch' (S-gh-actions-events); no workflow_dispatch, pull_request or pull_request_target trigger, so no one can start it on a candidate ref",
+            "secret_scope": "environment_secret",
+            "secret_rule": "The projection App key or the classic token limited to Project scopes is stored only as a secret of that environment ('Secrets stored in an environment are only available to workflow jobs that reference the environment', S-gh-actions-environments). The classic 'project' scope reaches every Project the token's owner can access ('Grants read/write access to user and organization projects', S-gh-oauth-scopes), so exposure to candidate code would reach beyond this repository",
+            "admin_bypass_of_environment_rules": "disabled",
+            "runtime_ref_check": "The job refuses to run unless GITHUB_REF is the default branch",
+            "pinned_revision_location": "environment_variable",
+            "rerun_rule": "The job refuses any run whose github.run_attempt is not 1 (S-gh-actions-contexts); it has no inputs",
+            "dispatch_exposure": "A workflow_dispatch trigger would allow a run on any branch or tag at its last commit (S-gh-actions-events), exposing the token to candidate code; the trigger is therefore forbidden",
+            "availability": "Environments, deployment branches and environment secrets are available for public repositories, and for private repositories only on paid plans (S-gh-actions-environments); otherwise the Actions projection job stays disabled",
+            "sources": [
+              "S-gh-actions-environments",
+              "S-gh-actions-events",
+              "S-gh-actions-contexts",
+              "S-gh-oauth-scopes"
+            ],
+            "unverified": [
+              "U-PM-16"
             ]
           }
         }
@@ -2327,9 +2478,22 @@
           "app_identity": "supervisor_client_app",
           "app_grant_rule": {
             "level": "registration_and_installation",
-            "covers": "forbidden_permissions",
-            "rule": "The App identified by app_identity must not be granted any permission listed in forbidden_permissions (unless its 'unless' decision applies) when it is registered or installed. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
-            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (the response has a required 'permissions' field; S-gh-rest-apps) and fails if any forbidden permission is granted",
+            "mode": "allowlist",
+            "allowed_grants": [
+              {
+                "resource": "metadata",
+                "permission_name": "Metadata",
+                "level": "read"
+              },
+              {
+                "resource": "contents",
+                "permission_name": "Contents",
+                "level": "read"
+              }
+            ],
+            "never_grant": "forbidden_permissions",
+            "rule": "The App identified by app_identity is registered and installed with exactly allowed_grants (conditional grants only when their decision applies) and nothing else; forbidden_permissions must never be granted. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
+            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (required 'permissions' field; S-gh-rest-apps) and fails if any granted permission or level is not in allowed_grants (least privilege), and in particular if any forbidden permission is granted",
             "sources": [
               "S-gh-app-iat",
               "S-gh-rest-apps"
@@ -2397,6 +2561,14 @@
             },
             {
               "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "repository identity; explicit so that the installation allowlist is complete"
+            },
+            {
+              "credential_type": "github_app_installation",
               "resource": "contents",
               "permission_name": "Contents",
               "level": "write",
@@ -2437,7 +2609,7 @@
               "permission_name": "project",
               "level": "write",
               "source": "S-gh-oauth-scopes",
-              "purpose": "Project projection for a user-owned Project via an Actions secret",
+              "purpose": "Project projection for a user-owned Project via an environment secret of the bound environment",
               "when": {
                 "decision_point": "DP-01",
                 "option": "user_owned"
@@ -2461,7 +2633,10 @@
             "a second reducer running beside supervisor-hosted reducers",
             "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials",
             "running the reducer, or receiving the App private key, for any GITHUB_REF other than the default branch or any revision other than the pinned reducer revision (see actions_job_binding)",
-            "the App private key as a repository or organization secret, or in an environment whose deployment branches include anything other than the default branch, or whose protection rules administrators may bypass"
+            "the App private key as a repository or organization secret, or in an environment whose deployment branches include anything other than the default branch, or whose protection rules administrators may bypass",
+            "interpolating workflow inputs or github-context values with ${{ }} into run:, action inputs or API calls (input_rule; S-gh-actions-script-injections)",
+            "authenticating the dispatcher by github.actor instead of github.triggering_actor plus enrollment (dispatcher_rule; S-gh-actions-contexts)",
+            "processing a re-run (github.run_attempt other than 1) or a SHA other than the pinned revision, or reading the pinned revision from the job's own commit (rerun_rule)"
           ],
           "enforcement": [
             {
@@ -2489,7 +2664,7 @@
               "relation": "subject_to"
             }
           ],
-          "secret_holder": "GitHub Actions job of an approved, protected workflow revision; App private key as an Actions secret (DP-06) for the in-job installation token",
+          "secret_holder": "GitHub Actions job of an approved, protected workflow revision, bound to the environment in actions_job_binding; the App private key (and, for a user-owned Project, the project-only classic token) only as environment secrets of that environment (DP-06), from which the in-job installation token is minted",
           "expiry_revocation": {
             "procedures": [
               "github_token",
@@ -2500,6 +2675,7 @@
           },
           "unverified": [
             "U-PM-16: a workflow_dispatch of the reducer workflow on a non-default ref (for example agent/**) must be refused by the environment's deployment-branch rule, so that the job does not obtain the environment secret, and the in-workflow ref check must also refuse it",
+            "U-PM-19: on the default branch, whether the reducer's input, dispatcher and re-run rules hold in practice: a dispatch with injection-shaped inputs runs no injected code, a dispatch by an unenrolled actor is refused, and a re-run (run_attempt 2) or a run at a SHA other than the pinned revision is refused before the App token is minted",
             "U-PE-02: GITHUB_TOKEN as a ruleset bypass actor (not found); irrelevant to the design, because the GitHub Actions App is never named as a bypass actor (github_token_rule)",
             "U-PE-10: GITHUB_TOKEN behaviour when pushing .github/workflows changes (no workflows key)",
             "U-PM-12: candidate pushes with GITHUB_TOKEN do not trigger push-based CI (documented); the effect on trusted-CI triggering must be designed in P09",
@@ -2582,9 +2758,41 @@
           "app_identity": "runtime_app",
           "app_grant_rule": {
             "level": "registration_and_installation",
-            "covers": "forbidden_permissions",
-            "rule": "The App identified by app_identity must not be granted any permission listed in forbidden_permissions (unless its 'unless' decision applies) when it is registered or installed. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
-            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (the response has a required 'permissions' field; S-gh-rest-apps) and fails if any forbidden permission is granted",
+            "mode": "allowlist",
+            "allowed_grants": [
+              {
+                "resource": "metadata",
+                "permission_name": "Metadata",
+                "level": "read"
+              },
+              {
+                "resource": "contents",
+                "permission_name": "Contents",
+                "level": "write"
+              },
+              {
+                "resource": "issues",
+                "permission_name": "Issues",
+                "level": "write"
+              },
+              {
+                "resource": "checks",
+                "permission_name": "Checks",
+                "level": "read"
+              },
+              {
+                "resource": "projects_org",
+                "permission_name": "Projects",
+                "level": "write",
+                "when": {
+                  "decision_point": "DP-01",
+                  "option": "org_owned"
+                }
+              }
+            ],
+            "never_grant": "forbidden_permissions",
+            "rule": "The App identified by app_identity is registered and installed with exactly allowed_grants (conditional grants only when their decision applies) and nothing else; forbidden_permissions must never be granted. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
+            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (required 'permissions' field; S-gh-rest-apps) and fails if any granted permission or level is not in allowed_grants (least privilege), and in particular if any forbidden permission is granted",
             "sources": [
               "S-gh-app-iat",
               "S-gh-rest-apps"
@@ -2633,6 +2841,10 @@
           },
           "actions_job_binding": {
             "environment": "a dedicated environment (for example 'harness-reducer') referenced only by the reducer job",
+            "applies_when": "always (the reducer runs only as an Actions job in this placement)",
+            "allowed_triggers": [
+              "workflow_dispatch"
+            ],
             "deployment_branches": [
               "refs/heads/main"
             ],
@@ -2640,15 +2852,23 @@
             "secret_scope": "environment_secret",
             "secret_rule": "The App private key is stored only as a secret of that environment: 'Secrets stored in an environment are only available to workflow jobs that reference the environment' (S-gh-actions-environments). Never a repository or organization secret",
             "admin_bypass_of_environment_rules": "disabled",
-            "runtime_ref_check": "The reducer job also refuses to run unless GITHUB_REF is the default branch and GITHUB_SHA is the pinned reducer revision. This check alone is insufficient, because a dispatched run executes the last commit on the dispatched ref (S-gh-actions-events) and a candidate ref may carry modified code; the environment rule is repository configuration and does not depend on the dispatched code",
+            "runtime_ref_check": "The reducer job also refuses to run unless GITHUB_REF is the default branch and GITHUB_SHA is the pinned reducer revision read from the bound environment's variable (pinned_revision_location; see rerun_rule). This check alone is insufficient, because a dispatched run executes the last commit on the dispatched ref (S-gh-actions-events) and a candidate ref may carry modified code; the environment rule is repository configuration and does not depend on the dispatched code",
+            "pinned_revision_location": "environment_variable",
+            "input_rule": "Workflow inputs and every github-context value are untrusted data: the reducer reads them as data (for example from an environment variable), parses and validates them against the command schema, and never interpolates them with ${{ }} into run:, action inputs or API calls. 'Before the shell script is run, the expressions inside ${{ }} are evaluated and then substituted', and such values must not 'flow directly into workflows, actions, API calls, or anywhere else where they could be interpreted as executable code' (S-gh-actions-script-injections)",
+            "dispatcher_rule": "The dispatcher is authenticated as github.triggering_actor ('the user that initiated the workflow run') and checked against enrollment in the state branch; github.actor is never used for this, because 'Any workflow re-runs will use the privileges of github.actor, even if the actor initiating the re-run (github.triggering_actor) has different privileges' (S-gh-actions-contexts). An unenrolled dispatcher is refused before any state read with the App token",
+            "rerun_rule": "The job refuses any run whose github.run_attempt is not 1 ('begins at 1 ... and increments with each re-run', S-gh-actions-contexts), because Actions write also covers POST .../actions/runs/{run_id}/rerun, .../rerun-failed-jobs and .../jobs/{job_id}/rerun (S-gh-fgpat). It also refuses any GITHUB_SHA other than the pinned reducer revision, which is read from an environment variable of the bound environment ('Variables stored in an environment are only available to workflow jobs that reference the environment', S-gh-actions-environments) and cross-checked with the reducer revision recorded in the state branch; never from the job's own commit, so a re-run of an old main run cannot pass its own check",
             "dispatch_exposure": "'Once a workflow has run at least once, you can dispatch it against any branch or tag via the GitHub API or GitHub CLI' and, for workflow_dispatch, GITHUB_SHA is the 'Last commit on the GITHUB_REF branch or tag' (S-gh-actions-events). Without the environment binding, a supervisor (or any holder of Actions write) could dispatch the reducer on an agent/** ref whose non-workflow code is model-produced, and that code would run with the App key: a second state writer",
             "availability": "Environments, deployment branches and environment secrets are available for public repositories, and for private repositories only on paid plans (S-gh-actions-environments); otherwise this placement is unavailable (DP-07)",
             "sources": [
+              "S-gh-actions-contexts",
               "S-gh-actions-environments",
-              "S-gh-actions-events"
+              "S-gh-actions-events",
+              "S-gh-actions-script-injections",
+              "S-gh-fgpat"
             ],
             "unverified": [
-              "U-PM-16"
+              "U-PM-16",
+              "U-PM-19"
             ]
           },
           "github_token_rule": "The job's GITHUB_TOKEN is never a state or candidate writer and carries no contents write. GITHUB_TOKEN 'is a GitHub App installation access token' of the GitHub App that 'GitHub installs ... on your repository' (S-gh-actions-token), shared by every workflow, and 'all actions and run commands within that job that use the GITHUB_TOKEN gain the access rights you specify' (S-gh-workflow-permissions). Naming the GitHub Actions App as a bypass actor would make every contents: write job, including CI running candidate code, a state writer. Only the dedicated App whose installation token is minted in the reducer job is a writer"
@@ -2989,6 +3209,14 @@
           "permissions": [
             {
               "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "repository identity; explicit so that the installation allowlist is complete"
+            },
+            {
+              "credential_type": "github_app_installation",
               "resource": "contents",
               "permission_name": "Contents",
               "level": "read",
@@ -3125,9 +3353,32 @@
           "app_identity": "ci_app",
           "app_grant_rule": {
             "level": "registration_and_installation",
-            "covers": "forbidden_permissions",
-            "rule": "The App identified by app_identity must not be granted any permission listed in forbidden_permissions (unless its 'unless' decision applies) when it is registered or installed. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
-            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (the response has a required 'permissions' field; S-gh-rest-apps) and fails if any forbidden permission is granted",
+            "mode": "allowlist",
+            "allowed_grants": [
+              {
+                "resource": "metadata",
+                "permission_name": "Metadata",
+                "level": "read"
+              },
+              {
+                "resource": "contents",
+                "permission_name": "Contents",
+                "level": "read"
+              },
+              {
+                "resource": "checks",
+                "permission_name": "Checks",
+                "level": "write"
+              },
+              {
+                "resource": "commit_statuses",
+                "permission_name": "Commit statuses",
+                "level": "write"
+              }
+            ],
+            "never_grant": "forbidden_permissions",
+            "rule": "The App identified by app_identity is registered and installed with exactly allowed_grants (conditional grants only when their decision applies) and nothing else; forbidden_permissions must never be granted. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
+            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (required 'permissions' field; S-gh-rest-apps) and fails if any granted permission or level is not in allowed_grants (least privilege), and in particular if any forbidden permission is granted",
             "sources": [
               "S-gh-app-iat",
               "S-gh-rest-apps"
@@ -3234,6 +3485,14 @@
           "permissions": [
             {
               "credential_type": "github_app_installation",
+              "resource": "metadata",
+              "permission_name": "Metadata",
+              "level": "read",
+              "source": "S-gh-appperms",
+              "purpose": "repository identity; explicit so that the installation allowlist is complete"
+            },
+            {
+              "credential_type": "github_app_installation",
               "resource": "contents",
               "permission_name": "Contents",
               "level": "read",
@@ -3314,7 +3573,9 @@
             "acknowledging authoritative outbox/pending-effect state",
             "any ruleset bypass",
             "classic repo scope",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials",
+            "a workflow_dispatch, pull_request or pull_request_target trigger on the projection job (allowed_triggers: schedule only)",
+            "the projection App key or Project token as a repository or organization secret, or in an environment whose deployment branches include anything other than the default branch, or whose protection rules administrators may bypass"
           ],
           "enforcement": [
             {
@@ -3322,7 +3583,7 @@
               "relation": "subject_to"
             }
           ],
-          "secret_holder": "optional scheduled Actions job; App key or PAT secret subject to DP-06",
+          "secret_holder": "optional scheduled Actions job; App key or Project-scoped classic token only as an environment secret of the bound environment (actions_job_binding; DP-06)",
           "expiry_revocation": {
             "procedures": [
               "github_app_installation",
@@ -3333,7 +3594,7 @@
           },
           "unverified": [
             "U-PM-08: for a private user-owned repository, reading state needs classic 'repo', which includes Contents write; projection-only cannot then be expressed and the job must stay disabled",
-            "U-PM-09: DP-06 applies when the job's App key or PAT is stored as an Actions secret"
+            "U-PM-09: DP-06 applies when the job's App key or PAT is stored as an environment secret of the bound environment (actions_job_binding)"
           ],
           "notes": "Optional idle refresh job (plan section 10). It derives projections from accepted state and never changes authority; it cannot substitute for a running supervisor.",
           "forbidden_permissions": [
@@ -3407,9 +3668,36 @@
           "app_identity": "projection_app",
           "app_grant_rule": {
             "level": "registration_and_installation",
-            "covers": "forbidden_permissions",
-            "rule": "The App identified by app_identity must not be granted any permission listed in forbidden_permissions (unless its 'unless' decision applies) when it is registered or installed. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
-            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (the response has a required 'permissions' field; S-gh-rest-apps) and fails if any forbidden permission is granted",
+            "mode": "allowlist",
+            "allowed_grants": [
+              {
+                "resource": "metadata",
+                "permission_name": "Metadata",
+                "level": "read"
+              },
+              {
+                "resource": "contents",
+                "permission_name": "Contents",
+                "level": "read"
+              },
+              {
+                "resource": "issues",
+                "permission_name": "Issues",
+                "level": "write"
+              },
+              {
+                "resource": "projects_org",
+                "permission_name": "Projects",
+                "level": "write",
+                "when": {
+                  "decision_point": "DP-01",
+                  "option": "org_owned"
+                }
+              }
+            ],
+            "never_grant": "forbidden_permissions",
+            "rule": "The App identified by app_identity is registered and installed with exactly allowed_grants (conditional grants only when their decision applies) and nothing else; forbidden_permissions must never be granted. Narrowing the installation token at request time is not a control: 'If permissions is not specified, the installation access token will have all of the permissions that were granted to the app' (S-gh-app-iat). Each app_identity is a distinct App, so a permission granted for one role never reaches another",
+            "verification": "harness doctor (P10) reads the installation's granted permissions with GET /repos/{owner}/{repo}/installation (required 'permissions' field; S-gh-rest-apps) and fails if any granted permission or level is not in allowed_grants (least privilege), and in particular if any forbidden permission is granted",
             "sources": [
               "S-gh-app-iat",
               "S-gh-rest-apps"
@@ -3455,6 +3743,34 @@
               "classic PAT / gh OAuth tokens cannot be narrowed to one repository; harness init must state this exposure and keep such credentials to the minimum scope (e.g. 'project' only)",
               "no per-Project token restriction was found in the evidence (unverified); targeting the single configured Project is enforced by trusted configuration, not by the token",
               "user-owned Projects are reachable only with classic/OAuth 'project', which covers every Project the user can access (DP-01)"
+            ]
+          },
+          "actions_job_binding": {
+            "environment": "a dedicated environment (for example 'harness-projection') referenced only by the projection job",
+            "applies_when": "whenever projection-only runs as a GitHub Actions job (optional idle refresh)",
+            "allowed_triggers": [
+              "schedule"
+            ],
+            "deployment_branches": [
+              "refs/heads/main"
+            ],
+            "deployment_branch_rule": "Selected branches and tags = the default branch only, matched against GITHUB_REF (S-gh-actions-environments). The job has only a schedule trigger: 'Scheduled workflows will only run on the default branch' (S-gh-actions-events); no workflow_dispatch, pull_request or pull_request_target trigger, so no one can start it on a candidate ref",
+            "secret_scope": "environment_secret",
+            "secret_rule": "The projection App key or the classic token limited to Project scopes is stored only as a secret of that environment ('Secrets stored in an environment are only available to workflow jobs that reference the environment', S-gh-actions-environments). The classic 'project' scope reaches every Project the token's owner can access ('Grants read/write access to user and organization projects', S-gh-oauth-scopes), so exposure to candidate code would reach beyond this repository",
+            "admin_bypass_of_environment_rules": "disabled",
+            "runtime_ref_check": "The job refuses to run unless GITHUB_REF is the default branch",
+            "pinned_revision_location": "environment_variable",
+            "rerun_rule": "The job refuses any run whose github.run_attempt is not 1 (S-gh-actions-contexts); it has no inputs",
+            "dispatch_exposure": "A workflow_dispatch trigger would allow a run on any branch or tag at its last commit (S-gh-actions-events), exposing the token to candidate code; the trigger is therefore forbidden",
+            "availability": "Environments, deployment branches and environment secrets are available for public repositories, and for private repositories only on paid plans (S-gh-actions-environments); otherwise the Actions projection job stays disabled",
+            "sources": [
+              "S-gh-actions-environments",
+              "S-gh-actions-events",
+              "S-gh-actions-contexts",
+              "S-gh-oauth-scopes"
+            ],
+            "unverified": [
+              "U-PM-16"
             ]
           }
         }
@@ -3648,7 +3964,7 @@
       "id": "DP-06",
       "parameter": "app_key_as_actions_secret",
       "status": "undecided",
-      "question": "Is a long-lived App private key acceptable as an Actions secret (actions_hosted placement, Actions projection job)?",
+      "question": "Is a long-lived App private key (or a Project-scoped classic token) acceptable as an Actions environment secret (actions_hosted placement, Actions projection job)?",
       "options": [
         {
           "id": "reject",
@@ -3656,7 +3972,7 @@
         },
         {
           "id": "accept",
-          "effect": "The workflow file and its protections join the trusted computing base. The key may be stored only as an environment secret of an environment whose deployment branches are the default branch only, with administrator bypass of its protection rules disabled (S-gh-actions-environments). EXPOSURE otherwise: a workflow_dispatch can target any branch or tag and runs its last commit (S-gh-actions-events), so code on a candidate ref could run with the key (U-PM-16)"
+          "effect": "The workflow file and its protections join the trusted computing base. The key may be stored only as an environment secret of an environment whose deployment branches are the default branch only, with administrator bypass of its protection rules disabled (S-gh-actions-environments). EXPOSURE otherwise: a workflow_dispatch can target any branch or tag and runs its last commit (S-gh-actions-events), so code on a candidate ref could run with the key (U-PM-16). The Actions projection job is bound the same way and may only have a schedule trigger"
         }
       ],
       "recommended": "reject",
@@ -3723,7 +4039,7 @@
         },
         {
           "id": "actions_hosted",
-          "effect": "Separately justified fallback for deployments that cannot trust state-writing supervisors; Actions latency/cost. Requires the reducer job to be bound to an environment restricted to the default branch, holding the App key as an environment secret (actions_job_binding; U-PM-16); never GITHUB_TOKEN as a state or candidate writer"
+          "effect": "Separately justified fallback for deployments that cannot trust state-writing supervisors; Actions latency/cost. Requires the reducer job to be bound to an environment restricted to the default branch, holding the App key as an environment secret (actions_job_binding; U-PM-16); never GITHUB_TOKEN as a state or candidate writer. EXPOSURE: the untrusted supervisor's Actions write can dispatch the reducer on main with arbitrary inputs and can re-run old runs (S-gh-fgpat), and the reducer then holds the App key; the input, dispatcher and re-run rules of actions_job_binding (S-gh-actions-script-injections, S-gh-actions-contexts; U-PM-19) are what keep this from becoming a second writer"
         }
       ],
       "recommended": "supervisor_hosted",

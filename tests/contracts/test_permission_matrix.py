@@ -654,8 +654,14 @@ class ActionsPlacementAndAppIdentityTests(Fixtures):
         for ruleset in self.matrix["rulesets"]:
             for actor in ruleset["bypass_actors"] + ruleset.get("conditional_bypass_actors", []):
                 if actor["actor_type"] == "Integration":
-                    self.assertEqual(actor.get("app_identity"), "dedicated_runtime_app", ruleset["id"])
                     self.assertIn("Never the GitHub Actions App", actor["actor"], ruleset["id"])
+        for name, placement in self.placements():
+            writer = [r for r in placement["roles"] if "state_branch_write" in r["authorities"]][0]
+            publisher = [r for r in placement["roles"] if "candidate_publication" in r["authorities"]][0]
+            for ruleset_id, role in (("RS-state-writers", writer), ("RS-candidates-writers", publisher)):
+                actors = self.rulesets()[ruleset_id]["bypass_actors"]
+                self.assertEqual([a.get("app_identity") for a in actors], [role["app_identity"]],
+                                 "%s %s: bypass App must be the writer role's App" % (name, ruleset_id))
         rule = self.role("actions_hosted", "actions-publisher-fallback")["github_token_rule"]
         for fragment in ("never a state or candidate writer", "S-gh-actions-token", "S-gh-workflow-permissions"):
             self.assertIn(fragment, rule)
@@ -672,7 +678,16 @@ class ActionsPlacementAndAppIdentityTests(Fixtures):
                 if uses_app and role["phase"] == "runtime":
                     grant = role["app_grant_rule"]
                     self.assertEqual(grant["level"], "registration_and_installation", where)
-                    self.assertEqual(grant["covers"], "forbidden_permissions", where)
+                    self.assertEqual(grant["mode"], "allowlist", where)
+                    self.assertEqual(grant["never_grant"], "forbidden_permissions", where)
+                    declared = [{k: p[k] for k in ("resource", "permission_name", "level", "when") if k in p}
+                                for p in role["permissions"] if p["credential_type"] == "github_app_installation"]
+                    self.assertEqual(grant["allowed_grants"], declared, "%s: allowlist must equal the App permissions" % where)
+                    for allowed in grant["allowed_grants"]:
+                        for forbidden in role["forbidden_permissions"]:
+                            if allowed["resource"] == forbidden["resource"] and allowed["level"] in forbidden["levels"]:
+                                self.assertEqual(allowed.get("when"), forbidden.get("unless"), where)
+                    self.assertIn("not in allowed_grants", grant["verification"], where)
                     self.assertTrue(role["forbidden_permissions"], where)
                     self.assertLessEqual({"S-gh-app-iat", "S-gh-rest-apps"}, set(grant["sources"]), where)
                     self.assertIn("P10", grant["verification"], where)
@@ -684,6 +699,60 @@ class ActionsPlacementAndAppIdentityTests(Fixtures):
             writer = [r for r in placement["roles"] if "state_branch_write" in r["authorities"]][0]
             self.assertEqual(writer["app_identity"], "runtime_app", name)
             self.assertNotEqual(roles["setup-operator"]["app_identity"], writer["app_identity"], name)
+
+    def test_actions_jobs_bind_inputs_dispatcher_and_reruns(self):
+        publisher = self.role("actions_hosted", "actions-publisher-fallback")
+        binding = publisher["actions_job_binding"]
+        self.assertEqual(binding["allowed_triggers"], ["workflow_dispatch"])
+        self.assertEqual(binding["pinned_revision_location"], "environment_variable")
+        self.assertIn("never interpolates", binding["input_rule"])
+        self.assertIn("S-gh-actions-script-injections", binding["input_rule"])
+        self.assertIn("github.triggering_actor", binding["dispatcher_rule"])
+        self.assertIn("enrollment", binding["dispatcher_rule"])
+        self.assertIn("github.actor is never used", binding["dispatcher_rule"])
+        self.assertIn("run_attempt is not 1", binding["rerun_rule"])
+        self.assertIn("never from the job's own commit", binding["rerun_rule"])
+        for source in ("S-gh-actions-script-injections", "S-gh-actions-contexts"):
+            self.assertIn(source, binding["sources"])
+            self.assertIn(source, self.source_ids)
+        self.assertIn("U-PM-19", binding["unverified"])
+        for fragment in ("interpolating workflow inputs", "github.actor instead of github.triggering_actor",
+                         "processing a re-run"):
+            self.assertTrue(any(fragment in m for m in publisher["must_not_have"]), fragment)
+        actions = [o for o in self.point("DP-09")["options"] if o["id"] == "actions_hosted"][0]
+        self.assertIn("EXPOSURE", actions["effect"])
+        self.assertIn("U-PM-19", actions["effect"])
+
+    def test_projection_job_is_schedule_only_and_environment_bound(self):
+        for name in ("supervisor_hosted", "actions_hosted"):
+            role = self.role(name, "projection-only")
+            binding = role["actions_job_binding"]
+            self.assertEqual(binding["allowed_triggers"], ["schedule"], name)
+            self.assertEqual(binding["deployment_branches"], ["refs/heads/main"], name)
+            self.assertEqual(binding["secret_scope"], "environment_secret", name)
+            self.assertEqual(binding["admin_bypass_of_environment_rules"], "disabled", name)
+            self.assertIn("run_attempt is not 1", binding["rerun_rule"], name)
+            self.assertTrue(any(m.startswith("a workflow_dispatch, pull_request or pull_request_target trigger")
+                                for m in role["must_not_have"]), name)
+        accept = [o for o in self.point("DP-06")["options"] if o["id"] == "accept"][0]
+        self.assertIn("schedule trigger", accept["effect"])
+
+    def test_environment_bound_roles_forbid_repository_secrets(self):
+        bound = 0
+        for name, placement in self.placements():
+            for role in placement["roles"]:
+                binding = role.get("actions_job_binding")
+                texts = [role["secret_holder"]] + role["must_not_have"] + role["unverified"] + [
+                    p["purpose"] for p in role["permissions"]]
+                for text in texts:
+                    if "Actions secret" in text:
+                        self.assertIn("environment", text, "%s/%s: %s" % (name, role["id"], text))
+                if binding and binding["secret_scope"] == "environment_secret":
+                    bound += 1
+                    self.assertTrue(any("as a repository or organization secret" in m for m in role["must_not_have"]),
+                                    "%s/%s must forbid repository/organization secrets" % (name, role["id"]))
+                    self.assertIn("environment secret", role["secret_holder"], "%s/%s" % (name, role["id"]))
+        self.assertEqual(bound, 3)
 
     def test_ci_identity_exposure_is_explicit(self):
         point = self.point("DP-03")

@@ -115,14 +115,20 @@ delete the state branch is an inference to test (RI §D).
   clients. Switching placement is an explicit pause/fence/drain operation with an authority
   epoch change; the two placements never write concurrently. The fallback does not waive
   the external-worker or single-authority criteria (plan section 11). Its open issues are
-  in the matrix: an App key as an Actions secret (DP-06), how a supervisor without Contents
-  write submits transitions and hands over candidate material (unverified). Because a
+  in the matrix: an App key as an Actions environment secret (DP-06), how a supervisor
+  without Contents write submits transitions and hands over candidate material
+  (unverified). Because a
   `workflow_dispatch` can target any branch or tag and runs its last commit
   (`S-gh-actions-events`), the reducer job must be bound to an environment restricted to the
   default branch that holds the App key as an environment secret
   (`S-gh-actions-environments`; `actions_job_binding`, U-PM-16, P02a F-DISPATCH-REF).
   `GITHUB_TOKEN` is never a state or candidate writer: it is the installation token of the
-  GitHub Actions App shared by every workflow (`S-gh-actions-token`).
+  GitHub Actions App shared by every workflow (`S-gh-actions-token`). The supervisor's
+  Actions write can still dispatch the reducer on the default branch with arbitrary inputs
+  and re-run old runs (`S-gh-fgpat`), so the reducer treats inputs as data only
+  (`S-gh-actions-script-injections`), authenticates `github.triggering_actor` against
+  enrollment and refuses re-runs and any SHA other than the pinned revision held in an
+  environment variable (`S-gh-actions-contexts`; U-PM-19).
 - gh-aw can be selected only if criterion 1 passes. If it is, its scheduler and trusted
   jobs in Actions are the single authority, supervisors participate only through the
   authenticated path that passed criterion 1, and the placements above (which describe the

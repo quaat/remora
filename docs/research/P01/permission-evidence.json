@@ -368,6 +368,18 @@
    "url": "https://docs.github.com/en/rest/teams/members",
    "title": "REST API endpoints for team members and teams (added during P01 internal check 6; 'List team members' GET /orgs/{org}/teams/{team_slug}/members: 'Team members will include the members of child teams' with an inherited flag; 'List child teams' GET /orgs/{org}/teams/{team_slug}/teams, documented at https://docs.github.com/en/rest/teams/teams)",
    "accessed_at": "2026-10-30T01:03:46Z"
+  },
+  {
+   "id": "S-gh-actions-script-injections",
+   "url": "https://docs.github.com/en/actions/concepts/security/script-injections",
+   "title": "Script injections (added during P01 internal check 7; quotes: 'You should ensure that these values do not flow directly into workflows, actions, API calls, or anywhere else where they could be interpreted as executable code'; 'Before the shell script is run, the expressions inside ${{ }} are evaluated and then substituted with the resulting values, which can make it vulnerable to shell command injection')",
+   "accessed_at": "2026-10-30T01:15:26Z"
+  },
+  {
+   "id": "S-gh-actions-contexts",
+   "url": "https://docs.github.com/en/actions/reference/workflows-and-actions/contexts",
+   "title": "Contexts reference (added during P01 internal check 7; quotes: github.triggering_actor 'The username of the user that initiated the workflow run'; github.actor 'Any workflow re-runs will use the privileges of github.actor, even if the actor initiating the re-run (github.triggering_actor) has different privileges'; github.run_attempt 'begins at 1 for the workflow run's first attempt, and increments with each re-run'; inputs 'Contains the inputs of a reusable or manually triggered workflow')",
+   "accessed_at": "2026-10-30T01:15:26Z"
   }
  ],
  "permissions": [

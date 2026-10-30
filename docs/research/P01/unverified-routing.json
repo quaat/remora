@@ -542,7 +542,7 @@
       "id": "U-PM-09",
       "source": "contracts/permission-matrix.v1.json",
       "source_ref": "placements.actions_hosted.projection-only.unverified; placements.supervisor_hosted.projection-only.unverified",
-      "text": "DP-06 applies when the job's App key or PAT is stored as an Actions secret",
+      "text": "DP-06 applies when the job's App key or PAT is stored as an environment secret of the bound environment (actions_job_binding)",
       "routed_to": [
         "human DP-06"
       ],
@@ -659,6 +659,19 @@
       "text": "whether a Team bypass actor on a ruleset also covers members of that Team's child teams (child teams inherit the parent's access permissions, S-gh-about-teams; bypass inheritance is not stated)",
       "routed_to": [
         "P02a (F-APPROVE)"
+      ],
+      "documented_in": [
+        "handoff-P02a.md",
+        "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-19",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.actions-publisher-fallback.unverified",
+      "text": "on the default branch, whether the reducer's input, dispatcher and re-run rules hold in practice: a dispatch with injection-shaped inputs runs no injected code, a dispatch by an unenrolled actor is refused, and a re-run (run_attempt 2) or a run at a SHA other than the pinned revision is refused before the App token is minted",
+      "routed_to": [
+        "P02a (F-DISPATCH-REF; Actions placement only)"
       ],
       "documented_in": [
         "handoff-P02a.md",

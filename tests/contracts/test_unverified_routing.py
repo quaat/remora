@@ -109,7 +109,7 @@ class MatrixUnverifiedTests(unittest.TestCase):
         for where, entry in self.entries:
             self.assertRegex(entry, self.ENTRY, where)
             for item_id in self.cited(entry):
-                self.assertIn(item_id, self.routing, "%s cites unknown %s" % (where, item_id))
+                self.assertTrue(item_id in self.routing, "%s cites unknown %s" % (where, item_id))
 
     def test_every_matrix_level_item_is_cited_and_documented(self):
         cited = {i for _, entry in self.entries for i in self.cited(entry)}

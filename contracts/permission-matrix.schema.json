@@ -224,11 +224,27 @@
         "app_identity": {"enum": [null, "setup_app", "runtime_app", "supervisor_client_app", "ci_app", "projection_app"]},
         "app_grant_rule": {
           "type": "object",
-          "required": ["level", "covers", "rule", "verification", "sources"],
+          "required": ["level", "mode", "allowed_grants", "never_grant", "rule", "verification", "sources"],
           "additionalProperties": false,
           "properties": {
             "level": {"const": "registration_and_installation"},
-            "covers": {"const": "forbidden_permissions"},
+            "mode": {"const": "allowlist"},
+            "allowed_grants": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "required": ["resource", "permission_name", "level"],
+                "additionalProperties": false,
+                "properties": {
+                  "resource": {"$ref": "#/$defs/resource"},
+                  "permission_name": {"type": "string", "minLength": 1},
+                  "level": {"enum": ["read", "write", "admin"]},
+                  "when": {"$ref": "#/$defs/decision_ref"}
+                }
+              }
+            },
+            "never_grant": {"const": "forbidden_permissions"},
             "rule": {"type": "string", "minLength": 1},
             "verification": {"type": "string", "minLength": 1},
             "sources": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/source_id"}}
@@ -237,12 +253,18 @@
         "github_token_rule": {"type": "string", "minLength": 1},
         "actions_job_binding": {
           "type": "object",
-          "required": ["environment", "deployment_branches", "deployment_branch_rule", "secret_scope", "secret_rule",
-                       "admin_bypass_of_environment_rules", "runtime_ref_check", "dispatch_exposure", "availability",
-                       "sources", "unverified"],
+          "required": ["environment", "applies_when", "allowed_triggers", "deployment_branches", "deployment_branch_rule",
+                       "secret_scope", "secret_rule", "admin_bypass_of_environment_rules", "runtime_ref_check",
+                       "pinned_revision_location", "rerun_rule", "dispatch_exposure", "availability", "sources", "unverified"],
           "additionalProperties": false,
           "properties": {
             "environment": {"type": "string", "minLength": 1},
+            "applies_when": {"type": "string", "minLength": 1},
+            "allowed_triggers": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["workflow_dispatch", "schedule"]}},
+            "pinned_revision_location": {"enum": ["environment_variable", "state_branch"]},
+            "input_rule": {"type": "string", "minLength": 1},
+            "dispatcher_rule": {"type": "string", "minLength": 1},
+            "rerun_rule": {"type": "string", "minLength": 1},
             "deployment_branches": {"type": "array", "minItems": 1, "items": {"type": "string"}},
             "deployment_branch_rule": {"type": "string", "minLength": 1},
             "secret_scope": {"const": "environment_secret"},
@@ -304,7 +326,7 @@
               "actor_type": {"type": "string"},
               "actor": {"type": "string", "minLength": 1},
               "bypass_mode": {"type": "string"},
-              "app_identity": {"enum": ["dedicated_runtime_app"]}
+              "app_identity": {"enum": ["runtime_app"]}
             }
           }
         },
