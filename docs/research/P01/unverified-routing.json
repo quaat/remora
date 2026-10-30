@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "purpose": "Stable IDs for every unverified/unknown item in the P01 research and where it is routed. tests/contracts/test_unverified_routing.py checks that every item of permission-evidence.json 'unverified', upstream-surfaces.md §5 and weave-inventory.md §H has an ID here and that each ID appears in the listed handoff or README file. Matrix-level open points on roles and rulesets (U-PM-*) are cited by ID in the matrix's role/ruleset 'unverified' entries; entries that restate a research item reuse its U-PE/U-US/U-WI ID.",
+  "purpose": "Stable IDs for every unverified/unknown item in the P01 research and where it is routed. tests/contracts/test_unverified_routing.py checks that every item of permission-evidence.json 'unverified', upstream-surfaces.md §5 and weave-inventory.md §H has an ID here and that each ID appears in the listed handoff or README file. Matrix-level open points on roles and rulesets (U-PM-*) are cited by ID in the matrix's role/ruleset 'unverified' entries; entries that restate a research item reuse its U-PE/U-US/U-WI ID. 'fixtures' lists every P02a fixture id with the item ids its handoff row carries; items routed to a named fixture must be covered by it.",
   "items": [
     {
       "id": "U-PE-01",
@@ -676,6 +676,197 @@
       "documented_in": [
         "handoff-P02a.md",
         "README.md"
+      ]
+    },
+    {
+      "id": "U-PM-20",
+      "source": "contracts/permission-matrix.v1.json",
+      "source_ref": "placements.actions_hosted.trusted-ci.unverified; placements.supervisor_hosted.trusted-ci.unverified",
+      "text": "CI App key custody and the token-minting job (a trusted default-branch workflow job that neither checks out nor executes candidate code, with no key reachable from candidate-running jobs) are P09's deliverable; the concrete GitHub workflow design that achieves this is not established by P01",
+      "routed_to": [
+        "P09",
+        "human DP-03"
+      ],
+      "documented_in": [
+        "README.md"
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "id": "F-A01",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-03"
+      ]
+    },
+    {
+      "id": "F-A04a",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A04b",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A05",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A07",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-A17f",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-SKEW",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-SNAP",
+      "document": "handoff-P02a.md",
+      "covers": []
+    },
+    {
+      "id": "F-T1",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-05"
+      ]
+    },
+    {
+      "id": "F-T2",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-04",
+        "U-PE-06"
+      ]
+    },
+    {
+      "id": "F-T3",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-04",
+        "U-PE-06"
+      ]
+    },
+    {
+      "id": "F-T4",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-03"
+      ]
+    },
+    {
+      "id": "F-RS",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-07",
+        "U-PE-08"
+      ]
+    },
+    {
+      "id": "F-GA1",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-01",
+        "U-US-10"
+      ]
+    },
+    {
+      "id": "F-GA2",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-04"
+      ]
+    },
+    {
+      "id": "F-GA3",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-07"
+      ]
+    },
+    {
+      "id": "F-RS-USER",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-01"
+      ]
+    },
+    {
+      "id": "F-RS-TOKEN",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-02"
+      ]
+    },
+    {
+      "id": "F-WF-TOKEN",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-10"
+      ]
+    },
+    {
+      "id": "F-APPROVE",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-09",
+        "U-PM-01",
+        "U-PM-04",
+        "U-PM-14",
+        "U-PM-15",
+        "U-PM-17",
+        "U-PM-18",
+        "U-PE-08"
+      ]
+    },
+    {
+      "id": "F-DISPATCH-REF",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PM-16",
+        "U-PM-19"
+      ]
+    },
+    {
+      "id": "F-SETUP",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-PE-03",
+        "U-PE-04",
+        "U-PE-11",
+        "U-PM-05"
+      ]
+    },
+    {
+      "id": "F-GA4",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-05"
+      ]
+    },
+    {
+      "id": "F-GA5",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-06"
+      ]
+    },
+    {
+      "id": "F-API",
+      "document": "handoff-P02a.md",
+      "covers": [
+        "U-US-04"
       ]
     }
   ]

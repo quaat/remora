@@ -85,6 +85,44 @@ class RoutingTests(unittest.TestCase):
                     self.assertIn(handoff, item["documented_in"], item["id"])
 
 
+class FixtureRoutingTests(unittest.TestCase):
+    """Fixture ids used as route targets are machine-checked against the handoff."""
+
+    ROW = re.compile(r"^\| (F-[A-Za-z0-9-]+)(?: \(([^)]*)\))? \|", re.M)
+
+    @classmethod
+    def setUpClass(cls):
+        cls.routing = json.loads(read(ROUTING))
+        cls.fixtures = {f["id"]: f for f in cls.routing["fixtures"]}
+
+    def rows(self, document):
+        return {m.group(1): m.group(2) or "" for m in self.ROW.finditer(read(P01 / document))}
+
+    def test_fixture_index_matches_handoff_rows(self):
+        self.assertEqual(len(self.fixtures), len(self.routing["fixtures"]), "duplicate fixture ids")
+        documents = {f["document"] for f in self.fixtures.values()}
+        self.assertEqual(documents, {"handoff-P02a.md"})
+        rows = self.rows("handoff-P02a.md")
+        self.assertEqual(set(rows), set(self.fixtures), "fixture rows and index must match exactly")
+        for fixture_id, fixture in self.fixtures.items():
+            for item_id in fixture["covers"]:
+                self.assertTrue(mentions(rows[fixture_id], item_id), "%s row lacks %s" % (fixture_id, item_id))
+
+    def test_items_routed_to_a_fixture_are_covered_by_it(self):
+        items = {i["id"]: i for i in self.routing["items"]}
+        for fixture in self.fixtures.values():
+            for item_id in fixture["covers"]:
+                self.assertIn(item_id, items, fixture["id"])
+        routed = 0
+        for item in self.routing["items"]:
+            for target in item["routed_to"]:
+                for fixture_id in re.findall(r"F-[A-Za-z0-9]+(?:-[A-Z][A-Za-z0-9]*)*", target):
+                    routed += 1
+                    self.assertIn(fixture_id, self.fixtures, "%s routed to unknown %s" % (item["id"], fixture_id))
+                    self.assertIn(item["id"], self.fixtures[fixture_id]["covers"], item["id"])
+        self.assertGreater(routed, 0)
+
+
 class MatrixUnverifiedTests(unittest.TestCase):
     """Role- and ruleset-level unverified entries in the matrix carry a routed ID."""
 

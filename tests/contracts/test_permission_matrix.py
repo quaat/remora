@@ -723,6 +723,44 @@ class ActionsPlacementAndAppIdentityTests(Fixtures):
         self.assertIn("EXPOSURE", actions["effect"])
         self.assertIn("U-PM-19", actions["effect"])
 
+    def test_reducer_repin_and_clean_import_rules(self):
+        binding = self.role("actions_hosted", "actions-publisher-fallback")["actions_job_binding"]
+        self.assertEqual(binding["pinned_revision_location"], "environment_variable")
+        repin = binding["repin_rule"]
+        for fragment in ("environment variable", "state branch", "record_pin_update", "P05", "P10",
+                         "exactly this one-step lag"):
+            self.assertIn(fragment, repin)
+        index = load(INTERFACES)
+        state = [i for i in index["interfaces"] if i["id"] == "state-backend"][0]
+        self.assertEqual(state["owner_task"], "P05")
+        repin_op = [o for o in state["operations"] if o["name"] == "record_pin_update"]
+        self.assertEqual(len(repin_op), 1)
+        self.assertIn("P10", repin_op[0]["notes"])
+        publisher = [i for i in index["interfaces"] if i["id"] == "publisher"][0]
+        publish = [o for o in publisher["operations"] if o["name"] == "publish_candidate"][0]
+        self.assertIn("hooks", publish["notes"])
+        bound = [binding] + [self.role(p, "projection-only")["actions_job_binding"]
+                             for p in ("supervisor_hosted", "actions_hosted")]
+        for item in bound:
+            self.assertIn("publish_candidate", item["clean_import_rule"])
+            self.assertIn("hooks, credential helpers", item["clean_import_rule"])
+        self.assertIn("publish_candidate", self.role("supervisor_hosted", "supervisor-runtime")["notes"])
+        for placement in ("supervisor_hosted", "actions_hosted"):
+            projection = self.role(placement, "projection-only")["actions_job_binding"]
+            self.assertNotIn("pinned_revision_location", projection, "declared but never checked")
+            self.assertNotIn("repin_rule", projection)
+
+    def test_ci_key_custody_is_assigned_to_p09(self):
+        dedicated = [o for o in self.point("DP-03")["options"] if o["id"] == "dedicated_ci_app"][0]
+        for fragment in ("P09", "U-PM-20", "neither checks out nor executes candidate code",
+                         "repository or organization secret"):
+            self.assertIn(fragment, dedicated["effect"])
+        for placement in ("supervisor_hosted", "actions_hosted"):
+            ci = self.role(placement, "trusted-ci")
+            self.assertTrue(any(u.startswith("U-PM-20: ") for u in ci["unverified"]), placement)
+            self.assertTrue(any("CI App private key as a repository or organization secret" in m
+                                for m in ci["must_not_have"]), placement)
+
     def test_projection_job_is_schedule_only_and_environment_bound(self):
         for name in ("supervisor_hosted", "actions_hosted"):
             role = self.role(name, "projection-only")

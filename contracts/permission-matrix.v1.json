@@ -900,7 +900,7 @@
             "U-PE-09: whether an App pull request review counts toward required approvals on main (relevant if DP-08 = supervisor_opens_pr; DP-10 does not rely on App approvals)",
             "U-PM-05: classic 'project' scope without 'repo' sufficient to project a user-owned Project linked to a public repository"
           ],
-          "notes": "Every enrolled supervisor runs the same pinned reducer; they are concurrent clients of one state branch, not separate ledgers. Fine-grained PATs cannot read the Checks API (S-gh-pat-manage), so a FG-PAT supervisor cannot read trusted-CI check runs; that profile needs DP-02 = github_app for P09.",
+          "notes": "Every enrolled supervisor runs the same pinned reducer; they are concurrent clients of one state branch, not separate ledgers. Fine-grained PATs cannot read the Checks API (S-gh-pat-manage), so a FG-PAT supervisor cannot read trusted-CI check runs; that profile needs DP-02 = github_app for P09. Candidate publication follows the clean-import rule of interface publisher, operation publish_candidate (contracts/interfaces.v1.json): a clean, controlled Git environment where candidate hooks, credential helpers and filters are never executed with publication credentials.",
           "forbidden_permissions": [
             {
               "resource": "rulesets_admin",
@@ -1482,7 +1482,8 @@
             "any ruleset bypass",
             "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
             "candidate-controlled workflow definitions or credentials exposed to candidate code",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials",
+            "the CI App private key as a repository or organization secret, or in any job that checks out or executes candidate code; only a trusted default-branch workflow job that runs no candidate code mints the token (custody and minting job: P09; U-PM-20)"
           ],
           "enforcement": [
             {
@@ -1499,7 +1500,8 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "U-PM-07: whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
+            "U-PM-07: whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')",
+            "U-PM-20: CI App key custody and the token-minting job (a trusted default-branch workflow job that neither checks out nor executes candidate code, with no key reachable from candidate-running jobs) are P09's deliverable; the concrete GitHub workflow design that achieves this is not established by P01"
           ],
           "notes": "Statuses from 'any source' are spoofable by any writer (S-gh-rules-available); pin the source App with integration_id.",
           "forbidden_permissions": [
@@ -1969,8 +1971,8 @@
             "secret_rule": "The projection App key or the classic token limited to Project scopes is stored only as a secret of that environment ('Secrets stored in an environment are only available to workflow jobs that reference the environment', S-gh-actions-environments). The classic 'project' scope reaches every Project the token's owner can access ('Grants read/write access to user and organization projects', S-gh-oauth-scopes), so exposure to candidate code would reach beyond this repository",
             "admin_bypass_of_environment_rules": "disabled",
             "runtime_ref_check": "The job refuses to run unless GITHUB_REF is the default branch",
-            "pinned_revision_location": "environment_variable",
             "rerun_rule": "The job refuses any run whose github.run_attempt is not 1 (S-gh-actions-contexts); it has no inputs",
+            "clean_import_rule": "The projection job never checks out or imports candidate refs; it reads accepted state only. Any Git operation it performs follows the clean-environment rule of interface publisher, operation publish_candidate (contracts/interfaces.v1.json): no candidate hooks, credential helpers or filters are executed",
             "dispatch_exposure": "A workflow_dispatch trigger would allow a run on any branch or tag at its last commit (S-gh-actions-events), exposing the token to candidate code; the trigger is therefore forbidden",
             "availability": "Environments, deployment branches and environment secrets are available for public repositories, and for private repositories only on paid plans (S-gh-actions-environments); otherwise the Actions projection job stays disabled",
             "sources": [
@@ -2857,6 +2859,8 @@
             "input_rule": "Workflow inputs and every github-context value are untrusted data: the reducer reads them as data (for example from an environment variable), parses and validates them against the command schema, and never interpolates them with ${{ }} into run:, action inputs or API calls. 'Before the shell script is run, the expressions inside ${{ }} are evaluated and then substituted', and such values must not 'flow directly into workflows, actions, API calls, or anywhere else where they could be interpreted as executable code' (S-gh-actions-script-injections)",
             "dispatcher_rule": "The dispatcher is authenticated as github.triggering_actor ('the user that initiated the workflow run') and checked against enrollment in the state branch; github.actor is never used for this, because 'Any workflow re-runs will use the privileges of github.actor, even if the actor initiating the re-run (github.triggering_actor) has different privileges' (S-gh-actions-contexts). An unenrolled dispatcher is refused before any state read with the App token",
             "rerun_rule": "The job refuses any run whose github.run_attempt is not 1 ('begins at 1 ... and increments with each re-run', S-gh-actions-contexts), because Actions write also covers POST .../actions/runs/{run_id}/rerun, .../rerun-failed-jobs and .../jobs/{job_id}/rerun (S-gh-fgpat). It also refuses any GITHUB_SHA other than the pinned reducer revision, which is read from an environment variable of the bound environment ('Variables stored in an environment are only available to workflow jobs that reference the environment', S-gh-actions-environments) and cross-checked with the reducer revision recorded in the state branch; never from the job's own commit, so a re-run of an old main run cannot pass its own check",
+            "repin_rule": "Human-authorized pin_update: (1) the human updates the pinned-revision environment variable of the bound environment to the new reviewed main SHA; (2) the next dispatch on the default branch is accepted when GITHUB_SHA equals the environment variable and all other rules pass; (3) the reducer's first transition in that run records the new pin in the state branch (interface state-backend, operation record_pin_update, owner P05). The cross-check between the environment variable and the state-branch record tolerates exactly this one-step lag, and only in the direction environment variable newer than state; any other mismatch is refused. Until the human re-pins, every merge to main halts this reducer (liveness, not safety). The operator procedure and the harness doctor check of both locations are P10's deliverable",
+            "clean_import_rule": "Candidate material is imported only through interface publisher, operation publish_candidate (contracts/interfaces.v1.json): a clean, controlled Git environment in which candidate Git hooks, credential helpers and filters are never executed (plan section 4). The reducer job never checks out a candidate ref as its working tree",
             "dispatch_exposure": "'Once a workflow has run at least once, you can dispatch it against any branch or tag via the GitHub API or GitHub CLI' and, for workflow_dispatch, GITHUB_SHA is the 'Last commit on the GITHUB_REF branch or tag' (S-gh-actions-events). Without the environment binding, a supervisor (or any holder of Actions write) could dispatch the reducer on an agent/** ref whose non-workflow code is model-produced, and that code would run with the App key: a second state writer",
             "availability": "Environments, deployment branches and environment secrets are available for public repositories, and for private repositories only on paid plans (S-gh-actions-environments); otherwise this placement is unavailable (DP-07)",
             "sources": [
@@ -3272,7 +3276,8 @@
             "any ruleset bypass",
             "the supervisor/publisher identity (plan section 4: separate identities and jobs)",
             "candidate-controlled workflow definitions or credentials exposed to candidate code",
-            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials"
+            "a credential that belongs to an account matched by an RS-main-integrator bypass actor (for example the human admin's own token), unless that credential carries no Contents write and so cannot merge; see bypass_account_credentials",
+            "the CI App private key as a repository or organization secret, or in any job that checks out or executes candidate code; only a trusted default-branch workflow job that runs no candidate code mints the token (custody and minting job: P09; U-PM-20)"
           ],
           "enforcement": [
             {
@@ -3289,7 +3294,8 @@
             "table": "expiry_revocation_procedures"
           },
           "unverified": [
-            "U-PM-07: whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')"
+            "U-PM-07: whether GITHUB_TOKEN check runs can be pinned as the required-check source (App source pinning is documented; GITHUB_TOKEN is '?')",
+            "U-PM-20: CI App key custody and the token-minting job (a trusted default-branch workflow job that neither checks out nor executes candidate code, with no key reachable from candidate-running jobs) are P09's deliverable; the concrete GitHub workflow design that achieves this is not established by P01"
           ],
           "notes": "Statuses from 'any source' are spoofable by any writer (S-gh-rules-available); pin the source App with integration_id.",
           "forbidden_permissions": [
@@ -3759,8 +3765,8 @@
             "secret_rule": "The projection App key or the classic token limited to Project scopes is stored only as a secret of that environment ('Secrets stored in an environment are only available to workflow jobs that reference the environment', S-gh-actions-environments). The classic 'project' scope reaches every Project the token's owner can access ('Grants read/write access to user and organization projects', S-gh-oauth-scopes), so exposure to candidate code would reach beyond this repository",
             "admin_bypass_of_environment_rules": "disabled",
             "runtime_ref_check": "The job refuses to run unless GITHUB_REF is the default branch",
-            "pinned_revision_location": "environment_variable",
             "rerun_rule": "The job refuses any run whose github.run_attempt is not 1 (S-gh-actions-contexts); it has no inputs",
+            "clean_import_rule": "The projection job never checks out or imports candidate refs; it reads accepted state only. Any Git operation it performs follows the clean-environment rule of interface publisher, operation publish_candidate (contracts/interfaces.v1.json): no candidate hooks, credential helpers or filters are executed",
             "dispatch_exposure": "A workflow_dispatch trigger would allow a run on any branch or tag at its last commit (S-gh-actions-events), exposing the token to candidate code; the trigger is therefore forbidden",
             "availability": "Environments, deployment branches and environment secrets are available for public repositories, and for private repositories only on paid plans (S-gh-actions-environments); otherwise the Actions projection job stays disabled",
             "sources": [
@@ -3896,7 +3902,7 @@
       "options": [
         {
           "id": "dedicated_ci_app",
-          "effect": "Pinnable as required-check source via integration_id; separate from the publisher. Its installation token must be minted only in a job that does not execute candidate code, so candidate code cannot post check runs as this App",
+          "effect": "Pinnable as required-check source via integration_id; separate from the publisher. Key custody and the job that mints the CI App token are P09's deliverable (U-PM-20): only a trusted workflow on the default branch, in a job that neither checks out nor executes candidate code, may mint the token; jobs that run candidate code receive no key. CI must run on candidate refs, so the main-only environment binding used for the reducer does not apply. Misconfiguration exposure: if the key were stored as a repository or organization secret available to candidate-running jobs, candidate code could post check runs as the CI App",
           "candidate_can_post_required_check": false
         },
         {

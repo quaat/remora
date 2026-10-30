@@ -127,6 +127,26 @@
             "IntegrityError",
             "SchemaUnsupported"
           ]
+        },
+        {
+          "name": "record_pin_update",
+          "inputs": [
+            "new pinned reducer revision (read from the bound environment's variable)",
+            "GITHUB_SHA of the accepted run",
+            "authenticated dispatcher",
+            "current state-branch pin"
+          ],
+          "outputs": [
+            "new_head_oid",
+            "receipt"
+          ],
+          "errors": [
+            "Conflict",
+            "AmbiguousWrite",
+            "Unauthorized",
+            "PinMismatch"
+          ],
+          "notes": "Actions placement only. Accepted only as the first transition of a run whose GITHUB_SHA equals the environment variable and whose state-branch pin is exactly one step older; any other mismatch fails closed. The operator procedure and harness doctor check of both pin locations are owned by P10."
         }
       ]
     },
